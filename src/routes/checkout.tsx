@@ -24,7 +24,7 @@ export const Route = createFileRoute("/checkout")({
 function Checkout() {
   const { plan: planId } = Route.useSearch();
   const navigate = useNavigate();
-  const plan = demoPlans.find((p) => p.id === planId) ?? demoPlans[1];
+  const plan = (demoPlans.find((p) => p.id === planId) ?? demoPlans[1])!;
   const [done, setDone] = useState(false);
 
   return (

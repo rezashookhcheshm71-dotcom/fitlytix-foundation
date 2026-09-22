@@ -22,7 +22,7 @@ export const performanceEngine = {
   },
   performanceDelta(points: PerformancePoint[]) {
     if (points.length < 2) return 0;
-    return points[points.length - 1].performanceIndex - points[0].performanceIndex;
+    return points[points.length - 1]!.performanceIndex - points[0]!.performanceIndex;
   },
   readinessLabel(readiness: number) {
     if (readiness >= 75) return { label: "آماده", tone: "success" as const };

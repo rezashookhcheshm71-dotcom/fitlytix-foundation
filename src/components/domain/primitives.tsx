@@ -30,7 +30,7 @@ export function SectionHeading({
   title: ReactNode;
   subtitle?: ReactNode;
   action?: { label: string; to: string };
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <div className={cn("mb-4 flex items-end justify-between gap-4", className)}>
@@ -80,7 +80,7 @@ export function Stat({
   unit?: string;
   delta?: number;
   tone?: "default" | "primary" | "success" | "info" | "warning";
-  className?: string;
+  className?: string | undefined;
 }) {
   const toneClass = {
     default: "text-foreground",
@@ -124,10 +124,10 @@ export function ProgressRing({
   value: number; // 0..100
   size?: number;
   stroke?: number;
-  color?: string;
+  color?: string | undefined;
   track?: string;
   children?: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -163,8 +163,8 @@ export function Bar({
   height = 6,
 }: {
   value: number; // 0..1
-  color?: string;
-  className?: string;
+  color?: string | undefined;
+  className?: string | undefined;
   height?: number;
 }) {
   return (
@@ -184,8 +184,8 @@ export function Pill({
   className,
 }: {
   children: ReactNode;
-  color?: string;
-  className?: string;
+  color?: string | undefined;
+  className?: string | undefined;
 }) {
   return (
     <span

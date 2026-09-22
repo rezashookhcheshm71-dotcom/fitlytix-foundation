@@ -11,7 +11,7 @@ export const assessmentEngine = {
     return COMMON_ASSESSMENT;
   },
   getSportTemplate(sport: SportId): AssessmentTemplate {
-    return SPORT_ASSESSMENTS[sport] ?? SPORT_ASSESSMENTS.crossfit;
+    return (SPORT_ASSESSMENTS[sport] ?? SPORT_ASSESSMENTS['crossfit'])!;
   },
   /** Fields hidden for beginners; shown for advanced/elite athletes. */
   visibleFields(template: AssessmentTemplate, level: ExperienceLevel) {

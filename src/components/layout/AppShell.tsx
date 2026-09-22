@@ -16,7 +16,7 @@ import { Avatar } from "@/components/domain/athlete";
 import { MockBadge } from "@/components/domain/primitives";
 import { cn } from "@/lib/utils";
 
-type NavItem = { to: LinkProps["to"]; label: string; icon: LucideIcon };
+type NavItem = { to: NonNullable<LinkProps["to"]>; label: string; icon: LucideIcon };
 
 const athleteNav: NavItem[] = [
   { to: "/athlete/dashboard", label: "داشبورد", icon: LayoutDashboard },
