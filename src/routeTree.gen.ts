@@ -10,33 +10,232 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PlansRouteImport } from './routes/plans'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
+import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
+import { Route as AthleteDashboardRouteImport } from './routes/athlete.dashboard'
+import { Route as AthleteFitnessDnaRouteImport } from './routes/athlete.fitness-dna'
+import { Route as AthletePerformanceRouteImport } from './routes/athlete.performance'
+import { Route as AthleteProgramRouteImport } from './routes/athlete.program'
+import { Route as CoachIndexRouteImport } from './routes/coach.index'
+import { Route as CoachExercisesRouteImport } from './routes/coach.exercises'
+import { Route as CoachProgramsRouteImport } from './routes/coach.programs'
+import { Route as CoachAthleteIdRouteImport } from './routes/coach.athlete.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssessmentCommonRoute = AssessmentCommonRouteImport.update({
+  id: '/assessment/common',
+  path: '/assessment/common',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssessmentSportRoute = AssessmentSportRouteImport.update({
+  id: '/assessment/sport',
+  path: '/assessment/sport',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AthleteDashboardRoute = AthleteDashboardRouteImport.update({
+  id: '/athlete/dashboard',
+  path: '/athlete/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AthleteFitnessDnaRoute = AthleteFitnessDnaRouteImport.update({
+  id: '/athlete/fitness-dna',
+  path: '/athlete/fitness-dna',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AthletePerformanceRoute = AthletePerformanceRouteImport.update({
+  id: '/athlete/performance',
+  path: '/athlete/performance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AthleteProgramRoute = AthleteProgramRouteImport.update({
+  id: '/athlete/program',
+  path: '/athlete/program',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachIndexRoute = CoachIndexRouteImport.update({
+  id: '/coach/',
+  path: '/coach/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachExercisesRoute = CoachExercisesRouteImport.update({
+  id: '/coach/exercises',
+  path: '/coach/exercises',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachProgramsRoute = CoachProgramsRouteImport.update({
+  id: '/coach/programs',
+  path: '/coach/programs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachAthleteIdRoute = CoachAthleteIdRouteImport.update({
+  id: '/coach/athlete/$id',
+  path: '/coach/athlete/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/checkout': typeof CheckoutRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/plans': typeof PlansRoute
+  '/register': typeof RegisterRoute
+  '/assessment/common': typeof AssessmentCommonRoute
+  '/assessment/sport': typeof AssessmentSportRoute
+  '/athlete/dashboard': typeof AthleteDashboardRoute
+  '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
+  '/athlete/performance': typeof AthletePerformanceRoute
+  '/athlete/program': typeof AthleteProgramRoute
+  '/coach/exercises': typeof CoachExercisesRoute
+  '/coach/programs': typeof CoachProgramsRoute
+  '/coach/': typeof CoachIndexRoute
+  '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/checkout': typeof CheckoutRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/plans': typeof PlansRoute
+  '/register': typeof RegisterRoute
+  '/assessment/common': typeof AssessmentCommonRoute
+  '/assessment/sport': typeof AssessmentSportRoute
+  '/athlete/dashboard': typeof AthleteDashboardRoute
+  '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
+  '/athlete/performance': typeof AthletePerformanceRoute
+  '/athlete/program': typeof AthleteProgramRoute
+  '/coach/exercises': typeof CoachExercisesRoute
+  '/coach/programs': typeof CoachProgramsRoute
+  '/coach': typeof CoachIndexRoute
+  '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/checkout': typeof CheckoutRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/plans': typeof PlansRoute
+  '/register': typeof RegisterRoute
+  '/assessment/common': typeof AssessmentCommonRoute
+  '/assessment/sport': typeof AssessmentSportRoute
+  '/athlete/dashboard': typeof AthleteDashboardRoute
+  '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
+  '/athlete/performance': typeof AthletePerformanceRoute
+  '/athlete/program': typeof AthleteProgramRoute
+  '/coach/exercises': typeof CoachExercisesRoute
+  '/coach/programs': typeof CoachProgramsRoute
+  '/coach/': typeof CoachIndexRoute
+  '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/checkout'
+    | '/login'
+    | '/onboarding'
+    | '/plans'
+    | '/register'
+    | '/assessment/common'
+    | '/assessment/sport'
+    | '/athlete/dashboard'
+    | '/athlete/fitness-dna'
+    | '/athlete/performance'
+    | '/athlete/program'
+    | '/coach/exercises'
+    | '/coach/programs'
+    | '/coach/'
+    | '/coach/athlete/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/checkout'
+    | '/login'
+    | '/onboarding'
+    | '/plans'
+    | '/register'
+    | '/assessment/common'
+    | '/assessment/sport'
+    | '/athlete/dashboard'
+    | '/athlete/fitness-dna'
+    | '/athlete/performance'
+    | '/athlete/program'
+    | '/coach/exercises'
+    | '/coach/programs'
+    | '/coach'
+    | '/coach/athlete/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/checkout'
+    | '/login'
+    | '/onboarding'
+    | '/plans'
+    | '/register'
+    | '/assessment/common'
+    | '/assessment/sport'
+    | '/athlete/dashboard'
+    | '/athlete/fitness-dna'
+    | '/athlete/performance'
+    | '/athlete/program'
+    | '/coach/exercises'
+    | '/coach/programs'
+    | '/coach/'
+    | '/coach/athlete/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CheckoutRoute: typeof CheckoutRoute
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
+  PlansRoute: typeof PlansRoute
+  RegisterRoute: typeof RegisterRoute
+  AssessmentCommonRoute: typeof AssessmentCommonRoute
+  AssessmentSportRoute: typeof AssessmentSportRoute
+  AthleteDashboardRoute: typeof AthleteDashboardRoute
+  AthleteFitnessDnaRoute: typeof AthleteFitnessDnaRoute
+  AthletePerformanceRoute: typeof AthletePerformanceRoute
+  AthleteProgramRoute: typeof AthleteProgramRoute
+  CoachExercisesRoute: typeof CoachExercisesRoute
+  CoachProgramsRoute: typeof CoachProgramsRoute
+  CoachIndexRoute: typeof CoachIndexRoute
+  CoachAthleteIdRoute: typeof CoachAthleteIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +247,131 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assessment/common': {
+      id: '/assessment/common'
+      path: '/assessment/common'
+      fullPath: '/assessment/common'
+      preLoaderRoute: typeof AssessmentCommonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assessment/sport': {
+      id: '/assessment/sport'
+      path: '/assessment/sport'
+      fullPath: '/assessment/sport'
+      preLoaderRoute: typeof AssessmentSportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/athlete/dashboard': {
+      id: '/athlete/dashboard'
+      path: '/athlete/dashboard'
+      fullPath: '/athlete/dashboard'
+      preLoaderRoute: typeof AthleteDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/athlete/fitness-dna': {
+      id: '/athlete/fitness-dna'
+      path: '/athlete/fitness-dna'
+      fullPath: '/athlete/fitness-dna'
+      preLoaderRoute: typeof AthleteFitnessDnaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/athlete/performance': {
+      id: '/athlete/performance'
+      path: '/athlete/performance'
+      fullPath: '/athlete/performance'
+      preLoaderRoute: typeof AthletePerformanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/athlete/program': {
+      id: '/athlete/program'
+      path: '/athlete/program'
+      fullPath: '/athlete/program'
+      preLoaderRoute: typeof AthleteProgramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach/': {
+      id: '/coach/'
+      path: '/coach'
+      fullPath: '/coach/'
+      preLoaderRoute: typeof CoachIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach/exercises': {
+      id: '/coach/exercises'
+      path: '/coach/exercises'
+      fullPath: '/coach/exercises'
+      preLoaderRoute: typeof CoachExercisesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach/programs': {
+      id: '/coach/programs'
+      path: '/coach/programs'
+      fullPath: '/coach/programs'
+      preLoaderRoute: typeof CoachProgramsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach/athlete/$id': {
+      id: '/coach/athlete/$id'
+      path: '/coach/athlete/$id'
+      fullPath: '/coach/athlete/$id'
+      preLoaderRoute: typeof CoachAthleteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CheckoutRoute: CheckoutRoute,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
+  PlansRoute: PlansRoute,
+  RegisterRoute: RegisterRoute,
+  AssessmentCommonRoute: AssessmentCommonRoute,
+  AssessmentSportRoute: AssessmentSportRoute,
+  AthleteDashboardRoute: AthleteDashboardRoute,
+  AthleteFitnessDnaRoute: AthleteFitnessDnaRoute,
+  AthletePerformanceRoute: AthletePerformanceRoute,
+  AthleteProgramRoute: AthleteProgramRoute,
+  CoachExercisesRoute: CoachExercisesRoute,
+  CoachProgramsRoute: CoachProgramsRoute,
+  CoachIndexRoute: CoachIndexRoute,
+  CoachAthleteIdRoute: CoachAthleteIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
