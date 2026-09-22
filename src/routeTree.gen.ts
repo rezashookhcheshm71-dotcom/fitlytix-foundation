@@ -16,6 +16,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
 import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
 import { Route as AthleteDashboardRouteImport } from './routes/athlete.dashboard'
+import { Route as AthleteFitnessDnaRouteImport } from './routes/athlete.fitness-dna'
 import { Route as AthletePerformanceRouteImport } from './routes/athlete.performance'
 import { Route as AthleteProgramRouteImport } from './routes/athlete.program'
 
@@ -54,6 +55,11 @@ const AthleteDashboardRoute = AthleteDashboardRouteImport.update({
   path: '/athlete/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AthleteFitnessDnaRoute = AthleteFitnessDnaRouteImport.update({
+  id: '/athlete/fitness-dna',
+  path: '/athlete/fitness-dna',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AthletePerformanceRoute = AthletePerformanceRouteImport.update({
   id: '/athlete/performance',
   path: '/athlete/performance',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
+  '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
   '/athlete/performance': typeof AthletePerformanceRoute
   '/athlete/program': typeof AthleteProgramRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
+  '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
   '/athlete/performance': typeof AthletePerformanceRoute
   '/athlete/program': typeof AthleteProgramRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
+  '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
   '/athlete/performance': typeof AthletePerformanceRoute
   '/athlete/program': typeof AthleteProgramRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
+    | '/athlete/fitness-dna'
     | '/athlete/performance'
     | '/athlete/program'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
+    | '/athlete/fitness-dna'
     | '/athlete/performance'
     | '/athlete/program'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
+    | '/athlete/fitness-dna'
     | '/athlete/performance'
     | '/athlete/program'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   AssessmentCommonRoute: typeof AssessmentCommonRoute
   AssessmentSportRoute: typeof AssessmentSportRoute
   AthleteDashboardRoute: typeof AthleteDashboardRoute
+  AthleteFitnessDnaRoute: typeof AthleteFitnessDnaRoute
   AthletePerformanceRoute: typeof AthletePerformanceRoute
   AthleteProgramRoute: typeof AthleteProgramRoute
 }
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AthleteDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/athlete/fitness-dna': {
+      id: '/athlete/fitness-dna'
+      path: '/athlete/fitness-dna'
+      fullPath: '/athlete/fitness-dna'
+      preLoaderRoute: typeof AthleteFitnessDnaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/athlete/performance': {
       id: '/athlete/performance'
       path: '/athlete/performance'
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssessmentCommonRoute: AssessmentCommonRoute,
   AssessmentSportRoute: AssessmentSportRoute,
   AthleteDashboardRoute: AthleteDashboardRoute,
+  AthleteFitnessDnaRoute: AthleteFitnessDnaRoute,
   AthletePerformanceRoute: AthletePerformanceRoute,
   AthleteProgramRoute: AthleteProgramRoute,
 }
