@@ -20,6 +20,7 @@ import { Route as AthleteFitnessDnaRouteImport } from './routes/athlete.fitness-
 import { Route as AthletePerformanceRouteImport } from './routes/athlete.performance'
 import { Route as AthleteProgramRouteImport } from './routes/athlete.program'
 import { Route as CoachIndexRouteImport } from './routes/coach.index'
+import { Route as CoachProgramsRouteImport } from './routes/coach.programs'
 import { Route as CoachAthleteIdRouteImport } from './routes/coach.athlete.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -77,6 +78,11 @@ const CoachIndexRoute = CoachIndexRouteImport.update({
   path: '/coach/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoachProgramsRoute = CoachProgramsRouteImport.update({
+  id: '/coach/programs',
+  path: '/coach/programs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoachAthleteIdRoute = CoachAthleteIdRouteImport.update({
   id: '/coach/athlete/$id',
   path: '/coach/athlete/$id',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
   '/athlete/performance': typeof AthletePerformanceRoute
   '/athlete/program': typeof AthleteProgramRoute
+  '/coach/programs': typeof CoachProgramsRoute
   '/coach/': typeof CoachIndexRoute
   '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
   '/athlete/performance': typeof AthletePerformanceRoute
   '/athlete/program': typeof AthleteProgramRoute
+  '/coach/programs': typeof CoachProgramsRoute
   '/coach': typeof CoachIndexRoute
   '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/athlete/fitness-dna': typeof AthleteFitnessDnaRoute
   '/athlete/performance': typeof AthletePerformanceRoute
   '/athlete/program': typeof AthleteProgramRoute
+  '/coach/programs': typeof CoachProgramsRoute
   '/coach/': typeof CoachIndexRoute
   '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/athlete/fitness-dna'
     | '/athlete/performance'
     | '/athlete/program'
+    | '/coach/programs'
     | '/coach/'
     | '/coach/athlete/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/athlete/fitness-dna'
     | '/athlete/performance'
     | '/athlete/program'
+    | '/coach/programs'
     | '/coach'
     | '/coach/athlete/$id'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/athlete/fitness-dna'
     | '/athlete/performance'
     | '/athlete/program'
+    | '/coach/programs'
     | '/coach/'
     | '/coach/athlete/$id'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   AthleteFitnessDnaRoute: typeof AthleteFitnessDnaRoute
   AthletePerformanceRoute: typeof AthletePerformanceRoute
   AthleteProgramRoute: typeof AthleteProgramRoute
+  CoachProgramsRoute: typeof CoachProgramsRoute
   CoachIndexRoute: typeof CoachIndexRoute
   CoachAthleteIdRoute: typeof CoachAthleteIdRoute
 }
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoachIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coach/programs': {
+      id: '/coach/programs'
+      path: '/coach/programs'
+      fullPath: '/coach/programs'
+      preLoaderRoute: typeof CoachProgramsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/coach/athlete/$id': {
       id: '/coach/athlete/$id'
       path: '/coach/athlete/$id'
@@ -286,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   AthleteFitnessDnaRoute: AthleteFitnessDnaRoute,
   AthletePerformanceRoute: AthletePerformanceRoute,
   AthleteProgramRoute: AthleteProgramRoute,
+  CoachProgramsRoute: CoachProgramsRoute,
   CoachIndexRoute: CoachIndexRoute,
   CoachAthleteIdRoute: CoachAthleteIdRoute,
 }
