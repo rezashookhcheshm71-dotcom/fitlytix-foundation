@@ -42,7 +42,7 @@ function AthleteDashboard() {
               <span>·</span>
               <MockBadge label={AI_ENGINE_LABEL} />
             </div>
-            <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">سلام {demoAthlete.identity.firstName} 👋</h1>
+            <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">سلام {demoAthlete.identity.firstName}</h1>
             <div className="mt-4 flex items-start gap-3 rounded-2xl bg-background/50 p-4 ring-1 ring-border/70">
               <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary"><Target className="size-4" /></span>
               <div>
