@@ -1,0 +1,147 @@
+/** MOCK DATA — demo program. TODO(backend): replace with program service. */
+import type { Exercise, Program, Workout } from "@/domain/types";
+
+const today: Workout = {
+  id: "w_d4",
+  programId: "prg_001",
+  dayIndex: 4,
+  date: "1404/06/31",
+  title: "Strength Day — Squat & Engine",
+  focus: "قدرت پایین‌تنه + ظرفیت هوازی",
+  estimatedMin: 72,
+  status: "today",
+  blocks: [
+    {
+      id: "b1",
+      type: "warmup",
+      title: "گرم کردن",
+      titleEn: "Warm-up",
+      durationMin: 10,
+      intent: "فعال‌سازی لگن و شانه",
+      movements: [
+        { exerciseName: "Row", scheme: "3 min easy" },
+        { exerciseName: "Banded Pull-apart", scheme: "2×15" },
+        { exerciseName: "Goblet Squat + Pause", scheme: "2×8", load: "16 kg" },
+      ],
+    },
+    {
+      id: "b2",
+      type: "strength",
+      title: "قدرت / بدنسازی",
+      titleEn: "Strength",
+      durationMin: 18,
+      format: "Every 2:30",
+      intent: "افزایش ۱RM اسکوات — هفته ۳ بلوک قدرت",
+      targetRpe: 8,
+      movements: [
+        { exerciseName: "Back Squat", scheme: "5×3", load: "82% (135 kg)", scaling: "Tempo 31X1 اگر فرم افت کرد" },
+        { exerciseName: "Bulgarian Split Squat", scheme: "3×8/leg", load: "DB 22 kg" },
+      ],
+    },
+    {
+      id: "b3",
+      type: "engine",
+      title: "موتور",
+      titleEn: "Engine",
+      durationMin: 14,
+      format: "4 rounds",
+      intent: "Zone 3 پایدار — بدون رفتن به آستانه",
+      targetRpe: 7,
+      movements: [
+        { exerciseName: "Assault Bike", scheme: "2:00 @ 70%" },
+        { exerciseName: "Rest", scheme: "1:00" },
+      ],
+    },
+    {
+      id: "b4",
+      type: "wod",
+      title: "WOD",
+      titleEn: "WOD",
+      durationMin: 12,
+      format: "For Time — cap 12:00",
+      intent: "تحمل عضلانی زیر خستگی",
+      targetRpe: 9,
+      movements: [
+        { exerciseName: "Thruster", scheme: "21-15-9", load: "43 kg", scaling: "35 kg" },
+        { exerciseName: "Chest-to-Bar Pull-up", scheme: "21-15-9", scaling: "Kipping Pull-up" },
+      ],
+    },
+    {
+      id: "b5",
+      type: "skill",
+      title: "مهارت",
+      titleEn: "Skill",
+      durationMin: 10,
+      format: "EMOM 10",
+      intent: "پیشرفت Ring Muscle-up — انتقال",
+      movements: [
+        { exerciseName: "Ring MU Transition Drill", scheme: "odd: 3 reps", scaling: "Low ring w/ feet" },
+        { exerciseName: "Handstand Walk", scheme: "even: 10 m", scaling: "Wall-facing shoulder taps" },
+      ],
+    },
+    {
+      id: "b6",
+      type: "cooldown",
+      title: "سرد کردن",
+      titleEn: "Cooldown",
+      durationMin: 8,
+      intent: "کاهش ضربان و بازیابی شانه",
+      movements: [
+        { exerciseName: "Easy Bike", scheme: "3 min" },
+        { exerciseName: "Couch Stretch", scheme: "1:30/side" },
+        { exerciseName: "Lat Stretch on Rig", scheme: "1:00/side" },
+      ],
+    },
+  ],
+};
+
+const day = (i: number, date: string, title: string, focus: string, status: Workout["status"]): Workout => ({
+  id: `w_d${i}`,
+  programId: "prg_001",
+  dayIndex: i,
+  date,
+  title,
+  focus,
+  estimatedMin: 60,
+  status,
+  blocks: [],
+});
+
+export const demoProgram: Program = {
+  id: "prg_001",
+  athleteId: "ath_001",
+  name: "Power Engine — Cycle 2",
+  sport: "crossfit",
+  phase: "Strength Accumulation",
+  weekIndex: 3,
+  totalWeeks: 8,
+  generatedBy: "hybrid",
+  goal: "Snatch ۹۰ کیلو و Fran زیر ۴ دقیقه",
+  adherence: 0.9,
+  workouts: [
+    day(1, "1404/06/27", "Gymnastics Skill + AMRAP 20", "ژیمناستیک", "completed"),
+    day(2, "1404/06/29", "Back Squat 5×3 + Fran", "قدرت", "completed"),
+    day(3, "1404/06/30", "Engine + Snatch Complex", "موتور", "completed"),
+    today,
+    day(5, "1404/07/01", "Active Recovery + Mobility", "ریکاوری", "planned"),
+    day(6, "1404/07/02", "Clean & Jerk + Chipper", "وزنه‌برداری", "planned"),
+    day(7, "1404/07/03", "Long Engine — Row / Run", "موتور", "planned"),
+  ],
+};
+
+export const todayWorkout = today;
+
+export const demoExercises: Exercise[] = [
+  { id: "ex_bs", name: "Back Squat", nameFa: "اسکوات پشت", pattern: "squat", equipment: ["Barbell", "Rack"], sports: ["crossfit", "bodybuilding", "functional"], scalingOptions: ["Goblet Squat", "Box Squat", "Tempo"], difficulty: 2 },
+  { id: "ex_dl", name: "Deadlift", nameFa: "ددلیفت", pattern: "hinge", equipment: ["Barbell"], sports: ["crossfit", "bodybuilding", "hyrox"], scalingOptions: ["KB Deadlift", "Trap Bar", "RDL"], difficulty: 2 },
+  { id: "ex_sn", name: "Snatch", nameFa: "یک‌ضرب", pattern: "olympic", equipment: ["Barbell"], sports: ["crossfit"], scalingOptions: ["Power Snatch", "Hang Snatch", "DB Snatch"], difficulty: 5 },
+  { id: "ex_cj", name: "Clean & Jerk", nameFa: "دوضرب", pattern: "olympic", equipment: ["Barbell"], sports: ["crossfit"], scalingOptions: ["Power Clean", "Push Press", "DB C&J"], difficulty: 4 },
+  { id: "ex_rmu", name: "Ring Muscle-up", pattern: "gymnastics", equipment: ["Rings"], sports: ["crossfit"], scalingOptions: ["Banded MU", "Low Ring Transition", "C2B + Dip"], difficulty: 5 },
+  { id: "ex_hspu", name: "Handstand Push-up", pattern: "push", equipment: ["Wall"], sports: ["crossfit"], scalingOptions: ["Pike Push-up", "Box HSPU", "DB Press"], difficulty: 4 },
+  { id: "ex_wb", name: "Wall Ball", pattern: "squat", equipment: ["Med Ball"], sports: ["crossfit", "hyrox", "functional"], scalingOptions: ["Lighter Ball", "Lower Target", "Thruster"], difficulty: 1 },
+  { id: "ex_row", name: "Row", pattern: "monostructural", equipment: ["Rower"], sports: ["crossfit", "hyrox", "running"], scalingOptions: ["Bike", "Ski"], difficulty: 1 },
+  { id: "ex_sled", name: "Sled Push", pattern: "carry", equipment: ["Sled"], sports: ["hyrox", "functional"], scalingOptions: ["Lighter Load", "Shorter Distance"], difficulty: 2 },
+  { id: "ex_du", name: "Double Under", pattern: "monostructural", equipment: ["Jump Rope"], sports: ["crossfit"], scalingOptions: ["Single Under ×2", "Penguin Jumps"], difficulty: 3 },
+  { id: "ex_t2b", name: "Toes-to-Bar", pattern: "core", equipment: ["Pull-up Bar"], sports: ["crossfit"], scalingOptions: ["Knees-to-Elbow", "Hanging Knee Raise"], difficulty: 3 },
+  { id: "ex_run", name: "Run", nameFa: "دویدن", pattern: "monostructural", equipment: [], sports: ["running", "hyrox", "crossfit"], scalingOptions: ["Row", "Bike"], difficulty: 1 },
+];
