@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
+import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const AssessmentCommonRoute = AssessmentCommonRouteImport.update({
   path: '/assessment/common',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssessmentSportRoute = AssessmentSportRouteImport.update({
+  id: '/assessment/sport',
+  path: '/assessment/sport',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/assessment/common': typeof AssessmentCommonRoute
+  '/assessment/sport': typeof AssessmentSportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/assessment/common': typeof AssessmentCommonRoute
+  '/assessment/sport': typeof AssessmentSportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,12 +70,25 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/assessment/common': typeof AssessmentCommonRoute
+  '/assessment/sport': typeof AssessmentSportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/onboarding' | '/register' | '/assessment/common'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/onboarding'
+    | '/register'
+    | '/assessment/common'
+    | '/assessment/sport'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/onboarding' | '/register' | '/assessment/common'
+  to:
+    | '/'
+    | '/login'
+    | '/onboarding'
+    | '/register'
+    | '/assessment/common'
+    | '/assessment/sport'
   id:
     | '__root__'
     | '/'
@@ -75,6 +96,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/register'
     | '/assessment/common'
+    | '/assessment/sport'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -83,6 +105,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   RegisterRoute: typeof RegisterRoute
   AssessmentCommonRoute: typeof AssessmentCommonRoute
+  AssessmentSportRoute: typeof AssessmentSportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -122,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssessmentCommonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assessment/sport': {
+      id: '/assessment/sport'
+      path: '/assessment/sport'
+      fullPath: '/assessment/sport'
+      preLoaderRoute: typeof AssessmentSportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -131,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   RegisterRoute: RegisterRoute,
   AssessmentCommonRoute: AssessmentCommonRoute,
+  AssessmentSportRoute: AssessmentSportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

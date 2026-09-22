@@ -4,13 +4,12 @@ import { ArrowLeft, Dna } from "lucide-react";
 import { z } from "zod";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
-import { AssessmentSectionCard, StepIndicator } from "@/components/domain/assessment";
+import { ASSESSMENT_STEPS, AssessmentSectionCard, StepIndicator } from "@/components/domain/assessment";
 import { MockBadge, Panel, ProgressRing } from "@/components/domain/primitives";
 import { SportCard } from "@/components/domain/sport";
 import { assessmentEngine } from "@/services/assessment/engine";
 import { EXPERIENCE_LABEL, SPORTS, SPORT_LIST } from "@/domain/sports";
 import type { AssessmentAnswers, ExperienceLevel, SportId } from "@/domain/types";
-import { ASSESSMENT_STEPS } from "./assessment.common";
 
 const searchSchema = z.object({
   sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional(),

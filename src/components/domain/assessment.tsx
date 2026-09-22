@@ -186,3 +186,5 @@ function FieldControl({
     </div>
   );
 }
+
+export const ASSESSMENT_STEPS = [{ label: "عمومی" }, { label: "رشته" }, { label: "Fitness DNA" }, { label: "پلن" }];

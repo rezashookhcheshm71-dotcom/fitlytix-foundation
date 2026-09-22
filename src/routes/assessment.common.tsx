@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
-import { AssessmentSectionCard, StepIndicator } from "@/components/domain/assessment";
+import { ASSESSMENT_STEPS, AssessmentSectionCard, StepIndicator } from "@/components/domain/assessment";
 import { MockBadge, Panel, ProgressRing } from "@/components/domain/primitives";
 import { assessmentEngine } from "@/services/assessment/engine";
 import type { AssessmentAnswers } from "@/domain/types";
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/assessment/common")({
   component: CommonAssessment,
 });
 
-export const ASSESSMENT_STEPS = [{ label: "عمومی" }, { label: "رشته" }, { label: "Fitness DNA" }, { label: "پلن" }];
+
 
 function CommonAssessment() {
   const navigate = useNavigate();
