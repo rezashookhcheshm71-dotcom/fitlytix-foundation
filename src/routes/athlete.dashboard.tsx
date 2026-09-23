@@ -18,6 +18,8 @@ export const Route = createFileRoute("/athlete/dashboard")({
       { name: "description", content: "تمرکز امروز، برنامه فعال، روند عملکرد، ریکاوری و Fitness DNA در یک نگاه." },
       { property: "og:title", content: "داشبورد ورزشکار — FitLytix" },
       { property: "og:description", content: "تمرکز امروز، برنامه فعال، روند عملکرد، ریکاوری و Fitness DNA در یک نگاه." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AthleteDashboard,

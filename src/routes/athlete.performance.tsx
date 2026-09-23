@@ -13,6 +13,8 @@ export const Route = createFileRoute("/athlete/performance")({
       { name: "description", content: "روند شاخص عملکرد، رکوردهای شخصی، بنچمارک‌ها و تاریخچه جلسات." },
       { property: "og:title", content: "عملکرد — FitLytix" },
       { property: "og:description", content: "روند شاخص عملکرد، رکوردهای شخصی، بنچمارک‌ها و تاریخچه جلسات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PerformancePage,

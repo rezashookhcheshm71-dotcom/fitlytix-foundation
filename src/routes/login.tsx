@@ -12,6 +12,8 @@ export const Route = createFileRoute("/login")({
       { name: "description", content: "ورود به حساب ورزشکار یا مربی FitLytix." },
       { property: "og:title", content: "ورود — FitLytix" },
       { property: "og:description", content: "ورود به حساب ورزشکار یا مربی FitLytix." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoginPage,

@@ -23,6 +23,8 @@ export const Route = createFileRoute("/assessment/sport")({
       { name: "description", content: "بخش‌های اختصاصی کراس‌فیت: Warm-up، Bodybuilding، Engine، WOD، Skill، Weightlifting، Cooldown." },
       { property: "og:title", content: "ارزیابی اختصاصی رشته — FitLytix" },
       { property: "og:description", content: "بخش‌های اختصاصی هر رشته ورزشی." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SportAssessment,
