@@ -12,6 +12,8 @@ export const Route = createFileRoute("/coach/")({
       { name: "description", content: "مدیریت ورزشکاران، برنامه‌ها، پایگاه حرکات، اسکیلینگ، مهارت‌ها، ارزیابی‌ها و عملکرد." },
       { property: "og:title", content: "Coach Command Center — FitLytix" },
       { property: "og:description", content: "مدیریت ورزشکاران، برنامه‌ها، حرکات و عملکرد در یک مرکز فرماندهی." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CoachHome,

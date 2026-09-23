@@ -15,6 +15,8 @@ export const Route = createFileRoute("/coach/programs")({
       { name: "description", content: "برنامه‌های فعال ورزشکاران، فاز، هفته و پایبندی." },
       { property: "og:title", content: "برنامه‌ها — Coach · FitLytix" },
       { property: "og:description", content: "برنامه‌های فعال ورزشکاران، فاز، هفته و پایبندی." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CoachPrograms,

@@ -23,6 +23,8 @@ export const Route = createFileRoute("/assessment/sport")({
       { name: "description", content: "بخش‌های اختصاصی کراس‌فیت: Warm-up، Bodybuilding، Engine، WOD، Skill، Weightlifting، Cooldown." },
       { property: "og:title", content: "ارزیابی اختصاصی رشته — FitLytix" },
       { property: "og:description", content: "بخش‌های اختصاصی هر رشته ورزشی." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SportAssessment,
@@ -91,10 +93,10 @@ function SportAssessment() {
                   className="w-full"
                   onClick={async () => {
                     await assessmentEngine.submit("ath_001", template.id, answers);
-                    navigate({ to: "/athlete/fitness-dna" });
+                    navigate({ to: "/plans", search: { coaching: "hybrid" } });
                   }}
                 >
-                  ساخت Fitness DNA <Dna />
+                  انتخاب نوع مربی‌گری <Dna />
                 </Button>
                 <Link to="/assessment/common" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
                   <ArrowLeft className="size-3 rotate-180" /> بازگشت به ارزیابی عمومی

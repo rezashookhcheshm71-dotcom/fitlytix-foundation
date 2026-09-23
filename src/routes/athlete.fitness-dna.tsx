@@ -14,6 +14,8 @@ export const Route = createFileRoute("/athlete/fitness-dna")({
       { name: "description", content: "پروفایل چندبعدی ورزشکار: قدرت، توان، موتور، ژیمناستیک، تحرک، ریکاوری، استمرار و مهارت." },
       { property: "og:title", content: "Fitness DNA — FitLytix" },
       { property: "og:description", content: "پروفایل چندبعدی ورزشکار از ارزیابی و تاریخچه عملکرد." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FitnessDnaPage,

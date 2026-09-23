@@ -15,6 +15,8 @@ export const Route = createFileRoute("/assessment/common")({
       { name: "description", content: "پروفایل پایه، هدف‌ها و سلامت؛ ورودی مشترک Fitness DNA." },
       { property: "og:title", content: "ارزیابی عمومی — FitLytix" },
       { property: "og:description", content: "پروفایل پایه، هدف‌ها و سلامت؛ ورودی مشترک Fitness DNA." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CommonAssessment,

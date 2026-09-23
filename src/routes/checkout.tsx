@@ -16,6 +16,8 @@ export const Route = createFileRoute("/checkout")({
       { name: "description", content: "تکمیل عضویت FitLytix (درگاه پرداخت هنوز متصل نیست)." },
       { property: "og:title", content: "پرداخت و عضویت — FitLytix" },
       { property: "og:description", content: "تکمیل عضویت FitLytix." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Checkout,

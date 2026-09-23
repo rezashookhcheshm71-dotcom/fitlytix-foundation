@@ -15,6 +15,8 @@ export const Route = createFileRoute("/register")({
       { name: "description", content: "ساخت هویت مستقل FitLytix با تأیید موبایل." },
       { property: "og:title", content: "ثبت‌نام — FitLytix" },
       { property: "og:description", content: "ساخت هویت مستقل FitLytix با تأیید موبایل." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: RegisterPage,

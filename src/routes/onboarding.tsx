@@ -13,6 +13,8 @@ export const Route = createFileRoute("/onboarding")({
       { name: "description", content: "از ارزیابی تا برنامه شخصی: مسیر ورود به FitLytix." },
       { property: "og:title", content: "شروع مسیر — FitLytix" },
       { property: "og:description", content: "از ارزیابی تا برنامه شخصی: مسیر ورود به FitLytix." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Onboarding,
