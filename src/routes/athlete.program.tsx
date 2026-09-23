@@ -15,6 +15,8 @@ export const Route = createFileRoute("/athlete/program")({
       { name: "description", content: "بلوک‌های تمرین امروز: گرم کردن، قدرت، موتور، WOD، مهارت و سرد کردن." },
       { property: "og:title", content: "برنامه تمرینی — FitLytix" },
       { property: "og:description", content: "بلوک‌های تمرین امروز: گرم کردن، قدرت، موتور، WOD، مهارت و سرد کردن." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProgramPage,

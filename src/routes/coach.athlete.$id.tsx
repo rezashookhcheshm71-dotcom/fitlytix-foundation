@@ -30,6 +30,8 @@ export const Route = createFileRoute("/coach/athlete/$id")({
         { name: "description", content: "نمای ۳۶۰ درجه ورزشکار: عملکرد، برنامه، Fitness DNA، ریکاوری، هدف‌ها، ارزیابی، بنچمارک‌ها، PRها و مهارت‌ها." },
         { property: "og:title", content: `Athlete 360 · ${n} — FitLytix` },
         { property: "og:description", content: "نمای ۳۶۰ درجه ورزشکار برای مربی." },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
         ...(loaderData ? [] : [{ name: "robots", content: "noindex" }]),
       ],
     };

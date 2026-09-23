@@ -15,6 +15,8 @@ export const Route = createFileRoute("/coach/exercises")({
       { name: "description", content: "حرکات، الگوهای حرکتی، تجهیزات و گزینه‌های اسکیلینگ." },
       { property: "og:title", content: "پایگاه حرکات — Coach · FitLytix" },
       { property: "og:description", content: "حرکات، الگوهای حرکتی، تجهیزات و گزینه‌های اسکیلینگ." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Exercises,
