@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Activity, ArrowLeft, ArrowUpLeft, Brain, Check, ClipboardCheck, Dna, Gauge, LineChart, Play, RefreshCw, RouteIcon, ShieldCheck, Sparkles, Target, Users } from "lucide-react";
+import { Activity, ArrowLeft, ArrowUpLeft, Brain, Check, ClipboardCheck, Dna, Gauge, Play, RefreshCw, RouteIcon, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -106,7 +106,6 @@ function Landing() {
       <section className="border-t border-border/60 py-20 md:py-28"><div className="mx-auto grid w-full max-w-5xl gap-10 px-4 md:grid-cols-[0.7fr_1.3fr] md:px-8"><SectionIntro eyebrow="FAQ" title="سؤال‌های پیش از شروع" text="آنچه لازم است پیش از ساخت مسیر خود بدانید." /><Accordion type="single" collapsible className="border-t border-border">{faqs.map(([q, a], i) => <AccordionItem key={q} value={`faq-${i}`}><AccordionTrigger className="text-start text-sm no-underline hover:no-underline md:text-base">{q}</AccordionTrigger><AccordionContent className="text-sm leading-7 text-muted-foreground">{a}</AccordionContent></AccordionItem>)}</Accordion></div></section>
 
       <section className="px-4 pb-20 md:px-8 md:pb-28"><div className="relative mx-auto flex w-full max-w-7xl flex-col items-center overflow-hidden rounded-lg border border-primary/25 bg-gradient-carbon px-6 py-16 text-center md:py-20"><div className="grid-noise absolute inset-0 opacity-35" /><ShieldCheck className="relative mb-5 size-8 text-primary" /><h2 className="relative text-3xl font-black md:text-5xl">اولین تصمیم دقیق، شناختن نقطه شروع است.</h2><p className="relative mt-4 max-w-xl text-sm leading-7 text-muted-foreground">ارزیابی را شروع کن و ببین FitLytix چطور داده‌های پراکنده را به یک مسیر تمرینی قابل اجرا تبدیل می‌کند.</p><div className="relative mt-7 flex flex-col gap-3 sm:flex-row"><Button asChild variant="hero" size="lg"><Link to="/register">شروع ارزیابی <ArrowLeft /></Link></Button><Button asChild variant="outline" size="lg"><Link to="/athlete/dashboard">مشاهده محصول</Link></Button></div></div></section>
-      </section>
     </MarketingShell>
   );
 }
