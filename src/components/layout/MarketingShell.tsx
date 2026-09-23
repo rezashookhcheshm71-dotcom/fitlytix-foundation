@@ -20,7 +20,7 @@ export function MarketingShell({ children, minimal }: { children: ReactNode; min
             </nav>
           )}
           <div className="ms-auto flex items-center gap-1.5 sm:gap-2 lg:ms-0">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link to="/login"><span className="hidden sm:inline">ورود به </span>FitLytix</Link>
             </Button>
             <Button asChild variant="hero" size="sm">
@@ -33,7 +33,7 @@ export function MarketingShell({ children, minimal }: { children: ReactNode; min
                     <Menu />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[84vw] border-e border-border bg-background p-6">
+                <SheetContent side="right" className="w-[84vw] border-s border-border bg-background p-6 text-start [&>button]:left-4 [&>button]:right-auto">
                   <SheetTitle className="sr-only">فهرست FitLytix</SheetTitle>
                   <Logo className="mb-10" />
                   <nav className="flex flex-col gap-1 text-base font-semibold">
