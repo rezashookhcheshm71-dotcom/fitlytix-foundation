@@ -26,7 +26,7 @@ export const Route = createFileRoute("/athlete/fitness-dna")({
 function FitnessDnaPage() {
   const { sport: selectedSport } = Route.useSearch();
   const sport = selectedSport ?? demoAthlete.primarySport;
-  const data = athleteDashboardService.getSnapshot(sport);
+  const data = athleteDashboardService.getSnapshot(demoAthlete.id, sport);
   const sportMeta = SPORTS[sport];
   const name = `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
 

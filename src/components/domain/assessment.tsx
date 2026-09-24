@@ -113,7 +113,7 @@ function FieldControl({
       <label className="text-xs font-semibold text-foreground">{field.label}</label>
       <span className="flex items-center gap-1.5">
         {field.required && <span className="text-[10px] text-muted-foreground">لازم</span>}
-        {field.depth && field.depth !== "all" && <span className="text-[10px] font-semibold" style={{ color }}>جزئیات بیشتر</span>}
+        {field.depth && field.depth !== "all" && <span className="text-[10px] font-semibold" style={{ color }}>جزئیات بیشتر برای باتجربه‌ها</span>}
         {field.unit && <span className="font-display text-[10px] text-muted-foreground">{field.unit}</span>}
       </span>
     </div>

@@ -9,12 +9,14 @@ export const RUNNING_ASSESSMENT: AssessmentTemplate = { id: "running-foundation"
   ]},
   { id: "running.pace", title: "pace و رکوردهای اخیر", description: "اگر تست نکردی، همان را انتخاب کن", icon: "Timer", blockToken: "engine", fields: [
     field({ id: "running.pace.easy", label: "easy pace معمول", type: "time", unit: "دقیقه/کیلومتر", depth: "intermediatePlus", allowUnknown: true, purpose: "level" }),
+    field({ id: "running.pace.recent_race", label: "pace آخرین مسابقه یا تایم‌تریال", type: "time", unit: "دقیقه/کیلومتر", depth: "intermediatePlus", allowUnknown: true, purpose: "level" }),
     field({ id: "running.records.5k", label: "رکورد اخیر 5K", type: "time", unit: "دقیقه:ثانیه", allowUnknown: true, purpose: "level" }),
     field({ id: "running.records.10k", label: "رکورد اخیر 10K", type: "time", unit: "دقیقه:ثانیه", depth: "intermediatePlus", allowUnknown: true, purpose: "level" }),
     field({ id: "running.records.half", label: "رکورد نیمه‌ماراتن", type: "time", unit: "ساعت:دقیقه", depth: "advancedPlus", allowUnknown: true, purpose: "level" }),
   ]},
   { id: "running.training", title: "نوع تمرین", description: "برای ساخت هفته‌ای متعادل", icon: "Wind", blockToken: "engine", fields: [
     field({ id: "running.training.zones", label: "با zone ضربان یا pace تمرین می‌کنی؟", type: "select", options: options("نه، با حس می‌دوم", "کمی آشنا هستم", "با zone تمرین می‌کنم", "داده دقیق دارم"), required: true, purpose: "programming" }),
+    field({ id: "running.training.max_hr", label: "حداکثر ضربان ثبت‌شده", type: "number", unit: "bpm", depth: "advancedPlus", allowUnknown: true, purpose: "programming" }),
     field({ id: "running.training.intervals", label: "تجربه interval و tempo", type: "select", options: options("ندارم", "گاهی", "هفته‌ای یک جلسه", "منظم و برنامه‌ریزی‌شده"), depth: "intermediatePlus", purpose: "level" }),
   ]},
   { id: "running.goal", title: "مسابقه و سلامت", description: "هدف و چیزهایی که باید مراقبشان باشیم", icon: "Target", blockToken: "cooldown", fields: [

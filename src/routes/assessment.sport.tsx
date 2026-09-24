@@ -20,7 +20,7 @@ export const Route = createFileRoute("/assessment/sport")({
   head: () => ({
     meta: [
       { title: "ارزیابی اختصاصی رشته — FitLytix" },
-      { name: "description", content: "بخش‌های اختصاصی کراس‌فیت: Warm-up، Bodybuilding، Engine، WOD، Skill، Weightlifting، Cooldown." },
+      { name: "description", content: "ارزیابی کوتاه و رشته‌محور برای شناخت سطح، هدف، محدودیت و داده‌های تمرینی." },
       { property: "og:title", content: "ارزیابی اختصاصی رشته — FitLytix" },
       { property: "og:description", content: "بخش‌های اختصاصی هر رشته ورزشی." },
       { property: "og:type", content: "website" },
@@ -65,7 +65,7 @@ function SportAssessment() {
             <div className="space-y-4">
               <Panel className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="font-display text-sm font-bold" style={{ color: `var(${SPORTS[sport].colorToken})` }}>{SPORTS[sport].name} Assessment</div>
+                  <div className="text-sm font-bold" style={{ color: `var(${SPORTS[sport].colorToken})` }}>ارزیابی {SPORTS[sport].nameFa}</div>
                   <div className="text-xs text-muted-foreground">سطحت را انتخاب کن؛ اگر سابقه بیشتری داشته باشی، جزئیات دقیق‌تری می‌پرسیم.</div>
                 </div>
                 <div className="flex gap-1.5 rounded-xl bg-muted/50 p-1">

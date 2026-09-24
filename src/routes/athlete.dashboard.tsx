@@ -28,7 +28,7 @@ function AthleteDashboard() {
   const { sport: selectedSport } = Route.useSearch();
   const navigate = useNavigate();
   const sport: SportId = selectedSport ?? demoAthlete.primarySport;
-  const data = athleteDashboardService.getSnapshot(sport);
+  const data = athleteDashboardService.getSnapshot(demoAthlete.id, sport);
   const sportMeta = SPORTS[sport];
   const name = `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
 
@@ -71,8 +71,9 @@ function AthleteDashboard() {
         </Panel>
         <Panel>
           <div className="mb-3 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">ریکاوری</span><Pill color="var(--success)">آماده</Pill></div>
-          <div className="flex items-center gap-4"><ProgressRing value={demoRecovery.readiness} size={88} stroke={9} color="var(--success)"><span className="font-mono text-xl font-bold">{demoRecovery.readiness}</span><span className="text-[9px] text-muted-foreground">آمادگی</span></ProgressRing><div className="grid flex-1 grid-cols-2 gap-3"><Mini icon={Moon} label="خواب" value={`${demoRecovery.sleepHours}h`} /><Mini icon={Zap} label="HRV" value={`${demoRecovery.hrv}`} /><Mini icon={Target} label="RHR" value={`${demoRecovery.restingHr}`} /><Mini icon={Clock} label="Strain" value={`${demoRecovery.strain}`} /></div></div>
+          <div className="flex items-center gap-4"><ProgressRing value={data.recovery.readiness} size={88} stroke={9} color="var(--success)"><span className="font-mono text-xl font-bold">{data.recovery.readiness}</span><span className="text-[9px] text-muted-foreground">آمادگی</span></ProgressRing><div className="grid flex-1 grid-cols-2 gap-3"><Mini icon={Moon} label="خواب" value={data.recovery.sleep} /><Mini icon={Zap} label="HRV" value={`${demoRecovery.hrv}`} /><Mini icon={Target} label="وضعیت" value={data.recovery.label} /><Mini icon={Clock} label="فشار" value={data.recovery.strain} /></div></div>
           <RecoveryBars data={demoRecoveryHistory} height={90} />
+          <p className="mt-2 text-xs leading-6 text-muted-foreground">{data.recovery.detail}</p>
         </Panel>
         <Panel className="md:col-span-2 xl:col-span-1">
           <div className="mb-1 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">پروفایل عملکرد</span><Link to="/athlete/fitness-dna" search={{ sport }} className="text-xs font-semibold text-primary">نمای کامل</Link></div>
