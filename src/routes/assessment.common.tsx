@@ -38,9 +38,9 @@ function CommonAssessment() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_260px]">
           <div className="space-y-4">
             <div className="mb-2">
-              <div className="mb-1 text-xs font-semibold text-primary">COMMON ASSESSMENT</div>
-              <h1 className="text-2xl font-extrabold md:text-3xl">ارزیابی عمومی</h1>
-              <p className="mt-1 text-sm text-muted-foreground">این بخش برای همه رشته‌ها مشترک است و پایه پروفایل شما را می‌سازد.</p>
+              <div className="mb-1 text-xs font-semibold text-primary">شناخت اولیه</div>
+              <h1 className="text-2xl font-extrabold md:text-3xl">اول از خودت بگو</h1>
+              <p className="mt-1 text-sm text-muted-foreground">چند سؤال کوتاه تا برنامه با وقت، هدف و شرایط واقعی تو هماهنگ باشد.</p>
             </div>
             {template.sections.map((s, i) => (
               <AssessmentSectionCard key={s.id} section={s} answers={answers} index={i} onChange={(id, v) => setAnswers((a) => ({ ...a, [id]: v }))} />
@@ -53,13 +53,13 @@ function CommonAssessment() {
                 <span className="num text-2xl font-bold">{Math.round(completion * 100)}٪</span>
                 <span className="text-[10px] text-muted-foreground">تکمیل</span>
               </ProgressRing>
-              <p className="text-xs text-muted-foreground">می‌توانید ناقص ادامه دهید؛ موتور ارزیابی سوالات مهم‌تر را بعداً یادآوری می‌کند.</p>
+              <p className="text-xs text-muted-foreground">لازم نیست عددی را حدس بزنی؛ هرجا مطمئن نیستی می‌توانی رد شوی.</p>
               <Button
                 variant="hero"
                 className="w-full"
                 onClick={async () => {
                   await assessmentEngine.submit("ath_001", template.id, answers);
-                  navigate({ to: "/assessment/sport", search: { sport: "crossfit" } });
+                  navigate({ to: "/assessment/sport", search: {} });
                 }}
               >
                 ادامه: انتخاب رشته <ArrowLeft />

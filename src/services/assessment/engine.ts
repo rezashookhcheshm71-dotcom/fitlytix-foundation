@@ -11,18 +11,21 @@ export const assessmentEngine = {
     return COMMON_ASSESSMENT;
   },
   getSportTemplate(sport: SportId): AssessmentTemplate {
-    return (SPORT_ASSESSMENTS[sport] ?? SPORT_ASSESSMENTS['crossfit'])!;
+    return SPORT_ASSESSMENTS[sport];
   },
-  /** Fields hidden for beginners; shown for advanced/elite athletes. */
+  /** Question depth grows with training experience without forcing specialist tests. */
   visibleFields(template: AssessmentTemplate, level: ExperienceLevel) {
-    const advanced = level === "advanced" || level === "elite";
+    const rank: Record<ExperienceLevel, number> = { beginner: 0, intermediate: 1, advanced: 2, elite: 2 };
+    const minimum = { all: 0, intermediatePlus: 1, advancedPlus: 2 } as const;
     return template.sections.map((s) => ({
       ...s,
-      fields: s.fields.filter((f) => !f.advancedOnly || advanced),
-    }));
+      fields: s.fields.filter((f) => rank[level] >= minimum[f.depth ?? "all"]),
+    })).filter((section) => section.fields.length > 0);
   },
   completion(template: AssessmentTemplate, answers: AssessmentAnswers): number {
-    const all = template.sections.flatMap((s) => s.fields);
+    const fields = template.sections.flatMap((s) => s.fields);
+    const required = fields.filter((field) => field.required);
+    const all = required.length ? required : fields;
     if (!all.length) return 0;
     const done = all.filter((f) => {
       const v = answers[f.id];

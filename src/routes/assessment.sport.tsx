@@ -36,7 +36,7 @@ function SportAssessment() {
   const { sport: sportParam } = Route.useSearch();
   const navigate = useNavigate();
   const [sport, setSport] = useState<SportId | undefined>(sportParam);
-  const [level, setLevel] = useState<ExperienceLevel>("advanced");
+  const [level, setLevel] = useState<ExperienceLevel>("beginner");
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
 
   const template = sport ? assessmentEngine.getSportTemplate(sport) : null;
@@ -49,9 +49,9 @@ function SportAssessment() {
         <StepIndicator steps={ASSESSMENT_STEPS} current={1} />
 
         <div className="mb-6 mt-8">
-          <div className="mb-1 text-xs font-semibold text-primary">SPORT ASSESSMENT</div>
-          <h1 className="text-2xl font-extrabold md:text-3xl">رشته خود را انتخاب کنید</h1>
-          <p className="mt-1 text-sm text-muted-foreground">هر رشته مدل ارزیابی مخصوص خود را دارد. سطح تجربه، عمق سوالات را تغییر می‌دهد.</p>
+          <div className="mb-1 text-xs font-semibold text-primary">ارزیابی تخصصی</div>
+          <h1 className="text-2xl font-extrabold md:text-3xl">بیشتر چه تمرینی انجام می‌دی؟</h1>
+          <p className="mt-1 text-sm text-muted-foreground">هر رشته سؤال‌های خودش را دارد؛ فقط چیزهایی را می‌پرسیم که روی برنامه‌ات اثر می‌گذارند.</p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -66,13 +66,13 @@ function SportAssessment() {
               <Panel className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="font-display text-sm font-bold" style={{ color: `var(${SPORTS[sport].colorToken})` }}>{SPORTS[sport].name} Assessment</div>
-                  <div className="text-xs text-muted-foreground">سطح تجربه را انتخاب کنید تا فیلدهای پیشرفته (ADV) فعال شوند.</div>
+                  <div className="text-xs text-muted-foreground">سطحت را انتخاب کن؛ اگر سابقه بیشتری داشته باشی، جزئیات دقیق‌تری می‌پرسیم.</div>
                 </div>
                 <div className="flex gap-1.5 rounded-xl bg-muted/50 p-1">
                   {levels.map((l) => (
-                    <button key={l} onClick={() => setLevel(l)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${level === l ? "bg-primary text-primary-foreground shadow-glow" : "text-muted-foreground hover:text-foreground"}`}>
+                    <Button key={l} type="button" variant={level === l ? "default" : "ghost"} size="sm" onClick={() => setLevel(l)} className="h-8 px-3 text-xs">
                       {EXPERIENCE_LABEL[l]}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </Panel>
@@ -87,7 +87,7 @@ function SportAssessment() {
                   <span className="num text-2xl font-bold">{Math.round(completion * 100)}٪</span>
                   <span className="text-[10px] text-muted-foreground">{sections.length} بخش</span>
                 </ProgressRing>
-                <p className="text-xs text-muted-foreground">پس از ثبت، موتور ارزیابی این پاسخ‌ها را به Fitness DNA تبدیل می‌کند.</p>
+                <p className="text-xs text-muted-foreground">از این جواب‌ها برای انتخاب سطح، حجم و تمرکز برنامه استفاده می‌شود.</p>
                 <Button
                   variant="hero"
                   className="w-full"

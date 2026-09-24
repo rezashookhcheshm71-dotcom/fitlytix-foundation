@@ -54,13 +54,13 @@ export function PerformanceTrendChart({ data, height = 220 }: { data: Performanc
 }
 
 export function DnaRadarChart({ dimensions, height = 300, compact }: { dimensions: DnaDimension[]; height?: number; compact?: boolean }) {
-  const data = dimensions.map((d) => ({ subject: compact ? d.labelEn : `${d.labelEn}`, score: d.score, full: 100 }));
+  const data = dimensions.map((d) => ({ subject: compact ? d.label : `${d.label}`, score: d.score, full: 100 }));
   return (
     <div style={{ height, direction: "ltr" }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={data} outerRadius={compact ? "70%" : "78%"}>
           <PolarGrid stroke="oklch(1 0 0 / 10%)" />
-          <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--muted-foreground)", fontSize: compact ? 10 : 12, fontFamily: "Space Grotesk" }} />
+          <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--muted-foreground)", fontSize: compact ? 10 : 12 }} />
           <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
           <Radar dataKey="score" stroke="var(--primary)" strokeWidth={2.5} fill="var(--primary)" fillOpacity={0.28} dot={{ r: 3, fill: "var(--primary)" }} />
           <Tooltip contentStyle={tooltipStyle} />
