@@ -34,7 +34,7 @@ function AthleteDashboard() {
 
   return (
     <AppShell mode="athlete" userName={name} userRole={`${sportMeta.name} · ${data.level}`}>
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1" aria-label="نمایش نمونه رشته">
+      <div className="mb-5 flex flex-wrap gap-2 pb-1" aria-label="نمایش نمونه رشته">
         {SPORT_LIST.map((item) => <Button key={item.id} size="sm" variant={sport === item.id ? "default" : "outline"} onClick={() => navigate({ to: "/athlete/dashboard", search: { sport: item.id }, replace: true })}>{item.name}</Button>)}
       </div>
 
@@ -75,7 +75,7 @@ function AthleteDashboard() {
           <RecoveryBars data={demoRecoveryHistory} height={90} />
         </Panel>
         <Panel className="md:col-span-2 xl:col-span-1">
-          <div className="mb-1 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">پروفایل عملکرد</span><Link to="/athlete/fitness-dna" className="text-xs font-semibold text-primary">نمای کامل</Link></div>
+          <div className="mb-1 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">پروفایل عملکرد</span><Link to="/athlete/fitness-dna" search={{ sport }} className="text-xs font-semibold text-primary">نمای کامل</Link></div>
           <h2 className="font-bold">{data.dna.archetype}</h2><DnaRadarChart dimensions={data.dna.dimensions} height={210} compact />
         </Panel>
       </section>
