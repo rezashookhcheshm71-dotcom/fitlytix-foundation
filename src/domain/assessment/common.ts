@@ -50,6 +50,8 @@ export const COMMON_ASSESSMENT: AssessmentTemplate = {
       fields: [
         field({ id: "common.recovery.sleep_hours", label: "معمولاً چند ساعت می‌خوابی؟", type: "number", unit: "ساعت", min: 3, max: 12, step: 0.5, required: true, purpose: "recovery" }),
         field({ id: "common.recovery.quality", label: "صبح‌ها چقدر سرحال بیدار می‌شی؟", type: "scale", min: 1, max: 5, required: true, purpose: "recovery" }),
+        field({ id: "common.recovery.stress", label: "این روزها فشار روزانه‌ات چقدره؟", type: "scale", min: 1, max: 5, required: true, purpose: "recovery" }),
+        field({ id: "common.body.condition", label: "بدنت بیشتر چه حسی داره؟", type: "select", options: options("سبک و آماده", "کمی خسته", "گرفته و خشک", "خستگی طولانی دارم", "روزبه‌روز فرق می‌کنه"), purpose: "recovery", wide: true }),
         field({ id: "common.safety.pain", label: "الان درد یا آسیبی داری که روی تمرین اثر بگذاره؟", type: "select", options: options("نه، موردی ندارم", "دارم ولی تمرین می‌کنم", "نیاز به تغییر حرکت دارم", "پزشک فعلاً تمرین را محدود کرده"), required: true, purpose: "safety", wide: true }),
         field({ id: "common.safety.areas", label: "اگر محدودیتی داری، کجاست؟", type: "multiselect", options: options("شانه", "آرنج/مچ", "کمر", "لگن", "زانو", "مچ پا", "مورد دیگری"), purpose: "safety", wide: true }),
       ],

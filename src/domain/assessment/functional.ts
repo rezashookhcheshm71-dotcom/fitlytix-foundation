@@ -15,7 +15,9 @@ export const FUNCTIONAL_ASSESSMENT: AssessmentTemplate = { id: "functional-found
     field({ id: "functional.strength.core", label: "در plank با فرم خوب چقدر می‌مونی؟", type: "select", options: options("کمتر از ۲۰ ثانیه", "۲۰ تا ۴۵ ثانیه", "۴۵ تا ۹۰ ثانیه", "بیشتر از ۹۰ ثانیه", "تست نکردم"), purpose: "level" }),
   ]},
   { id: "functional.conditioning", title: "آمادگی و هماهنگی", description: "برای تنظیم پیچیدگی و شدت جلسه", icon: "Wind", blockToken: "engine", fields: [
+    field({ id: "functional.goal.primary", label: "از تمرین فانکشنال بیشتر چی می‌خوای؟", type: "select", options: options("حرکت بدون درد", "قدرت روزمره", "تعادل و کنترل", "آمادگی و نفس", "برگشت به ورزش"), required: true, purpose: "goal" }),
     field({ id: "functional.conditioning.preference", label: "کدام تمرین را بیشتر دوست داری؟", type: "select", options: options("قدرتی و کنترل‌شده", "دایره‌ای و پرتحرک", "ترکیبی", "تمرکز روی حرکت و موبیلیتی"), required: true, purpose: "programming" }),
     field({ id: "functional.coordination.experience", label: "با حرکات ترکیبی چقدر راحتی؟", type: "select", options: options("تازه‌کارم", "با توضیح انجام می‌دم", "روان انجام می‌دم", "چالش بیشتر می‌خوام"), depth: "intermediatePlus", purpose: "level" }),
+    field({ id: "functional.environment.access", label: "در فضای تمرینت چه چیزهایی داری؟", type: "multiselect", options: options("فضای خالی", "کش", "دمبل/کتل‌بل", "TRX", "هالتر", "باشگاه کامل"), required: true, purpose: "programming", wide: true }),
   ]},
 ] };
