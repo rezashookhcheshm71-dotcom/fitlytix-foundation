@@ -64,18 +64,33 @@ export type AssessmentFieldType =
   | "multiselect"
   | "scale"
   | "time"
-  | "load";
+  | "load"
+  | "textarea";
+
+export type AssessmentPurpose = "programming" | "level" | "scaling" | "load" | "goal" | "safety" | "recovery";
+export type AssessmentDepth = "all" | "intermediatePlus" | "advancedPlus";
+
+export interface AssessmentOption {
+  value: string;
+  label: string;
+}
 
 export interface AssessmentField {
   id: string;
   label: string;
   type: AssessmentFieldType;
   unit?: string;
-  options?: string[];
+  options?: AssessmentOption[];
   min?: number;
   max?: number;
-  advancedOnly?: boolean;
+  step?: number;
+  depth?: AssessmentDepth;
+  required?: boolean;
+  allowUnknown?: boolean;
+  purpose: AssessmentPurpose;
   hint?: string;
+  help?: string;
+  wide?: boolean;
 }
 
 export interface AssessmentSection {
@@ -90,6 +105,7 @@ export interface AssessmentSection {
 
 export interface AssessmentTemplate {
   id: string;
+  version: number;
   scope: "common" | SportId;
   sections: AssessmentSection[];
 }
@@ -107,15 +123,7 @@ export interface Assessment {
 
 /* Fitness DNA ---------------------------------------------------------- */
 
-export type DnaDimensionId =
-  | "strength"
-  | "power"
-  | "engine"
-  | "gymnastics"
-  | "mobility"
-  | "recovery"
-  | "consistency"
-  | "skill";
+export type DnaDimensionId = string;
 
 export interface DnaDimension {
   id: DnaDimensionId;

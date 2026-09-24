@@ -1,12 +1,7 @@
-import type { AssessmentTemplate, AssessmentSection } from "../types";
-
-/**
- * Assessment Engine — extensible template registry.
- * Add a new sport by adding a template keyed by SportId.
- * TODO(backend): load templates from DB and persist answers via assessment service.
- */
-
-export const COMMON_ASSESSMENT: AssessmentTemplate = {
+export { COMMON_ASSESSMENT, SPORT_ASSESSMENTS } from "./registry";
+/* Legacy import path retained while templates now live in independent modules. */
+/*
+export const COMMON_ASSESSMENT = {
   id: "common-v1",
   scope: "common",
   sections: [
@@ -71,6 +66,7 @@ export const COMMON_ASSESSMENT: AssessmentTemplate = {
     },
   ],
 };
+*/
 
 const crossfitSections: AssessmentSection[] = [
   {
