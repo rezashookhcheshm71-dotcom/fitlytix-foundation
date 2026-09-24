@@ -15,6 +15,7 @@ import { Logo, LogoMark } from "@/components/brand/Logo";
 import { Avatar } from "@/components/domain/athlete";
 import { MockBadge } from "@/components/domain/primitives";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type NavItem = { to: NonNullable<LinkProps["to"]>; label: string; icon: LucideIcon };
 
@@ -99,10 +100,10 @@ export function AppShell({
             <MockBadge label="نسخه نمایشی · داده‌های شبیه‌سازی‌شده" />
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative inline-flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground" aria-label="اعلان‌ها">
+            <Button variant="outline" size="icon" className="relative rounded-full text-muted-foreground" aria-label="اعلان‌ها">
               <Bell className="size-4" />
               <span className="absolute end-2 top-2 size-1.5 rounded-full bg-primary" />
-            </button>
+            </Button>
             <Link to={switchTo.to} className="lg:hidden">
               <Avatar name={userName} className="size-9" />
             </Link>

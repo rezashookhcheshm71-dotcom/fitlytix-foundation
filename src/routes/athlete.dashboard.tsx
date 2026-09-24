@@ -1,200 +1,93 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Clock, Flame, Moon, Play, Target, Zap } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Clock, Moon, Play, Target, Zap } from "lucide-react";
+import { z } from "zod";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Bar, MockBadge, Panel, Pill, ProgressRing, SectionHeading, Stat } from "@/components/domain/primitives";
-import { DnaRadarChart, PerformanceTrendChart, RecoveryBars } from "@/components/domain/charts";
-import { SkillRow } from "@/components/domain/workout";
-import { BLOCK_META } from "@/domain/sports";
-import { aiCoachingEngine, AI_ENGINE_LABEL } from "@/services/ai-coaching/engine";
-import { performanceEngine } from "@/services/performance/engine";
-import { demoAthlete, demoDNA, demoPerformance, demoRecovery, demoRecoveryHistory, demoSessions, demoSkills } from "@/mock/athlete";
-import { demoProgram, todayWorkout } from "@/mock/program";
+import { DnaRadarChart, RecoveryBars } from "@/components/domain/charts";
+import { SPORTS, SPORT_LIST } from "@/domain/sports";
+import type { SportId } from "@/domain/types";
+import { athleteDashboardService } from "@/services/athlete/dashboard";
+import { demoAthlete, demoRecovery, demoRecoveryHistory } from "@/mock/athlete";
+
+const searchSchema = z.object({ sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional() });
 
 export const Route = createFileRoute("/athlete/dashboard")({
-  head: () => ({
-    meta: [
-      { title: "داشبورد ورزشکار — FitLytix" },
-      { name: "description", content: "تمرکز امروز، برنامه فعال، روند عملکرد، ریکاوری و Fitness DNA در یک نگاه." },
-      { property: "og:title", content: "داشبورد ورزشکار — FitLytix" },
-      { property: "og:description", content: "تمرکز امروز، برنامه فعال، روند عملکرد، ریکاوری و Fitness DNA در یک نگاه." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  validateSearch: (search) => searchSchema.parse(search),
+  head: () => ({ meta: [
+    { title: "داشبورد ورزشکار — FitLytix" },
+    { name: "description", content: "تمرین امروز، ریکاوری و پروفایل عملکرد متناسب با رشته ورزشی." },
+    { property: "og:title", content: "داشبورد ورزشکار — FitLytix" },
+    { property: "og:description", content: "تمرین امروز، ریکاوری و پروفایل عملکرد متناسب با رشته ورزشی." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: AthleteDashboard,
 });
 
 function AthleteDashboard() {
-  const ctx = { profile: demoAthlete, dna: demoDNA, history: demoPerformance, recovery: demoRecovery };
-  const focus = aiCoachingEngine.todaysFocus(ctx);
-  const readiness = performanceEngine.readinessLabel(demoRecovery.readiness);
-  const delta = performanceEngine.performanceDelta(demoPerformance);
+  const { sport: selectedSport } = Route.useSearch();
+  const navigate = useNavigate();
+  const sport: SportId = selectedSport ?? demoAthlete.primarySport;
+  const data = athleteDashboardService.getSnapshot(sport);
+  const sportMeta = SPORTS[sport];
   const name = `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
 
   return (
-    <AppShell mode="athlete" userName={name} userRole="CrossFit · پیشرفته">
-      {/* Greeting + Today's focus */}
-      <section className="mb-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-carbon p-6 ring-1 ring-border md:p-8 animate-rise">
-          <div className="pointer-events-none absolute -end-20 -top-20 size-72 rounded-full bg-primary/20 blur-3xl" />
+    <AppShell mode="athlete" userName={name} userRole={`${sportMeta.name} · ${data.level}`}>
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1" aria-label="نمایش نمونه رشته">
+        {SPORT_LIST.map((item) => <Button key={item.id} size="sm" variant={sport === item.id ? "default" : "outline"} onClick={() => navigate({ to: "/athlete/dashboard", search: { sport: item.id }, replace: true })}>{item.name}</Button>)}
+      </div>
+
+      <section className="mb-6 grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-carbon p-6 ring-1 ring-border md:p-8 animate-rise">
           <div className="relative">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>سه‌شنبه ۳۱ شهریور</span>
-              <span>·</span>
-              <MockBadge label={AI_ENGINE_LABEL} />
-            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>امروز</span><span>·</span><MockBadge label="پیشنهاد نمایشی" /></div>
             <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">سلام {demoAthlete.identity.firstName}</h1>
-            <div className="mt-4 flex items-start gap-3 rounded-2xl bg-background/50 p-4 ring-1 ring-border/70">
+            <div className="mt-4 flex items-start gap-3 rounded-xl bg-background/50 p-4 ring-1 ring-border/70">
               <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary"><Target className="size-4" /></span>
-              <div>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-primary">Today's Focus</div>
-                <p className="mt-1 text-sm leading-7">{focus}</p>
-              </div>
+              <div><div className="text-xs font-bold text-primary">تمرکز امروز</div><p className="mt-1 text-sm leading-7">{data.focus}</p></div>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Button asChild variant="hero" size="lg">
-                <Link to="/athlete/program"><Play /> شروع تمرین امروز</Link>
-              </Button>
-              <span className="num inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Clock className="size-4" /> {todayWorkout.estimatedMin} دقیقه · {todayWorkout.blocks.length} بلوک</span>
+              <Button asChild variant="hero" size="lg"><Link to="/athlete/program"><Play /> شروع تمرین امروز</Link></Button>
+              <span className="font-mono inline-flex items-center gap-1.5 text-sm text-muted-foreground"><Clock className="size-4" /> {data.workout.duration} دقیقه</span>
             </div>
           </div>
         </div>
-
-        {/* Next workout */}
         <Panel className="flex flex-col animate-rise [animation-delay:80ms]">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Next Workout</span>
-            <Pill color="var(--primary)">امروز</Pill>
-          </div>
-          <h3 className="font-display text-lg font-bold">{todayWorkout.title}</h3>
-          <p className="text-xs text-muted-foreground">{todayWorkout.focus}</p>
-          <ul className="mt-4 space-y-2">
-            {todayWorkout.blocks.map((b) => {
-              const m = BLOCK_META[b.type];
-              return (
-                <li key={b.id} className="flex items-center gap-3 text-sm">
-                  <span className="size-2 rounded-full" style={{ background: m.cssVar, boxShadow: `0 0 8px ${m.cssVar}` }} />
-                  <span className="font-display text-xs font-semibold" style={{ color: m.cssVar }}>{m.en}</span>
-                  <span className="truncate text-muted-foreground">{b.movements[0]?.exerciseName}{b.movements[1] ? ` · ${b.movements[1].exerciseName}` : ""}</span>
-                  <span className="num ms-auto text-xs text-muted-foreground">{b.durationMin}′</span>
-                </li>
-              );
-            })}
-          </ul>
-          <Link to="/athlete/program" className="mt-auto inline-flex items-center gap-1 pt-4 text-xs font-semibold text-primary hover:underline">جزئیات بلوک‌ها <ArrowLeft className="size-3.5" /></Link>
+          <div className="mb-3 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">جلسه بعدی</span><Pill color={`var(${sportMeta.colorToken})`}>امروز</Pill></div>
+          <h2 className="font-display text-lg font-bold">{data.workout.title}</h2><p className="text-xs text-muted-foreground">{data.workout.detail}</p>
+          <div className="mt-5 grid grid-cols-2 gap-2">{data.workout.blocks.map((block, index) => <div key={block} className="flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs"><span className="font-mono text-muted-foreground">{index + 1}</span><span>{block}</span></div>)}</div>
+          <Link to="/athlete/program" className="mt-auto inline-flex items-center gap-1 pt-5 text-xs font-semibold text-primary">دیدن جزئیات <ArrowLeft className="size-3.5" /></Link>
         </Panel>
       </section>
 
-      {/* Row: active program / recovery / DNA */}
       <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <Panel className="animate-rise [animation-delay:120ms]">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Active Program</span>
-            <Pill>{demoProgram.generatedBy === "hybrid" ? "AI + مربی" : demoProgram.generatedBy}</Pill>
-          </div>
-          <h3 className="font-display text-lg font-bold">{demoProgram.name}</h3>
-          <p className="text-xs text-muted-foreground">{demoProgram.phase} · هدف: {demoProgram.goal}</p>
-          <div className="mt-4 flex items-center justify-between text-xs">
-            <span>هفته <span className="num font-bold">{demoProgram.weekIndex}</span> از <span className="num">{demoProgram.totalWeeks}</span></span>
-            <span className="num text-muted-foreground">{Math.round((demoProgram.weekIndex / demoProgram.totalWeeks) * 100)}٪</span>
-          </div>
-          <Bar value={demoProgram.weekIndex / demoProgram.totalWeeks} className="mt-2" />
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <Stat label="پایبندی" value={`${Math.round(demoProgram.adherence * 100)}٪`} tone="success" />
-            <Stat label="جلسات هفته" value="4/5" />
-            <Stat label="بار هفتگی" value="25" unit="AU" />
-          </div>
+        <Panel>
+          <div className="mb-3 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">برنامه فعلی</span><Pill>{data.program.phase}</Pill></div>
+          <h2 className="font-display text-lg font-bold">{data.program.name}</h2>
+          <div className="mt-5 flex justify-between text-xs"><span>هفته {data.program.week} از {data.program.totalWeeks}</span><span className="font-mono text-muted-foreground">{Math.round(data.program.week / data.program.totalWeeks * 100)}٪</span></div>
+          <Bar value={data.program.week / data.program.totalWeeks} className="mt-2" color={`var(${sportMeta.colorToken})`} />
+          <div className="mt-5 grid grid-cols-3 gap-2">{data.metrics.map((metric) => <Stat key={metric.label} label={metric.label} value={metric.value} unit={metric.note} />)}</div>
         </Panel>
-
-        <Panel className="animate-rise [animation-delay:160ms]">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Recovery</span>
-            <Pill color={readiness.tone === "success" ? "var(--success)" : readiness.tone === "warning" ? "var(--warning)" : "var(--destructive)"}>{readiness.label}</Pill>
-          </div>
-          <div className="flex items-center gap-4">
-            <ProgressRing value={demoRecovery.readiness} size={88} stroke={9} color="var(--success)">
-              <span className="num text-xl font-bold">{demoRecovery.readiness}</span>
-              <span className="text-[9px] text-muted-foreground">آمادگی</span>
-            </ProgressRing>
-            <div className="grid flex-1 grid-cols-2 gap-x-3 gap-y-2">
-              <Mini icon={Moon} label="خواب" value={`${demoRecovery.sleepHours}h`} />
-              <Mini icon={Zap} label="HRV" value={`${demoRecovery.hrv}`} />
-              <Mini icon={Flame} label="Strain" value={`${demoRecovery.strain}`} />
-              <Mini icon={Target} label="RHR" value={`${demoRecovery.restingHr}`} />
-            </div>
-          </div>
-          <div className="mt-3"><RecoveryBars data={demoRecoveryHistory} height={90} /></div>
-          <p className="mt-2 text-xs leading-6 text-muted-foreground">{demoRecovery.recommendation}</p>
+        <Panel>
+          <div className="mb-3 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">ریکاوری</span><Pill color="var(--success)">آماده</Pill></div>
+          <div className="flex items-center gap-4"><ProgressRing value={demoRecovery.readiness} size={88} stroke={9} color="var(--success)"><span className="font-mono text-xl font-bold">{demoRecovery.readiness}</span><span className="text-[9px] text-muted-foreground">آمادگی</span></ProgressRing><div className="grid flex-1 grid-cols-2 gap-3"><Mini icon={Moon} label="خواب" value={`${demoRecovery.sleepHours}h`} /><Mini icon={Zap} label="HRV" value={`${demoRecovery.hrv}`} /><Mini icon={Target} label="RHR" value={`${demoRecovery.restingHr}`} /><Mini icon={Clock} label="Strain" value={`${demoRecovery.strain}`} /></div></div>
+          <RecoveryBars data={demoRecoveryHistory} height={90} />
         </Panel>
-
-        <Panel className="animate-rise [animation-delay:200ms] md:col-span-2 xl:col-span-1">
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Fitness DNA</span>
-            <Link to="/athlete/fitness-dna" className="text-xs font-semibold text-primary hover:underline">کامل</Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold">{demoDNA.archetype}</h3>
-            <span className="font-display text-xs text-muted-foreground">{demoDNA.archetypeEn}</span>
-          </div>
-          <DnaRadarChart dimensions={demoDNA.dimensions} height={200} compact />
-          <div className="flex flex-wrap gap-1.5">
-            {demoDNA.limiters.map((l) => <Pill key={l} color="var(--warning)">محدودکننده: {l}</Pill>)}
-          </div>
+        <Panel className="md:col-span-2 xl:col-span-1">
+          <div className="mb-1 flex items-center justify-between"><span className="text-xs font-bold text-muted-foreground">پروفایل عملکرد</span><Link to="/athlete/fitness-dna" className="text-xs font-semibold text-primary">نمای کامل</Link></div>
+          <h2 className="font-bold">{data.dna.archetype}</h2><DnaRadarChart dimensions={data.dna.dimensions} height={210} compact />
         </Panel>
       </section>
 
-      {/* Trend + skills */}
-      <section className="mb-6 grid gap-4 xl:grid-cols-[1.5fr_1fr]">
-        <Panel className="animate-rise [animation-delay:240ms]">
-          <SectionHeading title="روند عملکرد" subtitle="Performance Index · ۸ هفته اخیر" action={{ label: "تحلیل کامل", to: "/athlete/performance" }} />
-          <div className="mb-3 flex gap-6">
-            <Stat label="Performance Index" value={demoPerformance.at(-1)?.performanceIndex} delta={delta} tone="primary" />
-            <Stat label="Strength" value={demoPerformance.at(-1)?.strength} delta={8} tone="success" />
-            <Stat label="Engine" value={demoPerformance.at(-1)?.engine} delta={13} tone="info" />
-          </div>
-          <PerformanceTrendChart data={demoPerformance} height={220} />
-        </Panel>
-
-        <Panel className="animate-rise [animation-delay:280ms]">
-          <SectionHeading title="پیشرفت مهارت‌ها" subtitle="Skill Progress" action={{ label: "همه", to: "/athlete/fitness-dna" }} />
-          <div className="space-y-4">
-            {demoSkills.slice(1, 6).map((s) => <SkillRow key={s.id} skill={s} />)}
-          </div>
-        </Panel>
-      </section>
-
-      {/* Recent sessions */}
-      <section>
-        <Panel className="animate-rise [animation-delay:320ms]">
-          <SectionHeading title="جلسات اخیر" subtitle="Recent Sessions" action={{ label: "تاریخچه", to: "/athlete/performance" }} />
-          <ul className="divide-y divide-border/60">
-            {demoSessions.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
-                <span className="num w-20 text-xs text-muted-foreground">{s.date}</span>
-                <span className="font-display flex-1 text-sm font-semibold">{s.title}</span>
-                {s.prAchieved && <Pill color="var(--primary)">PR</Pill>}
-                <span className="num text-sm font-bold">{s.score}</span>
-                <span className="num text-xs text-muted-foreground">RPE {s.rpe}</span>
-                <span className="num text-xs text-muted-foreground">{s.durationMin}′</span>
-                <Bar value={s.blocksCompleted / s.totalBlocks} className="w-16" height={4} color={s.blocksCompleted === s.totalBlocks ? "var(--success)" : "var(--warning)"} />
-              </li>
-            ))}
-          </ul>
-        </Panel>
+      <section className="mb-6 grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+        <Panel><SectionHeading title="برداشت این هفته" subtitle={sportMeta.name} /><div className="space-y-3">{data.dna.insights.map((insight) => <div key={insight.label} className="grid grid-cols-[90px_1fr] gap-3 border-b border-border/60 pb-3 last:border-0"><span className="text-xs font-semibold text-muted-foreground">{insight.label}</span><p className="text-sm">{insight.text}</p></div>)}</div></Panel>
+        <Panel><SectionHeading title="جلسات اخیر" subtitle="سه جلسه آخر" action={{ label: "تاریخچه", to: "/athlete/performance" }} /><div className="divide-y divide-border/60">{data.sessions.map((session) => <div key={`${session.date}-${session.title}`} className="grid grid-cols-[75px_1fr_auto] items-center gap-3 py-3"><span className="text-xs text-muted-foreground">{session.date}</span><div><div className="text-sm font-semibold">{session.title}</div><div className="text-xs text-muted-foreground">{session.load}</div></div><span className="font-mono text-sm font-bold">{session.result}</span></div>)}</div></Panel>
       </section>
     </AppShell>
   );
 }
 
 function Mini({ icon: Icon, label, value }: { icon: typeof Moon; label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <Icon className="size-3.5 text-muted-foreground" />
-      <div>
-        <div className="text-[10px] text-muted-foreground">{label}</div>
-        <div className="num text-sm font-bold">{value}</div>
-      </div>
-    </div>
-  );
+  return <div className="flex items-center gap-2"><Icon className="size-3.5 text-muted-foreground" /><div><div className="text-[10px] text-muted-foreground">{label}</div><div className="font-mono text-sm font-bold">{value}</div></div></div>;
 }
