@@ -19,6 +19,8 @@ import type { AssessmentAnswers, AssessmentField, AssessmentSection } from "@/do
 import { BLOCK_META } from "@/domain/sports";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Pill } from "./primitives";
 
@@ -110,7 +112,8 @@ function FieldControl({
     <div className="mb-1.5 flex items-center justify-between">
       <label className="text-xs font-semibold text-foreground">{field.label}</label>
       <span className="flex items-center gap-1.5">
-        {field.advancedOnly && <span className="text-[10px] font-semibold" style={{ color }}>ADV</span>}
+        {field.required && <span className="text-[10px] text-muted-foreground">لازم</span>}
+        {field.depth && field.depth !== "all" && <span className="text-[10px] font-semibold" style={{ color }}>جزئیات بیشتر</span>}
         {field.unit && <span className="font-display text-[10px] text-muted-foreground">{field.unit}</span>}
       </span>
     </div>
@@ -118,17 +121,17 @@ function FieldControl({
 
   if (field.type === "select") {
     return (
-      <div>
+      <div className={field.wide ? "sm:col-span-2" : undefined}>
         {labelEl}
         <div className="flex flex-wrap gap-1.5">
           {field.options?.map((o) => {
-            const on = value === o;
+            const on = value === o.value;
             return (
-              <button key={o} type="button" onClick={() => onChange(on ? undefined : o)}
-                className={cn("rounded-lg border px-3 py-1.5 text-xs font-medium transition-all", on ? "border-transparent text-primary-foreground" : "border-border bg-muted/40 text-muted-foreground hover:text-foreground")}
+              <Button key={o.value} type="button" variant="outline" size="sm" onClick={() => onChange(on ? undefined : o.value)}
+                className={cn("h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs", on ? "border-transparent text-primary-foreground" : "bg-muted/40 text-muted-foreground")}
                 style={on ? { background: color } : undefined}>
-                {o}
-              </button>
+                {o.label}
+              </Button>
             );
           })}
         </div>
@@ -139,20 +142,29 @@ function FieldControl({
   if (field.type === "multiselect") {
     const arr = Array.isArray(value) ? value : [];
     return (
-      <div className="sm:col-span-2">
+      <div className={field.wide ? "sm:col-span-2" : undefined}>
         {labelEl}
         <div className="flex flex-wrap gap-1.5">
           {field.options?.map((o) => {
-            const on = arr.includes(o);
+            const on = arr.includes(o.value);
             return (
-              <button key={o} type="button" onClick={() => onChange(on ? arr.filter((x) => x !== o) : [...arr, o])}
-                className={cn("rounded-lg border px-3 py-1.5 font-display text-xs font-medium transition-all", on ? "border-transparent" : "border-border bg-muted/40 text-muted-foreground hover:text-foreground")}
+              <Button key={o.value} type="button" variant="outline" size="sm" onClick={() => onChange(on ? arr.filter((x) => x !== o.value) : [...arr, o.value])}
+                className={cn("h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs", on ? "border-transparent" : "bg-muted/40 text-muted-foreground")}
                 style={on ? { background: `color-mix(in oklch, ${color} 22%, transparent)`, color, borderColor: color } : undefined}>
-                {o}
-              </button>
+                {o.label}
+              </Button>
             );
           })}
         </div>
+      </div>
+    );
+  }
+
+  if (field.type === "textarea") {
+    return (
+      <div className="sm:col-span-2">
+        {labelEl}
+        <Textarea value={value === undefined ? "" : String(value)} onChange={(event) => onChange(event.target.value)} placeholder={field.hint} className="min-h-28 resize-y bg-muted/40" />
       </div>
     );
   }
@@ -173,7 +185,7 @@ function FieldControl({
   }
 
   return (
-    <div>
+    <div className={field.wide ? "sm:col-span-2" : undefined}>
       {labelEl}
       <Input
         dir={field.type === "text" ? undefined : "ltr"}
@@ -181,8 +193,9 @@ function FieldControl({
         placeholder={field.type === "time" ? "07:12" : field.hint ?? "—"}
         value={value === undefined ? "" : String(value)}
         onChange={(e) => onChange(field.type === "number" || field.type === "load" ? (e.target.value === "" ? undefined : Number(e.target.value)) : e.target.value)}
-        className={cn("h-10 bg-muted/40", field.type !== "text" && "font-display")}
+        className={cn("h-10 bg-muted/40", field.type !== "text" && "font-mono")}
       />
+      {field.allowUnknown && <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 px-1 text-xs text-muted-foreground" onClick={() => onChange("unknown")}>نمی‌دونم / تست نکردم</Button>}
     </div>
   );
 }
