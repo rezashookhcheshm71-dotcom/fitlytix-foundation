@@ -38,8 +38,8 @@ export const coachingContextService = {
     const snapshot = athleteDashboardService.getSnapshot(athleteId, sport);
     const records = bodyAnalysisService.list(athleteId);
     const latest = records.at(-1);
-    const goal = typeof answers.primary_goal === "string" ? answers.primary_goal : snapshot.program.name;
-    const availability = { sessionsPerWeek: answers.sessions_per_week as string | undefined, sessionMinutes: answers.session_length as string | undefined };
+    const goal = typeof answers["common.goals.primary"] === "string" ? answers["common.goals.primary"] : snapshot.program.name;
+    const availability = { sessionsPerWeek: answers["common.schedule.sessions_per_week"] as number | undefined, sessionMinutes: answers["common.schedule.minutes_per_session"] as string | undefined };
     const inputs: CoachingInputStatus[] = [
       { key: "goal", label: "هدف", available: Boolean(goal), usedBy: ["programming", "nutrition"] },
       { key: "sport", label: "رشته", available: true, usedBy: ["programming", "nutrition"] },
