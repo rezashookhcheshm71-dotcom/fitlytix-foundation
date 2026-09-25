@@ -9,7 +9,7 @@ import { athleteDashboardService } from "@/services/athlete/dashboard";
 import { bodyAnalysisService } from "@/services/body-analysis/service";
 
 export interface DnaEngineInputs {
-  bodyComposition: { recordIds: string[]; latest?: BodyAnalysisRecord };
+  bodyComposition: { recordIds: string[]; latest?: BodyAnalysisRecord | undefined };
   performanceMetrics: Array<{ label: string; value: string }>;
   recoveryReadiness: number;
 }

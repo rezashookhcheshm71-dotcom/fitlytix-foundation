@@ -61,7 +61,7 @@ export function BodyAnalysisIntake({ state, onChange, errors }: { state: BodyInt
             <div>
               <label htmlFor="ba-date" className="mb-1.5 block text-xs font-semibold">تاریخ اندازه‌گیری</label>
               <Input id="ba-date" type="date" dir="ltr" value={state.values["measuredAt"] ?? ""} onChange={(e) => set("measuredAt", e.target.value)} className="h-10 bg-muted/40 font-mono" />
-              {errors.measuredAt && <p className="mt-1 text-[11px] text-destructive">{errors.measuredAt}</p>}
+              {errors["measuredAt"] && <p className="mt-1 text-[11px] text-destructive">{errors["measuredAt"]}</p>}
             </div>
             <div>
               <span className="mb-1.5 block text-xs font-semibold">از کجا گرفتی؟</span>

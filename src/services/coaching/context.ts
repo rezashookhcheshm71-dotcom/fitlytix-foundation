@@ -21,10 +21,10 @@ export interface CoachingInputStatus {
 export interface AthleteCoachingContext {
   athleteId: string;
   sport: SportId;
-  goal?: string;
-  availability?: { sessionsPerWeek?: string | number; sessionMinutes?: string | number };
+  goal?: string | undefined;
+  availability?: { sessionsPerWeek?: string | number | undefined; sessionMinutes?: string | number | undefined };
   assessmentAnswers: AssessmentAnswers;
-  latestBodyAnalysis?: BodyAnalysisRecord;
+  latestBodyAnalysis?: BodyAnalysisRecord | undefined;
   bodyTrend: MetricDelta[];
   recovery: { readiness: number; label: string };
   performanceMetrics: Array<{ label: string; value: string }>;
