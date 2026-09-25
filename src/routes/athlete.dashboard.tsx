@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Clock, Moon, Play, Target, Zap } from "lucide-react";
 import { z } from "zod";
@@ -5,12 +6,18 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Bar, MockBadge, Panel, Pill, ProgressRing, SectionHeading, Stat } from "@/components/domain/primitives";
 import { DnaRadarChart, RecoveryBars } from "@/components/domain/charts";
+import { BodyChangesPanel } from "@/components/domain/body-analysis";
+import { AddBodyAnalysisDialog } from "@/components/domain/body-analysis-dialog";
 import { SPORTS, SPORT_LIST } from "@/domain/sports";
 import type { SportId } from "@/domain/types";
 import { athleteDashboardService } from "@/services/athlete/dashboard";
+import { bodyAnalysisService } from "@/services/body-analysis/service";
 import { demoAthlete, demoRecovery, demoRecoveryHistory } from "@/mock/athlete";
 
-const searchSchema = z.object({ sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional() });
+const searchSchema = z.object({
+  sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional(),
+  body: z.enum(["empty", "single"]).optional(),
+});
 
 export const Route = createFileRoute("/athlete/dashboard")({
   validateSearch: (search) => searchSchema.parse(search),
@@ -25,12 +32,20 @@ export const Route = createFileRoute("/athlete/dashboard")({
 });
 
 function AthleteDashboard() {
-  const { sport: selectedSport } = Route.useSearch();
+  const { sport: selectedSport, body } = Route.useSearch();
   const navigate = useNavigate();
   const sport: SportId = selectedSport ?? demoAthlete.primarySport;
   const data = athleteDashboardService.getSnapshot(demoAthlete.id, sport);
   const sportMeta = SPORTS[sport];
   const name = `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
+  const [addOpen, setAddOpen] = useState(false);
+  const [bodyVersion, setBodyVersion] = useState(0);
+  const bodyRecords = useMemo(() => {
+    const all = bodyAnalysisService.list(demoAthlete.id);
+    // Demo-only views for QA: ?body=empty | ?body=single
+    return body === "empty" ? [] : body === "single" ? all.slice(-1) : all;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [body, bodyVersion]);
 
   return (
     <AppShell mode="athlete" userName={name} userRole={`${sportMeta.name} · ${data.level}`}>
@@ -80,6 +95,9 @@ function AthleteDashboard() {
           <h2 className="font-bold">{data.dna.archetype}</h2><DnaRadarChart dimensions={data.dna.dimensions} height={210} compact />
         </Panel>
       </section>
+
+      <BodyChangesPanel records={bodyRecords} sport={sport} onAdd={() => setAddOpen(true)} />
+      <AddBodyAnalysisDialog open={addOpen} onOpenChange={setAddOpen} athleteId={demoAthlete.id} onSaved={() => setBodyVersion((v) => v + 1)} />
 
       <section className="mb-6 grid gap-4 lg:grid-cols-[1.1fr_1fr]">
         <Panel><SectionHeading title="برداشت این هفته" subtitle={sportMeta.name} /><div className="space-y-3">{data.dna.insights.map((insight) => <div key={insight.label} className="grid grid-cols-[90px_1fr] gap-3 border-b border-border/60 pb-3 last:border-0"><span className="text-xs font-semibold text-muted-foreground">{insight.label}</span><p className="text-sm">{insight.text}</p></div>)}</div></Panel>

@@ -7,6 +7,9 @@ import { ASSESSMENT_STEPS, AssessmentSectionCard, StepIndicator } from "@/compon
 import { MockBadge, Panel, ProgressRing } from "@/components/domain/primitives";
 import { assessmentEngine } from "@/services/assessment/engine";
 import type { AssessmentAnswers } from "@/domain/types";
+import { BodyAnalysisIntake, emptyBodyIntake, toBodyInput, type BodyIntakeState } from "@/components/domain/body-analysis";
+import { zodErrors } from "@/components/domain/body-analysis-dialog";
+import { bodyAnalysisService } from "@/services/body-analysis/service";
 
 export const Route = createFileRoute("/assessment/common")({
   head: () => ({
@@ -28,6 +31,8 @@ function CommonAssessment() {
   const navigate = useNavigate();
   const template = assessmentEngine.getCommonTemplate();
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
+  const [body, setBody] = useState<BodyIntakeState>(emptyBodyIntake);
+  const [bodyErrors, setBodyErrors] = useState<Record<string, string>>({});
   const completion = useMemo(() => assessmentEngine.completion(template, answers), [template, answers]);
 
   return (
@@ -45,6 +50,7 @@ function CommonAssessment() {
             {template.sections.map((s, i) => (
               <AssessmentSectionCard key={s.id} section={s} answers={answers} index={i} onChange={(id, v) => setAnswers((a) => ({ ...a, [id]: v }))} />
             ))}
+            <BodyAnalysisIntake state={body} onChange={setBody} errors={bodyErrors} />
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -58,6 +64,11 @@ function CommonAssessment() {
                 variant="hero"
                 className="w-full"
                 onClick={async () => {
+                  if (body.mode === "has") {
+                    const parsed = bodyAnalysisService.validate(toBodyInput(body));
+                    if (!parsed.success) { setBodyErrors(zodErrors(parsed.error.issues)); return; }
+                    bodyAnalysisService.add("ath_001", parsed.data);
+                  }
                   await assessmentEngine.submit("ath_001", template.id, answers);
                   navigate({ to: "/assessment/sport", search: {} });
                 }}

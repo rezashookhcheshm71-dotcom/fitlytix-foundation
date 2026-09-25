@@ -7,3 +7,4 @@
 - [x] Make athlete dashboard and Fitness DNA sport-adaptive.
 - [x] Harmonize visual tokens, shared controls, RTL mobile navigation, and Persian copy.
 - [x] Verify all five assessment paths, representative product navigation, mobile RTL, and diagnostics.
+- [x] Body Analysis: optional assessment intake, append-only records, dashboard «تغییرات بدن», DNA/coaching-context boundaries.
