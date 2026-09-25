@@ -64,6 +64,11 @@ function CommonAssessment() {
                 variant="hero"
                 className="w-full"
                 onClick={async () => {
+                  if (body.mode === "has") {
+                    const parsed = bodyAnalysisService.validate(toBodyInput(body));
+                    if (!parsed.success) { setBodyErrors(zodErrors(parsed.error.issues)); return; }
+                    bodyAnalysisService.add("ath_001", parsed.data);
+                  }
                   await assessmentEngine.submit("ath_001", template.id, answers);
                   navigate({ to: "/assessment/sport", search: {} });
                 }}

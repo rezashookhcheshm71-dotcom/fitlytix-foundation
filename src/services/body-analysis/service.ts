@@ -65,7 +65,7 @@ export const bodyAnalysisService = {
         vsPrevious: latest !== undefined && prev !== undefined ? round(latest - prev) : undefined,
         vsFirst: latest !== undefined && first !== undefined && withValue.length > 1 ? round(latest - first) : undefined,
       };
-    }) as unknown as BodyAnalysisRecord;
+    });
   },
   /** Plain-language summary strictly from the numbers available. No medical claims. */
   summary(records: BodyAnalysisRecord[], sport: SportId): string | undefined {
