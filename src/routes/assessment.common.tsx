@@ -7,6 +7,9 @@ import { ASSESSMENT_STEPS, AssessmentSectionCard, StepIndicator } from "@/compon
 import { MockBadge, Panel, ProgressRing } from "@/components/domain/primitives";
 import { assessmentEngine } from "@/services/assessment/engine";
 import type { AssessmentAnswers } from "@/domain/types";
+import { BodyAnalysisIntake, emptyBodyIntake, toBodyInput, type BodyIntakeState } from "@/components/domain/body-analysis";
+import { zodErrors } from "@/components/domain/body-analysis-dialog";
+import { bodyAnalysisService } from "@/services/body-analysis/service";
 
 export const Route = createFileRoute("/assessment/common")({
   head: () => ({

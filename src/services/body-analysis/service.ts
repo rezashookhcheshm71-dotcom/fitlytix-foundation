@@ -70,7 +70,7 @@ export const bodyAnalysisService = {
   /** Plain-language summary strictly from the numbers available. No medical claims. */
   summary(records: BodyAnalysisRecord[], sport: SportId): string | undefined {
     if (records.length < 2) return undefined;
-    const first = records[0];
+    const first = records[0]!;
     const last = records.at(-1)!;
     const weeks = Math.max(1, Math.round((new Date(last.measuredAt).getTime() - new Date(first.measuredAt).getTime()) / (7 * 86_400_000)));
     const dw = last.weightKg - first.weightKg;
