@@ -28,6 +28,8 @@ function CommonAssessment() {
   const navigate = useNavigate();
   const template = assessmentEngine.getCommonTemplate();
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
+  const [body, setBody] = useState<BodyIntakeState>(emptyBodyIntake);
+  const [bodyErrors, setBodyErrors] = useState<Record<string, string>>({});
   const completion = useMemo(() => assessmentEngine.completion(template, answers), [template, answers]);
 
   return (
@@ -45,6 +47,7 @@ function CommonAssessment() {
             {template.sections.map((s, i) => (
               <AssessmentSectionCard key={s.id} section={s} answers={answers} index={i} onChange={(id, v) => setAnswers((a) => ({ ...a, [id]: v }))} />
             ))}
+            <BodyAnalysisIntake state={body} onChange={setBody} errors={bodyErrors} />
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
