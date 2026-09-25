@@ -12,9 +12,9 @@ export type BodyRange = "all" | "12w" | "8w";
 
 export interface MetricDelta {
   key: BodyMetricKey;
-  latest?: number;
-  vsPrevious?: number;
-  vsFirst?: number;
+  latest?: number | undefined;
+  vsPrevious?: number | undefined;
+  vsFirst?: number | undefined;
 }
 
 const byDate = (a: BodyAnalysisRecord, b: BodyAnalysisRecord) => a.measuredAt.localeCompare(b.measuredAt) || a.createdAt.localeCompare(b.createdAt);
@@ -37,13 +37,13 @@ export const bodyAnalysisService = {
   /** Always creates a new record; existing measurements are never overwritten. */
   add(athleteId: string, input: BodyAnalysisInput): BodyAnalysisRecord {
     const parsed = bodyAnalysisInputSchema.parse(input);
-    const record: BodyAnalysisRecord = clean({
+    const record = clean({
       ...parsed,
       id: `ba_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
       athleteId,
       version: 1 as const,
       createdAt: new Date().toISOString(),
-    });
+    }) as unknown as BodyAnalysisRecord;
     store.push(Object.freeze(record) as BodyAnalysisRecord);
     return record;
   },
@@ -65,7 +65,7 @@ export const bodyAnalysisService = {
         vsPrevious: latest !== undefined && prev !== undefined ? round(latest - prev) : undefined,
         vsFirst: latest !== undefined && first !== undefined && withValue.length > 1 ? round(latest - first) : undefined,
       };
-    });
+    }) as unknown as BodyAnalysisRecord;
   },
   /** Plain-language summary strictly from the numbers available. No medical claims. */
   summary(records: BodyAnalysisRecord[], sport: SportId): string | undefined {

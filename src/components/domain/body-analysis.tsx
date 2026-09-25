@@ -20,11 +20,11 @@ export const emptyBodyIntake = (): BodyIntakeState => ({ mode: "none", values: {
 export function toBodyInput(state: BodyIntakeState): Partial<BodyAnalysisInput> {
   const v = state.values;
   const num = (k: string) => (v[k] === undefined || v[k].trim() === "" ? undefined : Number(v[k].replace(/[٫,]/, ".")));
-  const out: Record<string, unknown> = { measuredAt: v.measuredAt, source: state.source, notes: v.notes?.trim() || undefined };
+  const out: Record<string, unknown> = { measuredAt: v["measuredAt"], source: state.source, notes: v["notes"]?.trim() || undefined };
   for (const f of BODY_FIELDS) out[f.id] = num(f.id);
   const segmental: Record<string, { leanKg: number }> = {};
   for (const s of BODY_SEGMENTS) { const n = num(`seg.${s.id}`); if (n !== undefined) segmental[s.id] = { leanKg: n }; }
-  if (Object.keys(segmental).length) out.segmental = segmental;
+  if (Object.keys(segmental).length) out["segmental"] = segmental;
   return out as Partial<BodyAnalysisInput>;
 }
 
@@ -60,7 +60,7 @@ export function BodyAnalysisIntake({ state, onChange, errors }: { state: BodyInt
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="ba-date" className="mb-1.5 block text-xs font-semibold">تاریخ اندازه‌گیری</label>
-              <Input id="ba-date" type="date" dir="ltr" value={state.values.measuredAt ?? ""} onChange={(e) => set("measuredAt", e.target.value)} className="h-10 bg-muted/40 font-mono" />
+              <Input id="ba-date" type="date" dir="ltr" value={state.values["measuredAt"] ?? ""} onChange={(e) => set("measuredAt", e.target.value)} className="h-10 bg-muted/40 font-mono" />
               {errors.measuredAt && <p className="mt-1 text-[11px] text-destructive">{errors.measuredAt}</p>}
             </div>
             <div>
@@ -89,7 +89,7 @@ export function BodyAnalysisIntake({ state, onChange, errors }: { state: BodyInt
                     ))}
                   </div>
                 </div>
-                <Textarea placeholder="نکته‌ای درباره این اندازه‌گیری؟ (مثلاً ناشتا بودم)" value={state.values.notes ?? ""} onChange={(e) => set("notes", e.target.value)} className="min-h-20 bg-muted/40" />
+                <Textarea placeholder="نکته‌ای درباره این اندازه‌گیری؟ (مثلاً ناشتا بودم)" value={state.values["notes"] ?? ""} onChange={(e) => set("notes", e.target.value)} className="min-h-20 bg-muted/40" />
               </div>
             )}
           </div>
