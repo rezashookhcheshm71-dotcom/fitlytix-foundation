@@ -19,9 +19,9 @@ const today: Workout = {
       durationMin: 10,
       intent: "فعال‌سازی لگن و شانه",
       movements: [
-        { exerciseName: "Row", scheme: "3 min easy" },
-        { exerciseName: "Banded Pull-apart", scheme: "2×15" },
-        { exerciseName: "Goblet Squat + Pause", scheme: "2×8", load: "16 kg" },
+        { exerciseId: "ex_row", exerciseName: "Row", scheme: "3 min easy" },
+        { exerciseId: "ex_banded_pull_apart", exerciseName: "Banded Pull-apart", scheme: "2×15" },
+        { exerciseId: "ex_goblet_squat", exerciseName: "Goblet Squat + Pause", scheme: "2×8", load: "16 kg" },
       ],
     },
     {
@@ -34,8 +34,8 @@ const today: Workout = {
       intent: "افزایش ۱RM اسکوات — هفته ۳ بلوک قدرت",
       targetRpe: 8,
       movements: [
-        { exerciseName: "Back Squat", scheme: "5×3", load: "82% (135 kg)", scaling: "Tempo 31X1 اگر فرم افت کرد" },
-        { exerciseName: "Bulgarian Split Squat", scheme: "3×8/leg", load: "DB 22 kg" },
+        { exerciseId: "ex_bs", exerciseName: "Back Squat", scheme: "5×3", load: "82% (135 kg)", scaling: "Tempo 31X1 اگر فرم افت کرد", notes: "tempo 31X1" },
+        { exerciseId: "ex_bss", exerciseName: "Bulgarian Split Squat", scheme: "3×8/leg", load: "DB 22 kg" },
       ],
     },
     {
@@ -62,8 +62,8 @@ const today: Workout = {
       intent: "تحمل عضلانی زیر خستگی",
       targetRpe: 9,
       movements: [
-        { exerciseName: "Thruster", scheme: "21-15-9", load: "43 kg", scaling: "35 kg" },
-        { exerciseName: "Chest-to-Bar Pull-up", scheme: "21-15-9", scaling: "Kipping Pull-up" },
+        { exerciseId: "ex_thruster", exerciseName: "Thruster", scheme: "21-15-9", load: "43 kg", scaling: "35 kg" },
+        { exerciseId: "ex_c2b", exerciseName: "Chest-to-Bar Pull-up", scheme: "21-15-9", scaling: "Kipping Pull-up" },
       ],
     },
     {
