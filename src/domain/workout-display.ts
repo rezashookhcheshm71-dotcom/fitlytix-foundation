@@ -2,7 +2,8 @@ import type { WorkoutMovement } from "./types";
 
 export function readableScheme(scheme: string): string {
   const sets = scheme.match(/^(\d+)\s*[×xX]\s*(\d+)(?:\/leg)?$/);
-  if (sets) return `${sets[1]} ست، هر ست ${sets[2]} تکرار${scheme.includes("/leg") ? " برای هر پا" : ""}`;
+  if (sets)
+    return `${sets[1]} ست، هر ست ${sets[2]} تکرار${scheme.includes("/leg") ? " برای هر پا" : ""}`;
   const minutes = scheme.match(/^(\d+) min(?: easy)?$/i);
   if (minutes) return `${minutes[1]} دقیقه${scheme.toLowerCase().includes("easy") ? " آرام" : ""}`;
   const seconds = scheme.match(/^(\d+):(\d+)$/);

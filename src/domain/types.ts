@@ -58,16 +58,10 @@ export interface Sport {
 /* Assessment ---------------------------------------------------------- */
 
 export type AssessmentFieldType =
-  | "number"
-  | "text"
-  | "select"
-  | "multiselect"
-  | "scale"
-  | "time"
-  | "load"
-  | "textarea";
+  "number" | "text" | "select" | "multiselect" | "scale" | "time" | "load" | "textarea";
 
-export type AssessmentPurpose = "programming" | "level" | "scaling" | "load" | "goal" | "safety" | "recovery";
+export type AssessmentPurpose =
+  "programming" | "level" | "scaling" | "load" | "goal" | "safety" | "recovery";
 export type AssessmentDepth = "all" | "intermediatePlus" | "advancedPlus";
 
 export interface AssessmentOption {
@@ -216,13 +210,7 @@ export interface Benchmark {
 /* Programs & Workouts --------------------------------------------------- */
 
 export type WorkoutBlockType =
-  | "warmup"
-  | "strength"
-  | "engine"
-  | "wod"
-  | "skill"
-  | "weightlifting"
-  | "cooldown";
+  "warmup" | "strength" | "engine" | "wod" | "skill" | "weightlifting" | "cooldown";
 
 export interface WorkoutMovement {
   exerciseId?: string;
