@@ -164,6 +164,16 @@ export interface Exercise {
   id: string;
   name: string;
   nameFa?: string;
+  shortDescription?: string;
+  howToSteps?: string[];
+  coachingCues?: string[];
+  commonMistakes?: string[];
+  breathingCue?: string;
+  easierOption?: string;
+  harderOption?: string;
+  primaryMuscles?: string[];
+  safetyNote?: string;
+  media?: { imageUrl?: string; videoUrl?: string };
   pattern: MovementPattern;
   equipment: string[];
   sports: SportId[];
@@ -215,6 +225,7 @@ export type WorkoutBlockType =
   | "cooldown";
 
 export interface WorkoutMovement {
+  exerciseId?: string;
   exerciseName: string;
   scheme: string; // e.g. "5x5 @ 80%", "21-15-9"
   load?: string;

@@ -13,3 +13,5 @@
 - Body analysis is one shared, append-only, dated model (`src/domain/body-analysis.ts` + `src/services/body-analysis`) for every sport — never sport-specific fields, never overwrite a record.
 - Fitness DNA radar scores come from the sport snapshot; body composition is passed as a separate traceable input (`src/services/fitness-dna/inputs.ts`), not raw scores.
 - Future programming/nutrition engines read only `coachingContextService` (`src/services/coaching/context.ts`), which reports available/missing inputs and generates no plans.
+- Workout education is a shared exercise catalog referenced by stable exercise IDs; sport-specific sessions live behind a program service so UI never assumes CrossFit blocks.
+- Workout completion is local UI state only until a real session/feedback persistence layer exists; never imply saved results.
