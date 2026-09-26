@@ -2,6 +2,26 @@ import type { ExperienceLevel, Program, SportId, Workout } from "@/domain/types"
 import { demoProgram, todayWorkout } from "@/mock/program";
 
 const sportSessions: Partial<Record<SportId, Workout>> = {
+  hyrox: {
+    id: "w_hy_1", programId: "prg_hy", dayIndex: 1, date: "1404/07/04", title: "دویدن و ایستگاه‌ها", focus: "حفظ ریتم میان دویدن و ایستگاه", estimatedMin: 54, status: "today",
+    blocks: [
+      { id: "hy1", type: "warmup", title: "گرم کردن", titleEn: "Warm-up", durationMin: 8, intent: "آماده کردن پاها و تنفس", movements: [{ exerciseId: "ex_easy_run", exerciseName: "Easy Run", scheme: "5 min easy" }] },
+      { id: "hy2", type: "engine", title: "دویدن و موتور", titleEn: "Run & engine", durationMin: 15, intent: "پیدا کردن سرعت پایدار", movements: [{ exerciseId: "ex_easy_run", exerciseName: "Easy Run", scheme: "10 min" }, { exerciseId: "ex_row", exerciseName: "Row", scheme: "5 min" }] },
+      { id: "hy3", type: "strength", title: "ایستگاه‌ها", titleEn: "Stations", durationMin: 12, intent: "حرکت کنترل‌شده بعد از دویدن", movements: [{ exerciseName: "Sled Push", scheme: "4×20 m", scaling: "سورتمه سبک‌تر" }] },
+      { id: "hy4", type: "skill", title: "استقامت قدرتی و ریتم مسابقه", titleEn: "Race pace", durationMin: 14, intent: "پیوستگی در تکرارهای طولانی", movements: [{ exerciseName: "Farmer Carry", scheme: "4×40 m", scaling: "وزنه سبک‌تر" }] },
+      { id: "hy5", type: "cooldown", title: "سرد کردن", titleEn: "Cooldown", durationMin: 5, intent: "پایین آوردن ضربان", movements: [{ exerciseName: "راه رفتن آرام", scheme: "5 min" }] },
+    ],
+  },
+  functional: {
+    id: "w_fn_1", programId: "prg_fn", dayIndex: 1, date: "1404/07/04", title: "حرکت و قدرت پایه", focus: "کیفیت حرکت و تعادل", estimatedMin: 48, status: "today",
+    blocks: [
+      { id: "fn1", type: "warmup", title: "گرم کردن", titleEn: "Warm-up", durationMin: 8, intent: "آماده شدن مفصل‌ها", movements: [{ exerciseName: "راه رفتن و چرخش مفاصل", scheme: "8 min" }] },
+      { id: "fn2", type: "skill", title: "حرکت و موبیلیتی", titleEn: "Movement", durationMin: 10, intent: "دامنه حرکت آرام و بدون فشار", movements: [{ exerciseId: "ex_goblet_squat", exerciseName: "Goblet Squat + Pause", scheme: "2×8", scaling: "اسکوات روی نیمکت" }] },
+      { id: "fn3", type: "strength", title: "قدرت", titleEn: "Strength", durationMin: 15, intent: "ساخت قدرت پایدار در پاها", movements: [{ exerciseId: "ex_bss", exerciseName: "Bulgarian Split Squat", scheme: "3×8/leg", scaling: "Split Squat روی زمین" }] },
+      { id: "fn4", type: "engine", title: "آمادگی هوازی و تعادل", titleEn: "Conditioning", durationMin: 10, intent: "بالا بردن ضربان با کنترل بدن", movements: [{ exerciseId: "ex_row", exerciseName: "Row", scheme: "5 min easy" }, { exerciseName: "تعادل تک‌پا", scheme: "2×30 sec" }] },
+      { id: "fn5", type: "cooldown", title: "سرد کردن", titleEn: "Cooldown", durationMin: 5, intent: "برگشت به ریتم آرام", movements: [{ exerciseName: "تنفس آرام", scheme: "5 min" }] },
+    ],
+  },
   bodybuilding: {
     id: "w_bb_1", programId: "prg_bb", dayIndex: 1, date: "1404/07/04", title: "سینه و پشت بازو", focus: "کنترل حرکت و حجم عضله سینه", estimatedMin: 58, status: "today",
     blocks: [
