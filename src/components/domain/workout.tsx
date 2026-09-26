@@ -29,7 +29,7 @@ export function WorkoutBlockCard({
   const meta = BLOCK_META[block.type];
   const beginner = !compact && experience === "beginner";
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [guideId, setGuideId] = useState<string>();
+  const [guideId, setGuideId] = useState<string | undefined>();
   const guide = getExerciseEducation(guideId);
   return (
     <article
@@ -70,6 +70,7 @@ export function WorkoutBlockCard({
               {beginner && " از ۱۰"}
             </span>
           )}
+          {beginner && block.targetRpe && <span className="max-w-36 text-end text-[11px] leading-4">شدت از ۱ تا ۱۰؛ ۸ یعنی حدود ۲ تکرار دیگه می‌تونستی بزنی</span>}
         </div>
       </header>
       <ul className="space-y-2">
@@ -143,6 +144,7 @@ export function WorkoutBlockCard({
                         `؛ ${readableTempo("tempo 31X1")}`}
                     </p>
                   )}
+                  {m.notes && !tempo && <p>{m.notes}</p>}
                   {exercise?.shortDescription && (
                     <p className="text-muted-foreground">{exercise.shortDescription}</p>
                   )}
@@ -186,14 +188,16 @@ export function WorkoutBlockCard({
           </Button>
         </div>
       )}
-      <ExerciseGuide
-        exercise={guide}
-        sport={sport}
-        open={Boolean(guideId)}
-        onOpenChange={(open) => {
-          if (!open) setGuideId(undefined);
-        }}
-      />
+      {guide && (
+        <ExerciseGuide
+          exercise={guide}
+          sport={sport}
+          open={Boolean(guideId)}
+          onOpenChange={(open) => {
+            if (!open) setGuideId(undefined);
+          }}
+        />
+      )}
     </article>
   );
 }
