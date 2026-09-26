@@ -8,7 +8,7 @@
 - [x] Harmonize visual tokens, shared controls, RTL mobile navigation, and Persian copy.
 - [x] Verify all five assessment paths, representative product navigation, mobile RTL, and diagnostics.
 - [x] Body Analysis: optional assessment intake, append-only records, dashboard «تغییرات بدن», DNA/coaching-context boundaries.
-- [ ] Add shared exercise education model and curated movement guidance without media URLs.
-- [ ] Build level-adaptive workout cards, accessible education overlay, and local session progress.
-- [ ] Keep CrossFit demo intact while adding sport-specific Bodybuilding and Running session examples.
-- [ ] Verify types, lint, preview and four level/sport scenarios.
+- [x] Add shared exercise education model and curated movement guidance without media URLs.
+- [x] Build level-adaptive workout cards, accessible education overlay, and local session progress.
+- [x] Keep CrossFit demo intact while adding sport-specific Bodybuilding and Running session examples.
+- [x] Verify types, lint, preview and four level/sport scenarios.
