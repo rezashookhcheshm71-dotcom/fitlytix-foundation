@@ -1,5 +1,6 @@
 /** MOCK DATA — demo program. TODO(backend): replace with program service. */
 import type { Exercise, Program, Workout } from "@/domain/types";
+import { exerciseEducation } from "./exercise-education";
 
 const today: Workout = {
   id: "w_d4",
@@ -173,7 +174,7 @@ export const demoProgram: Program = {
 
 export const todayWorkout = today;
 
-export const demoExercises: Exercise[] = [
+const legacyExercises: Exercise[] = [
   {
     id: "ex_bs",
     name: "Back Squat",
@@ -287,4 +288,13 @@ export const demoExercises: Exercise[] = [
     scalingOptions: ["Row", "Bike"],
     difficulty: 1,
   },
+];
+
+/** Preserve legacy catalog rows; enrich matching IDs and add the new guided movements. */
+export const demoExercises: Exercise[] = [
+  ...legacyExercises.map((exercise) => ({
+    ...exercise,
+    ...exerciseEducation.find((guide) => guide.id === exercise.id),
+  })),
+  ...exerciseEducation.filter((guide) => !legacyExercises.some((exercise) => exercise.id === guide.id)),
 ];
