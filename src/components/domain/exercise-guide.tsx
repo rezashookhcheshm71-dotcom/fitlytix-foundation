@@ -4,13 +4,6 @@ import { exerciseContextLabel } from "@/domain/exercise-education";
 import type { SportId } from "@/domain/types";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -101,38 +94,20 @@ export function ExerciseGuide({
   if (!exercise) return null;
   const title = exercise.nameFa || exercise.name;
   return (
-    <>
-      <div className="md:hidden">
-        <Sheet open={open} onOpenChange={onOpenChange}>
-          <SheetContent
-            side="bottom"
-            dir="rtl"
-            className="max-h-[90dvh] overflow-y-auto rounded-t-lg pt-10 text-start"
-          >
-            <SheetHeader className="text-start">
-              <SheetTitle>{title}</SheetTitle>
-              <SheetDescription>آموزش حرکت · {exercise.name}</SheetDescription>
-            </SheetHeader>
-            <div className="mt-5">
-              <GuideBody exercise={exercise} sport={sport} close={() => onOpenChange(false)} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-      <div className="hidden md:block">
-        <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent dir="rtl" className="max-h-[85dvh] overflow-y-auto text-start">
-            <DialogHeader className="text-start">
-              <DialogTitle className="flex items-center gap-2">
-                <BookOpen className="size-4 text-primary" />
-                {title}
-              </DialogTitle>
-              <DialogDescription>آموزش حرکت · {exercise.name}</DialogDescription>
-            </DialogHeader>
-            <GuideBody exercise={exercise} sport={sport} close={() => onOpenChange(false)} />
-          </DialogContent>
-        </Dialog>
-      </div>
-    </>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        dir="rtl"
+        className="bottom-0 top-auto max-h-[90dvh] translate-y-0 overflow-y-auto rounded-t-lg text-start md:bottom-auto md:top-1/2 md:max-h-[85dvh] md:-translate-y-1/2 md:rounded-lg"
+      >
+        <DialogHeader className="text-start">
+          <DialogTitle className="flex items-center gap-2">
+            <BookOpen className="size-4 text-primary" />
+            {title}
+          </DialogTitle>
+          <DialogDescription>آموزش حرکت · {exercise.name}</DialogDescription>
+        </DialogHeader>
+        <GuideBody exercise={exercise} sport={sport} close={() => onOpenChange(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }
