@@ -296,5 +296,7 @@ export const demoExercises: Exercise[] = [
     ...exercise,
     ...exerciseEducation.find((guide) => guide.id === exercise.id),
   })),
-  ...exerciseEducation.filter((guide) => !legacyExercises.some((exercise) => exercise.id === guide.id)),
+  ...exerciseEducation.filter(
+    (guide) => !legacyExercises.some((exercise) => exercise.id === guide.id),
+  ),
 ];

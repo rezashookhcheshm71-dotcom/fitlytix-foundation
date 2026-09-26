@@ -9,13 +9,18 @@ export function readableScheme(scheme: string): string {
   const meters = scheme.match(/^(\d+)\s*[×xX]\s*(\d+)\s*m$/i);
   if (meters) return `${meters[1]} بار، هر بار ${meters[2]} متر`;
   const interval = scheme.match(/^(\d+):(\d+)\s*@\s*(\d+)%$/);
-  if (interval) return `${interval[1]} دقیقه${interval[2] === "00" ? "" : ` و ${interval[2]} ثانیه`} با حدود ${interval[3]}٪ توان`;
+  if (interval)
+    return `${interval[1]} دقیقه${interval[2] === "00" ? "" : ` و ${interval[2]} ثانیه`} با حدود ${interval[3]}٪ توان`;
   const minuteRep = scheme.match(/^(odd|even):\s*(\d+)\s*(reps|m)$/i);
-  if (minuteRep) return `${minuteRep[1] === "odd" ? "دقیقه‌های فرد" : "دقیقه‌های زوج"}: ${minuteRep[2]} ${minuteRep[3] === "m" ? "متر" : "تکرار"}`;
+  if (minuteRep)
+    return `${minuteRep[1] === "odd" ? "دقیقه‌های فرد" : "دقیقه‌های زوج"}: ${minuteRep[2]} ${minuteRep[3] === "m" ? "متر" : "تکرار"}`;
   const seconds = scheme.match(/^(\d+):(\d+)$/);
   if (seconds) return `${seconds[1]} دقیقه و ${seconds[2]} ثانیه`;
   if (scheme === "21-15-9") return "سه دور: ۲۱، ۱۵ و ۹ تکرار";
-  return scheme.replace(/\bmin\b/gi, "دقیقه").replace(/\breps\b/gi, "تکرار").replace(/\brest\b/gi, "استراحت");
+  return scheme
+    .replace(/\bmin\b/gi, "دقیقه")
+    .replace(/\breps\b/gi, "تکرار")
+    .replace(/\brest\b/gi, "استراحت");
 }
 
 export function readableTempo(notes?: string) {

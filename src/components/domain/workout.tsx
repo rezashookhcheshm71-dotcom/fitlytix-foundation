@@ -70,7 +70,11 @@ export function WorkoutBlockCard({
               {beginner && " از ۱۰"}
             </span>
           )}
-          {beginner && block.targetRpe && <span className="max-w-36 text-end text-[11px] leading-4">شدت از ۱ تا ۱۰؛ ۸ یعنی حدود ۲ تکرار دیگه می‌تونستی بزنی</span>}
+          {beginner && block.targetRpe && (
+            <span className="max-w-36 text-end text-[11px] leading-4">
+              شدت از ۱ تا ۱۰؛ ۸ یعنی حدود ۲ تکرار دیگه می‌تونستی بزنی
+            </span>
+          )}
         </div>
       </header>
       <ul className="space-y-2">
