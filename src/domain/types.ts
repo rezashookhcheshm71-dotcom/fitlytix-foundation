@@ -58,16 +58,10 @@ export interface Sport {
 /* Assessment ---------------------------------------------------------- */
 
 export type AssessmentFieldType =
-  | "number"
-  | "text"
-  | "select"
-  | "multiselect"
-  | "scale"
-  | "time"
-  | "load"
-  | "textarea";
+  "number" | "text" | "select" | "multiselect" | "scale" | "time" | "load" | "textarea";
 
-export type AssessmentPurpose = "programming" | "level" | "scaling" | "load" | "goal" | "safety" | "recovery";
+export type AssessmentPurpose =
+  "programming" | "level" | "scaling" | "load" | "goal" | "safety" | "recovery";
 export type AssessmentDepth = "all" | "intermediatePlus" | "advancedPlus";
 
 export interface AssessmentOption {
@@ -164,6 +158,16 @@ export interface Exercise {
   id: string;
   name: string;
   nameFa?: string;
+  shortDescription?: string;
+  howToSteps?: string[];
+  coachingCues?: string[];
+  commonMistakes?: string[];
+  breathingCue?: string;
+  easierOption?: string;
+  harderOption?: string;
+  primaryMuscles?: string[];
+  safetyNote?: string;
+  media?: { imageUrl?: string; videoUrl?: string };
   pattern: MovementPattern;
   equipment: string[];
   sports: SportId[];
@@ -206,15 +210,10 @@ export interface Benchmark {
 /* Programs & Workouts --------------------------------------------------- */
 
 export type WorkoutBlockType =
-  | "warmup"
-  | "strength"
-  | "engine"
-  | "wod"
-  | "skill"
-  | "weightlifting"
-  | "cooldown";
+  "warmup" | "strength" | "engine" | "wod" | "skill" | "weightlifting" | "cooldown";
 
 export interface WorkoutMovement {
+  exerciseId?: string;
   exerciseName: string;
   scheme: string; // e.g. "5x5 @ 80%", "21-15-9"
   load?: string;
