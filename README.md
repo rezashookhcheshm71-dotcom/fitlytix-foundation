@@ -113,3 +113,6 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Architecture
+See [docs/architecture.md](docs/architecture.md) and the unapplied future schema in docs/schema/future-schema.sql.

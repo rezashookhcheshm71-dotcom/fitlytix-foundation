@@ -15,3 +15,5 @@
 - Future programming/nutrition engines read only `coachingContextService` (`src/services/coaching/context.ts`), which reports available/missing inputs and generates no plans.
 - Workout education is a shared exercise catalog referenced by stable exercise IDs; sport-specific sessions live behind a program service so UI never assumes CrossFit blocks.
 - Workout completion is local UI state only until a real session/feedback persistence layer exists; never imply saved results.
+- Platform domains (health, readiness, nutrition, goals, decisions, proposals, notifications, packages) are typed in `src/domain/platform.ts` and served by one service per domain under `src/services/*`; UI never imports mock data for these. See docs/architecture.md.
+- Coach proposals are drafts (`needs_review`) until an explicit coach approval; nothing auto-publishes. Wearables never show `connected` without a real server-side token.
