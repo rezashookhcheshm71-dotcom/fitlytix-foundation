@@ -1,17 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, Calendar, ClipboardList, Library, LineChart, Ruler, Sparkles, Users } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Sparkles, TrendingUp } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
+import { Button } from "@/components/ui/button";
 import { AthleteCard } from "@/components/domain/athlete";
 import { MockBadge, PageHeader, Panel, SectionHeading, Stat } from "@/components/domain/primitives";
 import { coachRoster, demoCoach } from "@/mock/coach";
+import { coachService } from "@/services/coach/service";
+import { proposalService } from "@/services/ai-coaching/proposals";
 
 export const Route = createFileRoute("/coach/")({
   head: () => ({
     meta: [
-      { title: "Coach Command Center — FitLytix" },
-      { name: "description", content: "مدیریت ورزشکاران، برنامه‌ها، پایگاه حرکات، اسکیلینگ، مهارت‌ها، ارزیابی‌ها و عملکرد." },
-      { property: "og:title", content: "Coach Command Center — FitLytix" },
-      { property: "og:description", content: "مدیریت ورزشکاران، برنامه‌ها، حرکات و عملکرد در یک مرکز فرماندهی." },
+      { title: "مرکز فرمان مربی — FitLytix" },
+      { name: "description", content: "خلاصه تیم، ورزشکاران نیازمند توجه، گزارش هفتگی و پیش‌نویس‌های در انتظار بررسی." },
+      { property: "og:title", content: "مرکز فرمان مربی — FitLytix" },
+      { property: "og:description", content: "خلاصه تیم، ورزشکاران نیازمند توجه و گزارش هفتگی مربی." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -19,56 +22,46 @@ export const Route = createFileRoute("/coach/")({
   component: CoachHome,
 });
 
-const modules = [
-  { icon: Users, label: "Athletes", fa: "ورزشکاران", to: "/coach" as const },
-  { icon: Calendar, label: "Programs", fa: "برنامه‌ها", to: "/coach/programs" as const },
-  { icon: Library, label: "Exercise DB", fa: "پایگاه حرکات", to: "/coach/exercises" as const },
-  { icon: Ruler, label: "Scaling", fa: "اسکیلینگ", to: "/coach/exercises" as const },
-  { icon: Sparkles, label: "Skills", fa: "مهارت‌ها", to: "/coach/athlete/$id" as const },
-  { icon: ClipboardList, label: "Assessments", fa: "ارزیابی‌ها", to: "/coach/athlete/$id" as const },
-  { icon: LineChart, label: "Performance", fa: "عملکرد", to: "/coach/athlete/$id" as const },
-];
-
 function CoachHome() {
-  const name = `${demoCoach.identity.firstName} ${demoCoach.identity.lastName}`;
-  const attention = coachRoster.filter((r) => r.flag === "attention");
-  const avgReadiness = Math.round(coachRoster.reduce((a, r) => a + r.readiness, 0) / coachRoster.length);
-  const avgAdherence = Math.round((coachRoster.reduce((a, r) => a + r.adherence, 0) / coachRoster.length) * 100);
+  const brief = coachService.weeklyBrief();
+  const sessionsToday = coachRoster.filter((r) => r.lastSession === "امروز").length;
+  const pending = proposalService.list().filter((p) => p.status === "needs_review").length;
+  const top = coachService.sort(coachRoster, "all").slice(0, 3);
 
   return (
-    <AppShell mode="coach" userName={name} userRole="مربی · CrossFit L2">
-      <PageHeader eyebrow="COACH COMMAND CENTER" title={`صبح بخیر، ${demoCoach.identity.firstName}`} description="وضعیت تیم امروز. موارد نیازمند توجه اول نمایش داده می‌شوند." actions={<MockBadge label="روستر نمایشی" />} />
+    <AppShell mode="coach" userName={`${demoCoach.identity.firstName} ${demoCoach.identity.lastName}`} userRole="مربی · CrossFit L2">
+      <PageHeader eyebrow="مرکز فرمان" title={`صبح بخیر، ${demoCoach.identity.firstName}`} description="اول موارد نیازمند توجه، بعد بقیه تیم." actions={<MockBadge label="روستر نمایشی" />} />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Panel><Stat label="ورزشکاران فعال" value={coachRoster.length} /></Panel>
-        <Panel><Stat label="میانگین آمادگی" value={avgReadiness} unit="%" tone="success" /></Panel>
-        <Panel><Stat label="میانگین پایبندی" value={avgAdherence} unit="%" tone="info" /></Panel>
-        <Panel className="border-destructive/30">
-          <Stat label="نیازمند توجه" value={attention.length} tone="warning" />
-          {attention[0] && (
-            <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-destructive"><AlertTriangle className="size-3" /> {attention[0].athlete.identity.firstName}: پایبندی افت کرده</div>
-          )}
+      <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-6">
+        <Panel><Stat label="کل ورزشکاران" value={coachRoster.length} /></Panel>
+        <Panel><Stat label="فعال این هفته" value={brief.activeAthletes} tone="success" /></Panel>
+        <Panel><Stat label="نیاز به توجه" value={new Set(brief.attention.filter((a) => a.severity === "act").map((a) => a.athleteId)).size} tone="warning" /></Panel>
+        <Panel><Stat label="جلسه‌های امروز" value={sessionsToday} tone="info" /></Panel>
+        <Panel><Stat label="نگرانی ریکاوری" value={brief.recoveryConcerns.length} /></Panel>
+        <Panel><Stat label="پیش‌نویس در انتظار" value={pending} tone="primary" /></Panel>
+      </div>
+
+      <div className="mb-6 grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <Panel>
+          <SectionHeading title="گزارش هفتگی" subtitle={`میانگین پایبندی ${Math.round(brief.avgAdherence * 100)}٪`} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div><div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-success"><TrendingUp className="size-3.5" /> پیشرفت‌ها</div><ul className="space-y-1.5 text-sm">{brief.improvements.map((i) => <li key={i.athleteName}><span className="font-semibold">{i.athleteName}</span> <span className="text-xs text-muted-foreground">{i.text}</span></li>)}</ul></div>
+            <div><div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-warning"><AlertTriangle className="size-3.5" /> ریکاوری و تغذیه</div><ul className="space-y-1.5 text-xs text-muted-foreground">{[...brief.recoveryConcerns, ...brief.nutritionFlags.map((n) => `تغذیه: ${n}`)].map((t) => <li key={t}>{t}</li>)}</ul></div>
+          </div>
+          <div className="mt-4 rounded-xl bg-muted/40 p-3">
+            <div className="mb-1 flex items-center gap-1.5 text-xs font-bold"><Sparkles className="size-3.5 text-primary" /> پیگیری‌های پیشنهادی <span className="font-normal text-muted-foreground">(پیشنهاد — تصمیم با تو)</span></div>
+            <ul className="space-y-1 text-xs">{brief.followUps.map((f) => <li key={f}>• {f}</li>)}</ul>
+          </div>
+        </Panel>
+        <Panel className="flex flex-col">
+          <SectionHeading title="دستیار مربی" subtitle="پیش‌نویس تمرین و تغذیه" />
+          <p className="text-sm leading-7 text-muted-foreground">از روی پروفایل ورزشکار یک پیش‌نویس بساز، ویرایش کن و فقط وقتی راضی بودی تأیید کن.</p>
+          <Button asChild variant="hero" className="mt-auto"><Link to="/coach/assistant">شروع پیش‌نویس <ArrowLeft /></Link></Button>
         </Panel>
       </div>
 
-      <div className="mb-6 overflow-x-auto">
-        <div className="flex min-w-max gap-2">
-          {modules.map((m) => (
-            <Link key={m.label} to={m.to} params={{ id: "ath_001" }} className="flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold transition-colors hover:border-primary/40 hover:text-primary">
-              <m.icon className="size-3.5 text-primary" /> {m.fa} <span className="font-display text-muted-foreground">{m.label}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <SectionHeading title="ورزشکاران" subtitle="کلیک روی هر کارت → Athlete 360" />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {[...coachRoster].sort((a, b) => (a.flag === "attention" ? -1 : b.flag === "attention" ? 1 : 0)).map((r, i) => (
-          <div key={r.athlete.id} className="animate-rise" style={{ animationDelay: `${i * 60}ms` }}>
-            <AthleteCard item={r} />
-          </div>
-        ))}
-      </div>
+      <SectionHeading title="اولویت امروز" subtitle="ورزشکاران با بیشترین نیاز به پیگیری" action={{ label: "همه ورزشکاران", to: "/coach/athletes" }} />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{top.map((r) => <AthleteCard key={r.athlete.id} item={r} />)}</div>
     </AppShell>
   );
 }
