@@ -12,3 +12,14 @@
 - [x] Build level-adaptive workout cards, accessible education overlay, and local session progress.
 - [x] Keep CrossFit demo intact while adding sport-specific Bodybuilding and Running session examples.
 - [x] Verify types, lint, preview and four level/sport scenarios.
+
+## Master implementation (Athlete 360 / Coach Command Center)
+- [x] Shared platform domain types (health, readiness, nutrition, goals, decisions, proposals, notifications, passport, packages, coach profile)
+- [x] Services: health-data, recovery, nutrition, goals, subscriptions, decision-engine (+why), notifications, athlete360, coach, ai-proposals
+- [x] Assessment wearable intake card
+- [x] Athlete dashboard: coach cards, health panel, package-aware
+- [x] Athlete routes: nutrition, recovery, goals, passport, health
+- [x] Coach: command center, athletes (filters/segments), attention, assistant (proposal review/approve), profile, nutrition, performance, athlete timeline
+- [x] Expanded multi-sport demo roster
+- [x] docs/architecture.md + future schema SQL (not applied), README
+- [x] QA: types, build, browser

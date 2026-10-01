@@ -352,4 +352,11 @@ export interface CoachAthleteSummary {
   flag?: "attention" | "peak" | "recovering";
   lastSession: string;
   nextWorkout: string;
+  /** Additive Athlete 360 fields used by Coach Command Center filters. */
+  goal?: string;
+  goalType?: "performance" | "body" | "health" | "skill" | "race";
+  packageId?: "training" | "nutrition" | "combined";
+  nutritionAdherence?: number;
+  improvement?: number;
 }
+export * from "./platform";

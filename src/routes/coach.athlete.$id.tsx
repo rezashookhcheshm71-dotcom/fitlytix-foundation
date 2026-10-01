@@ -13,6 +13,11 @@ import { aiCoachingEngine } from "@/services/ai-coaching/engine";
 import { findRosterAthlete, demoCoach } from "@/mock/coach";
 import { demoBenchmarks, demoDNA, demoPerformance, demoPRs, demoRecovery, demoRecoveryHistory, demoSessions, demoSkills, demoAthlete } from "@/mock/athlete";
 import { demoProgram, todayWorkout } from "@/mock/program";
+import { CONNECTION_STATUS_LABEL, METRIC_DEFS, PROVIDER_LABEL, type HealthMetricType } from "@/domain/types";
+import { healthDataService } from "@/services/health-data/service";
+import { bodyAnalysisService } from "@/services/body-analysis/service";
+import { nutritionService } from "@/services/nutrition/service";
+import { PACKAGES } from "@/services/subscriptions/service";
 
 export const Route = createFileRoute("/coach/athlete/$id")({
   loader: async ({ params }) => {
@@ -39,7 +44,7 @@ export const Route = createFileRoute("/coach/athlete/$id")({
   component: Athlete360,
 });
 
-const tabs = ["Overview", "Performance", "Program", "Fitness DNA", "Recovery", "Goals", "Assessment", "Benchmarks", "PRs", "Skills", "Calendar", "Sessions", "Exercise History"];
+const tabs = ["Overview", "Timeline", "Nutrition", "Wearables", "Body Analysis", "Feedback", "Performance", "Program", "Fitness DNA", "Recovery", "Goals", "Assessment", "Benchmarks", "PRs", "Skills", "Calendar", "Sessions", "Exercise History"];
 
 function Athlete360() {
   const { item, adjustments } = Route.useLoaderData();
@@ -73,8 +78,8 @@ function Athlete360() {
         <div className="flex flex-wrap items-center gap-3">
           <ProgressRing value={item.readiness} size={64} stroke={6} color="var(--success)"><span className="num text-sm font-bold">{item.readiness}</span></ProgressRing>
           <div className="flex flex-col gap-2">
-            <Button variant="hero" size="sm"><Pencil /> ویرایش برنامه</Button>
-            <Button variant="outline" size="sm"><MessageSquare /> پیام</Button>
+            <Button asChild variant="hero" size="sm"><Link to="/coach/programs"><Pencil /> برنامه‌ها</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to="/coach/assistant" search={{ athlete: a.id }}><MessageSquare /> دستیار مربی</Link></Button>
           </div>
         </div>
       </div>
@@ -153,6 +158,56 @@ function Athlete360() {
         <TabsContent value="Calendar" className="mt-4"><Panel><div className="grid grid-cols-7 gap-2">{demoProgram.workouts.map((w) => <div key={w.id} className={`rounded-xl border p-2 text-center ${w.status === "today" ? "border-primary bg-primary-soft" : "border-border"}`}><div className="num text-[10px] text-muted-foreground">{w.date.slice(5)}</div><div className="mt-1 truncate text-[10px] font-semibold">{w.focus}</div></div>)}</div></Panel></TabsContent>
         <TabsContent value="Sessions" className="mt-4"><Panel>{demoSessions.map((s) => <div key={s.id} className="flex flex-wrap items-center gap-3 border-b border-border/60 py-3 last:border-0"><span className="num text-xs text-muted-foreground">{s.date}</span><span className="font-display flex-1 font-semibold">{s.title}</span><span className="num">RPE {s.rpe}</span><span className="num font-bold">{s.score}</span></div>)}</Panel></TabsContent>
         <TabsContent value="Exercise History" className="mt-4"><Panel>{demoPRs.map((p) => <div key={p.id} className="border-b border-border/60 py-3 last:border-0"><div className="flex justify-between"><span className="font-display font-semibold">{p.exerciseName}</span><span className="num text-xs text-muted-foreground">{p.previous} → {p.value} {p.unit}</span></div><Bar value={Math.min(1, p.value / ((p.previous ?? p.value) * 1.15))} className="mt-2" height={4} /></div>)}</Panel></TabsContent>
+        <TabsContent value="Timeline" className="mt-4">
+          <Panel>
+            <SectionHeading title="مسیر ورزشکار" subtitle="از ارزیابی تا وضعیت فعلی" />
+            <ol className="relative space-y-5 border-s border-border ps-5">
+              {[
+                { t: "ارزیابی", d: "ارزیابی عمومی و رشته‌ای تکمیل شد", when: a.identity.createdAt },
+                { t: "نقطه شروع", d: `شاخص عملکرد پایه ${Math.max(20, item.performanceIndex - 12)}`, when: "هفته ۱" },
+                { t: "برنامه", d: `شروع برنامه · ${item.nextWorkout}`, when: "هفته ۲" },
+                { t: "سنجش", d: "اولین بنچمارک/تست دوره‌ای", when: "هفته ۶" },
+                { t: "پیشرفت", d: `روند ${item.trend > 0 ? "+" : ""}${item.trend} در چهار هفته اخیر`, when: "هفته ۱۰" },
+                { t: "وضعیت فعلی", d: `آمادگی ${item.readiness} · پایبندی ${Math.round(item.adherence * 100)}٪`, when: "امروز" },
+              ].map((e, i, arr) => (
+                <li key={e.t} className="relative"><span className={`absolute -start-[27px] top-1 size-3 rounded-full ${i === arr.length - 1 ? "bg-primary" : "bg-muted-foreground/50"}`} /><div className="flex flex-wrap items-baseline gap-2"><span className="font-bold">{e.t}</span><span className="num text-[11px] text-muted-foreground">{e.when}</span></div><p className="text-sm text-muted-foreground">{e.d}</p></li>
+              ))}
+            </ol>
+          </Panel>
+        </TabsContent>
+
+        <TabsContent value="Nutrition" className="mt-4">
+          {item.packageId && PACKAGES[item.packageId].includes.nutrition ? (
+            <Panel>
+              <SectionHeading title="تغذیه" subtitle={`بسته ${PACKAGES[item.packageId].name}`} />
+              <Stat label="پایبندی تغذیه" value={item.nutritionAdherence !== undefined ? `${Math.round(item.nutritionAdherence * 100)}٪` : "—"} />
+              {isDemo && <ul className="mt-4 space-y-2 text-sm">{nutritionService.getDailyPlan(a.id, "training").meals.map((m) => <li key={m.id} className="rounded-lg bg-muted/40 p-2"><b>{m.title}</b> · {m.idea}</li>)}</ul>}
+              <Button asChild size="sm" variant="outline" className="mt-4"><Link to="/coach/assistant" search={{ athlete: a.id }}>پیش‌نویس تغذیه</Link></Button>
+            </Panel>
+          ) : <Panel className="text-center text-sm text-muted-foreground">این ورزشکار بسته تغذیه ندارد.</Panel>}
+        </TabsContent>
+
+        <TabsContent value="Wearables" className="mt-4">
+          <Panel>
+            <SectionHeading title="دستگاه‌ها و داده سلامت" subtitle="بدون اتصال واقعی · داده دستی" />
+            {healthDataService.listConnections(a.id).map((c) => <div key={c.id} className="mb-2 flex justify-between rounded-lg bg-muted/40 p-2 text-sm"><span>{PROVIDER_LABEL[c.provider]}</span><span className="text-xs text-muted-foreground">{CONNECTION_STATUS_LABEL[c.status]}</span></div>)}
+            {(() => { const latest = healthDataService.latestByType(a.id); const keys = Object.keys(latest) as HealthMetricType[]; return keys.length ? <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{keys.map((k) => <Stat key={k} label={METRIC_DEFS[k].label} value={latest[k]!.value} unit={latest[k]!.unit} />)}</div> : <p className="text-sm text-muted-foreground">این ورزشکار هنوز داده سلامتی ثبت نکرده.</p>; })()}
+          </Panel>
+        </TabsContent>
+
+        <TabsContent value="Body Analysis" className="mt-4">
+          <Panel>
+            <SectionHeading title="آنالیز بدن" />
+            {(() => { const recs = bodyAnalysisService.list(a.id); return recs.length ? <div className="divide-y divide-border/60">{recs.map((r) => <div key={r.id} className="num grid grid-cols-4 gap-2 py-2 text-sm"><span className="text-xs text-muted-foreground">{r.measuredAt}</span><span>{r.weightKg} kg</span><span>{r.bodyFatPct ?? "—"} %</span><span>{r.skeletalMuscleKg ?? "—"} SMM</span></div>)}</div> : <p className="text-sm text-muted-foreground">آنالیز بدنی ثبت نشده.</p>; })()}
+          </Panel>
+        </TabsContent>
+
+        <TabsContent value="Feedback" className="mt-4">
+          <Panel>
+            <SectionHeading title="بازخورد ورزشکار" />
+            {isDemo ? <ul className="space-y-2 text-sm">{nutritionService.feedback(a.id).map((f) => <li key={f.date} className="num flex justify-between rounded-lg bg-muted/40 p-2"><span>{f.date}</span><span className="text-xs text-muted-foreground">پایبندی {Math.round(f.adherence * 100)}٪ · انرژی {f.energy}/5 · گرسنگی {f.hunger}/5</span></li>)}</ul> : <p className="text-sm text-muted-foreground">هنوز بازخوردی ثبت نشده.</p>}
+          </Panel>
+        </TabsContent>
       </Tabs>
     </AppShell>
   );

@@ -10,6 +10,8 @@ import type { AssessmentAnswers } from "@/domain/types";
 import { BodyAnalysisIntake, emptyBodyIntake, toBodyInput, type BodyIntakeState } from "@/components/domain/body-analysis";
 import { zodErrors } from "@/components/domain/body-analysis-dialog";
 import { bodyAnalysisService } from "@/services/body-analysis/service";
+import { WearableIntake, type WearableIntakeState } from "@/components/domain/health-data";
+import { healthDataService } from "@/services/health-data/service";
 
 export const Route = createFileRoute("/assessment/common")({
   head: () => ({
@@ -32,6 +34,7 @@ function CommonAssessment() {
   const template = assessmentEngine.getCommonTemplate();
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
   const [body, setBody] = useState<BodyIntakeState>(emptyBodyIntake);
+  const [wearable, setWearable] = useState<WearableIntakeState>({ providers: [] });
   const [bodyErrors, setBodyErrors] = useState<Record<string, string>>({});
   const completion = useMemo(() => assessmentEngine.completion(template, answers), [template, answers]);
 
@@ -51,6 +54,7 @@ function CommonAssessment() {
               <AssessmentSectionCard key={s.id} section={s} answers={answers} index={i} onChange={(id, v) => setAnswers((a) => ({ ...a, [id]: v }))} />
             ))}
             <BodyAnalysisIntake state={body} onChange={setBody} errors={bodyErrors} />
+            <WearableIntake state={wearable} onChange={setWearable} />
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -69,6 +73,7 @@ function CommonAssessment() {
                     if (!parsed.success) { setBodyErrors(zodErrors(parsed.error.issues)); return; }
                     bodyAnalysisService.add("ath_001", parsed.data);
                   }
+                  if (wearable.intent) healthDataService.setIntent("ath_001", wearable.intent, wearable.providers);
                   await assessmentEngine.submit("ath_001", template.id, answers);
                   navigate({ to: "/assessment/sport", search: {} });
                 }}

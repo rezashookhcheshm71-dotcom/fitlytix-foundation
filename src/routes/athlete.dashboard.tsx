@@ -13,10 +13,18 @@ import type { SportId } from "@/domain/types";
 import { athleteDashboardService } from "@/services/athlete/dashboard";
 import { bodyAnalysisService } from "@/services/body-analysis/service";
 import { demoAthlete, demoRecovery, demoRecoveryHistory } from "@/mock/athlete";
+import { CoachCards, JourneyBar, PackageNotice, ReadinessCard } from "@/components/domain/coaching";
+import { HealthDataPanel } from "@/components/domain/health-data";
+import { decisionEngine } from "@/services/decision-engine/service";
+import { goalsService } from "@/services/goals/service";
+import { nutritionService } from "@/services/nutrition/service";
+import { subscriptionService } from "@/services/subscriptions/service";
 
 const searchSchema = z.object({
   sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional(),
   body: z.enum(["empty", "single"]).optional(),
+  pkg: z.enum(["training", "nutrition", "combined"]).optional(),
+  health: z.enum(["empty"]).optional(),
 });
 
 export const Route = createFileRoute("/athlete/dashboard")({
@@ -32,7 +40,8 @@ export const Route = createFileRoute("/athlete/dashboard")({
 });
 
 function AthleteDashboard() {
-  const { sport: selectedSport, body } = Route.useSearch();
+  const { sport: selectedSport, body, pkg, health } = Route.useSearch();
+  const [healthVersion, setHealthVersion] = useState(0);
   const navigate = useNavigate();
   const sport: SportId = selectedSport ?? demoAthlete.primarySport;
   const data = athleteDashboardService.getSnapshot(demoAthlete.id, sport);
@@ -46,13 +55,40 @@ function AthleteDashboard() {
     return body === "empty" ? [] : body === "single" ? all.slice(-1) : all;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body, bodyVersion]);
+  const pack = subscriptionService.getPackage(demoAthlete.id, pkg);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const ctx = useMemo(() => decisionEngine.context(demoAthlete.id, sport, pkg), [sport, pkg, healthVersion]);
+  const recs = decisionEngine.recommend(ctx);
+  const goal = goalsService.primary(demoAthlete.id, sport);
+  const nutritionPlan = nutritionService.getDailyPlan(demoAthlete.id, ctx.readiness.level === "ready" ? "hard" : "training");
 
   return (
     <AppShell mode="athlete" userName={name} userRole={`${sportMeta.name} · ${data.level}`}>
       <div className="mb-5 flex flex-wrap gap-2 pb-1" aria-label="نمایش نمونه رشته">
         {SPORT_LIST.map((item) => <Button key={item.id} size="sm" variant={sport === item.id ? "default" : "outline"} onClick={() => navigate({ to: "/athlete/dashboard", search: { sport: item.id }, replace: true })}>{item.name}</Button>)}
       </div>
+      <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="بسته نمایشی">
+        <span className="text-[11px] text-muted-foreground">بسته (نمایشی):</span>
+        {(["training", "nutrition", "combined"] as const).map((id) => <Button key={id} size="sm" variant={pack.id === id ? "secondary" : "ghost"} onClick={() => navigate({ to: "/athlete/dashboard", search: { sport, pkg: id }, replace: true })}>{subscriptionService.getPackage(demoAthlete.id, id).name}</Button>)}
+      </div>
 
+      <CoachCards recs={recs} />
+
+      {goal && (
+        <Panel className="mb-6">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><span className="text-xs font-bold text-muted-foreground">هدف اصلی</span><h2 className="font-bold">{goal.title}</h2></div><Link to="/athlete/goals" search={{ sport }} className="text-xs font-semibold text-primary">همه هدف‌ها</Link></div>
+          <JourneyBar stage={goalsService.journeyStage(goal)} />
+        </Panel>
+      )}
+
+      {!pack.includes.training && (
+        <section className="mb-6 grid gap-4 lg:grid-cols-2">
+          <PackageNotice included={false} what="training" />
+          <ReadinessCard r={ctx.readiness} />
+        </section>
+      )}
+
+      {pack.includes.training && <>
       <section className="mb-6 grid gap-4 lg:grid-cols-[1.35fr_1fr]">
         <div className="relative overflow-hidden rounded-2xl bg-gradient-carbon p-6 ring-1 ring-border md:p-8 animate-rise">
           <div className="relative">
@@ -96,12 +132,23 @@ function AthleteDashboard() {
         </Panel>
       </section>
 
+      </>}
+
+      {pack.includes.nutrition ? (
+        <Panel className="mb-6">
+          <SectionHeading title="تغذیه امروز" subtitle={nutritionPlan.notes[0]} action={{ label: "برنامه کامل", to: "/athlete/nutrition" }} />
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{nutritionPlan.meals.map((m) => <div key={m.id} className="rounded-xl bg-muted/40 p-3"><div className="text-xs font-bold">{m.title}</div><div className="text-[11px] text-muted-foreground">{m.timing}</div><p className="mt-1 text-xs leading-6">{m.idea}</p></div>)}</div>
+        </Panel>
+      ) : <div className="mb-6"><PackageNotice included={false} what="nutrition" /></div>}
+
+      <HealthDataPanel athleteId={demoAthlete.id} empty={health === "empty"} version={healthVersion} onChanged={() => setHealthVersion((v) => v + 1)} />
+
       <BodyChangesPanel records={bodyRecords} sport={sport} onAdd={() => setAddOpen(true)} />
       <AddBodyAnalysisDialog open={addOpen} onOpenChange={setAddOpen} athleteId={demoAthlete.id} onSaved={() => setBodyVersion((v) => v + 1)} />
 
       <section className="mb-6 grid gap-4 lg:grid-cols-[1.1fr_1fr]">
         <Panel><SectionHeading title="برداشت این هفته" subtitle={sportMeta.name} /><div className="space-y-3">{data.dna.insights.map((insight) => <div key={insight.label} className="grid grid-cols-[90px_1fr] gap-3 border-b border-border/60 pb-3 last:border-0"><span className="text-xs font-semibold text-muted-foreground">{insight.label}</span><p className="text-sm">{insight.text}</p></div>)}</div></Panel>
-        <Panel><SectionHeading title="جلسات اخیر" subtitle="سه جلسه آخر" action={{ label: "تاریخچه", to: "/athlete/performance" }} /><div className="divide-y divide-border/60">{data.sessions.map((session) => <div key={`${session.date}-${session.title}`} className="grid grid-cols-[75px_1fr_auto] items-center gap-3 py-3"><span className="text-xs text-muted-foreground">{session.date}</span><div><div className="text-sm font-semibold">{session.title}</div><div className="text-xs text-muted-foreground">{session.load}</div></div><span className="font-mono text-sm font-bold">{session.result}</span></div>)}</div></Panel>
+        {pack.includes.training && <Panel><SectionHeading title="جلسات اخیر" subtitle="سه جلسه آخر" action={{ label: "تاریخچه", to: "/athlete/performance" }} /><div className="divide-y divide-border/60">{data.sessions.map((session) => <div key={`${session.date}-${session.title}`} className="grid grid-cols-[75px_1fr_auto] items-center gap-3 py-3"><span className="text-xs text-muted-foreground">{session.date}</span><div><div className="text-sm font-semibold">{session.title}</div><div className="text-xs text-muted-foreground">{session.load}</div></div><span className="font-mono text-sm font-bold">{session.result}</span></div>)}</div></Panel>}
       </section>
     </AppShell>
   );
