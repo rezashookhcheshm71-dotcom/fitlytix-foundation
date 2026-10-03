@@ -13,7 +13,45 @@ export const HEALTH_PROVIDERS = ["garmin", "apple_health", "google_health_connec
 export type HealthProvider = (typeof HEALTH_PROVIDERS)[number];
 export type HealthSource = HealthProvider | "manual";
 export type ConnectionStatus = "not_connected" | "ready_to_connect" | "connected" | "sync_error" | "manual";
-export type WearableIntent = "yes" | "no" | "later";
+/** yes = owns a device; manual = will enter data by hand; no = not using one; later = undecided. */
+export type WearableIntent = "yes" | "no" | "later" | "manual";
+
+/** How a provider reaches FitLytix in the future (drives Phase 2 connector work, not UI logic). */
+export type ProviderTransport = "mobile_bridge" | "cloud_oauth" | "none";
+export const PROVIDER_TRANSPORT: Record<HealthProvider, ProviderTransport> = {
+  apple_health: "mobile_bridge",
+  google_health_connect: "mobile_bridge",
+  samsung: "mobile_bridge",
+  garmin: "cloud_oauth",
+  whoop: "cloud_oauth",
+  oura: "cloud_oauth",
+  polar: "cloud_oauth",
+  fitbit: "cloud_oauth",
+  other: "none",
+};
+
+export type HealthScope = "workouts" | "heart_rate" | "hrv" | "sleep" | "activity" | "body" | "recovery";
+export const HEALTH_SCOPE_LABEL: Record<HealthScope, string> = {
+  workouts: "جلسه‌های تمرین",
+  heart_rate: "ضربان قلب",
+  hrv: "HRV",
+  sleep: "خواب",
+  activity: "قدم و فعالیت روزانه",
+  body: "وزن و ترکیب بدن",
+  recovery: "ریکاوری / آمادگی",
+};
+/** Scopes we plan to request per provider once a real connector exists. */
+export const PROVIDER_SCOPES: Record<HealthProvider, HealthScope[]> = {
+  garmin: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
+  apple_health: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
+  google_health_connect: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
+  whoop: ["workouts", "heart_rate", "hrv", "sleep", "recovery"],
+  oura: ["heart_rate", "hrv", "sleep", "activity", "recovery"],
+  polar: ["workouts", "heart_rate", "hrv", "sleep", "activity"],
+  samsung: ["workouts", "heart_rate", "sleep", "activity", "body"],
+  fitbit: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
+  other: [],
+};
 
 export const PROVIDER_LABEL: Record<HealthSource, string> = {
   garmin: "Garmin",
@@ -30,7 +68,7 @@ export const PROVIDER_LABEL: Record<HealthSource, string> = {
 
 export const CONNECTION_STATUS_LABEL: Record<ConnectionStatus, string> = {
   not_connected: "وصل نیست",
-  ready_to_connect: "آماده اتصال",
+  ready_to_connect: "انتخاب شده · اتصال در نسخه بعدی",
   connected: "وصل",
   sync_error: "خطا در همگام‌سازی",
   manual: "ورود دستی",
@@ -41,14 +79,21 @@ export interface HealthProviderConnection {
   athleteId: string;
   provider: HealthProvider;
   status: ConnectionStatus;
+  /** Granted scopes — empty until a real connector grants them. */
+  scopes?: HealthScope[];
   externalAccountId?: string;
+  connectedAt?: string;
   lastSyncAt?: string;
   lastError?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
 
-export type HealthMetricType = "resting_hr" | "hrv" | "sleep_duration" | "vo2max" | "weight" | "body_fat" | "steps" | "training_load";
+/** Canonical metric types every provider normalizes into (see services/health-data/normalize.ts). */
+export type HealthMetricType =
+  | "heart_rate" | "resting_hr" | "hrv" | "sleep_duration" | "sleep_score" | "steps" | "active_calories"
+  | "workout" | "training_load" | "vo2max" | "weight" | "body_fat" | "respiratory_rate" | "recovery" | "readiness" | "stress";
 
 export interface HealthMetric {
   id: string;
@@ -67,16 +112,25 @@ export interface HealthMetric {
   createdAt: string;
 }
 
-export const METRIC_DEFS: Record<HealthMetricType, { label: string; unit: string; min: number; max: number; step?: number }> = {
-  resting_hr: { label: "ضربان استراحت", unit: "bpm", min: 25, max: 130 },
-  hrv: { label: "HRV", unit: "ms", min: 5, max: 300 },
-  sleep_duration: { label: "خواب", unit: "ساعت", min: 0, max: 16, step: 0.1 },
-  vo2max: { label: "VO2max", unit: "ml/kg/min", min: 15, max: 95 },
-  weight: { label: "وزن", unit: "kg", min: 30, max: 300, step: 0.1 },
-  body_fat: { label: "درصد چربی", unit: "%", min: 2, max: 65, step: 0.1 },
-  steps: { label: "قدم", unit: "قدم", min: 0, max: 100000 },
-  training_load: { label: "بار تمرین", unit: "AU", min: 0, max: 3000 },
+export const METRIC_DEFS: Record<HealthMetricType, { label: string; unit: string; min: number; max: number; step?: number; manual?: boolean }> = {
+  resting_hr: { label: "ضربان استراحت", unit: "bpm", min: 25, max: 130, manual: true },
+  hrv: { label: "HRV", unit: "ms", min: 5, max: 300, manual: true },
+  sleep_duration: { label: "خواب", unit: "ساعت", min: 0, max: 16, step: 0.1, manual: true },
+  vo2max: { label: "VO2max", unit: "ml/kg/min", min: 15, max: 95, manual: true },
+  weight: { label: "وزن", unit: "kg", min: 30, max: 300, step: 0.1, manual: true },
+  body_fat: { label: "درصد چربی", unit: "%", min: 2, max: 65, step: 0.1, manual: true },
+  steps: { label: "قدم", unit: "قدم", min: 0, max: 100000, manual: true },
+  training_load: { label: "بار تمرین", unit: "AU", min: 0, max: 3000, manual: true },
+  heart_rate: { label: "ضربان قلب", unit: "bpm", min: 25, max: 230 },
+  sleep_score: { label: "امتیاز خواب", unit: "/100", min: 0, max: 100 },
+  active_calories: { label: "کالری فعال", unit: "kcal", min: 0, max: 10000 },
+  workout: { label: "جلسه تمرین", unit: "min", min: 0, max: 600 },
+  respiratory_rate: { label: "تنفس", unit: "br/min", min: 4, max: 60 },
+  recovery: { label: "ریکاوری", unit: "/100", min: 0, max: 100 },
+  readiness: { label: "آمادگی", unit: "/100", min: 0, max: 100 },
+  stress: { label: "استرس", unit: "/100", min: 0, max: 100 },
 };
+export const MANUAL_METRICS = (Object.keys(METRIC_DEFS) as HealthMetricType[]).filter((k) => METRIC_DEFS[k].manual);
 
 export const manualHealthInputSchema = z
   .object({
