@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Plus, Watch, Link2 } from "lucide-react";
+import { Check, Link2, PenLine, Plus, ShieldCheck, Unplug, Watch, WatchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -8,61 +8,94 @@ import { cn } from "@/lib/utils";
 import {
   CONNECTION_STATUS_LABEL,
   HEALTH_PROVIDERS,
+  HEALTH_SCOPE_LABEL,
+  MANUAL_METRICS,
   METRIC_DEFS,
   PROVIDER_LABEL,
+  PROVIDER_SCOPES,
   type ConnectionStatus,
   type HealthMetricType,
   type HealthProvider,
+  type HealthProviderConnection,
   type WearableIntent,
 } from "@/domain/types";
 import { healthDataService } from "@/services/health-data/service";
 import { Panel, Pill, SectionHeading } from "./primitives";
+
+export const PRIVACY_NOTE = "دسترسی به داده‌های سلامت اختیاری است. فقط داده‌هایی که اجازه می‌دهی برای تحلیل تمرین و ریکاوری FitLytix استفاده می‌شوند.";
+const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("fa-IR") : undefined);
 
 /* Assessment intake ------------------------------------------------------- */
 
 export type WearableIntakeState = { intent?: WearableIntent | undefined; providers: HealthProvider[] };
 
 export function WearableIntake({ state, onChange }: { state: WearableIntakeState; onChange: (s: WearableIntakeState) => void }) {
-  const choices: { v: WearableIntent; l: string }[] = [
-    { v: "yes", l: "بله" },
-    { v: "no", l: "خیر" },
-    { v: "later", l: "مطمئن نیستم / بعداً" },
-  ];
+  const toggle = (p: HealthProvider) => {
+    const providers = state.providers.includes(p) ? state.providers.filter((x) => x !== p) : [...state.providers, p];
+    onChange({ providers, intent: providers.length ? "yes" : undefined });
+  };
+  const exclusive = (intent: "no" | "manual") => onChange(state.intent === intent ? { providers: [] } : { intent, providers: [] });
+  const tile = (on: boolean) =>
+    cn("h-auto min-h-11 justify-start gap-2 rounded-xl px-3 py-2 text-start text-xs font-semibold whitespace-normal", on ? "border-primary bg-primary-soft text-primary" : "bg-muted/40 text-muted-foreground");
+
   return (
-    <section className="card-surface rounded-2xl p-5 md:p-6" aria-labelledby="wearable-title">
-      <div className="mb-4 flex items-start gap-3">
+    <section className="card-surface animate-rise relative overflow-hidden rounded-2xl p-5 md:p-6" style={{ borderInlineStartWidth: 3, borderInlineStartColor: "var(--primary)" }} aria-labelledby="wearable-title">
+      <header className="mb-4 flex items-start gap-3">
         <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"><Watch className="size-5" /></span>
         <div>
-          <h3 id="wearable-title" className="text-base font-bold">از ساعت یا اپ سلامت استفاده می‌کنی؟</h3>
-          <p className="text-xs leading-6 text-muted-foreground">خواب، HRV و بار تمرین کمک می‌کند شدت جلسه‌ها را بهتر با حال واقعی بدنت تنظیم کنیم. اتصال بعداً از داشبورد انجام می‌شود.</p>
+          <h3 id="wearable-title" className="text-base font-bold">از ساعت یا سنسور هوشمند استفاده می‌کنی؟</h3>
+          <p className="text-xs leading-6 text-muted-foreground">با اتصال داده‌های تمرین، خواب و ریکاوری، FitLytix می‌تواند شناخت دقیق‌تری از عملکرد و وضعیت بدنت داشته باشد.</p>
         </div>
+      </header>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="منبع داده سلامت">
+        {HEALTH_PROVIDERS.map((p) => {
+          const on = state.providers.includes(p);
+          return (
+            <Button key={p} type="button" variant="outline" aria-pressed={on} onClick={() => toggle(p)} className={tile(on)}>
+              {on ? <Check className="size-3.5 shrink-0" /> : <WatchIcon className="size-3.5 shrink-0 opacity-50" />}{PROVIDER_LABEL[p]}
+            </Button>
+          );
+        })}
       </div>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="استفاده از ساعت هوشمند">
-        {choices.map((c) => (
-          <Button key={c.v} type="button" role="radio" aria-checked={state.intent === c.v} size="sm" variant={state.intent === c.v ? "default" : "outline"} onClick={() => onChange({ ...state, intent: c.v })}>{c.l}</Button>
-        ))}
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <Button type="button" variant="outline" aria-pressed={state.intent === "manual"} onClick={() => exclusive("manual")} className={tile(state.intent === "manual")}><PenLine className="size-3.5 shrink-0" />اطلاعاتم را دستی وارد می‌کنم</Button>
+        <Button type="button" variant="outline" aria-pressed={state.intent === "no"} onClick={() => exclusive("no")} className={tile(state.intent === "no")}>فعلاً استفاده نمی‌کنم</Button>
       </div>
-      {state.intent === "yes" && (
-        <div className="mt-4">
-          <div className="mb-2 text-xs font-semibold">از کدام استفاده می‌کنی؟</div>
-          <div className="flex flex-wrap gap-1.5">
-            {HEALTH_PROVIDERS.map((p) => {
-              const on = state.providers.includes(p);
-              return (
-                <Button key={p} type="button" size="sm" variant="outline" aria-pressed={on} onClick={() => onChange({ ...state, providers: on ? state.providers.filter((x) => x !== p) : [...state.providers, p] })}
-                  className={cn("h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs", on ? "border-primary bg-primary-soft text-primary" : "bg-muted/40 text-muted-foreground")}>
-                  {PROVIDER_LABEL[p]}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
+        {state.intent === "yes" ? "عالی؛ اتصال بعد از ساخت حساب از داشبورد انجام می‌شود. الان فقط منبع را مشخص می‌کنی." : "اختیاری است و هر وقت خواستی می‌توانی تغییرش بدهی."}
+      </p>
     </section>
   );
 }
 
-/* Dashboard panel --------------------------------------------------------- */
+/* Privacy / permission step ---------------------------------------------- */
+
+export function ConnectPermissionDialog({ provider, onOpenChange }: { provider: HealthProvider | null; onOpenChange: (o: boolean) => void }) {
+  const result = provider ? healthDataService.requestConnect(provider) : null;
+  return (
+    <Dialog open={provider !== null} onOpenChange={onOpenChange}>
+      <DialogContent dir="rtl" className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><ShieldCheck className="size-5 text-primary" />اتصال {provider ? PROVIDER_LABEL[provider] : ""}</DialogTitle>
+          <DialogDescription className="leading-6">{PRIVACY_NOTE} هر زمان بخواهی می‌توانی دسترسی‌ها را تغییر بدهی یا کامل قطع کنی.</DialogDescription>
+        </DialogHeader>
+        {provider && PROVIDER_SCOPES[provider].length > 0 && (
+          <div>
+            <div className="mb-2 text-xs font-semibold">داده‌هایی که درخواست خواهد شد:</div>
+            <div className="flex flex-wrap gap-1.5">{PROVIDER_SCOPES[provider].map((s) => <Pill key={s}>{HEALTH_SCOPE_LABEL[s]}</Pill>)}</div>
+          </div>
+        )}
+        {result && !result.available && <p role="status" className="rounded-lg bg-info/10 p-3 text-xs leading-6 text-info">{result.message}</p>}
+        <DialogFooter className="gap-2">
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>بستن</Button>
+          <Button variant="hero" disabled={!result?.available}>{result?.available ? "ادامه" : "به‌زودی"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* Connections list -------------------------------------------------------- */
 
 const statusColor: Record<ConnectionStatus, string> = {
   not_connected: "var(--muted-foreground)",
@@ -72,58 +105,89 @@ const statusColor: Record<ConnectionStatus, string> = {
   manual: "var(--primary)",
 };
 
+export function WearableConnections({ athleteId, connections, onChanged }: { athleteId: string; connections: HealthProviderConnection[]; onChanged: () => void }) {
+  const [connecting, setConnecting] = useState<HealthProvider | null>(null);
+  if (!connections.length) return null;
+  return (
+    <>
+      <ul className="mb-4 divide-y divide-border/60 rounded-xl bg-muted/30" aria-label="دستگاه‌ها">
+        {connections.map((c) => (
+          <li key={c.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-semibold">{PROVIDER_LABEL[c.provider]}</span>
+                <Pill color={statusColor[c.status]}>{CONNECTION_STATUS_LABEL[c.status]}</Pill>
+              </div>
+              <dl className="mt-1 grid grid-cols-2 gap-x-4 text-[11px] text-muted-foreground">
+                <div>تاریخ اتصال: <span className="num">{fmtDate(c.connectedAt) ?? "—"}</span></div>
+                <div>آخرین همگام‌سازی: <span className="num">{fmtDate(c.lastSyncAt) ?? "هنوز نه"}</span></div>
+                <div className="col-span-2">دسترسی‌ها: {c.scopes?.length ? c.scopes.map((s) => HEALTH_SCOPE_LABEL[s]).join("، ") : "هنوز دسترسی‌ای داده نشده"}</div>
+              </dl>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button size="sm" variant="outline" onClick={() => setConnecting(c.provider)}><Link2 /> اتصال</Button>
+              <Button size="sm" variant="ghost" aria-label={`حذف ${PROVIDER_LABEL[c.provider]}`} onClick={() => { healthDataService.disconnect(athleteId, c.id); onChanged(); }}><Unplug /> حذف</Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <ConnectPermissionDialog provider={connecting} onOpenChange={(o) => !o && setConnecting(null)} />
+    </>
+  );
+}
+
+/* Smart Health Data panel (dashboard + health page) ----------------------- */
+
+const SLOTS: HealthMetricType[] = ["hrv", "resting_hr", "sleep_duration", "vo2max", "recovery"];
+
 export function HealthDataPanel({ athleteId, empty, version, onChanged }: { athleteId: string; empty?: boolean; version: number; onChanged: () => void }) {
   const [manualOpen, setManualOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   void version;
   const connections = empty ? [] : healthDataService.listConnections(athleteId);
   const latest = empty ? {} : healthDataService.latestByType(athleteId);
-  const keys = Object.keys(latest) as HealthMetricType[];
   const status: ConnectionStatus = empty ? "not_connected" : healthDataService.overallStatus(athleteId);
+  const hasAny = Object.keys(latest).length > 0;
+  const isDemo = Object.values(latest).some((m) => m?.metadata?.["demo"] === true);
+  const emptyCopy =
+    status === "ready_to_connect" ? "دستگاهت را انتخاب کرده‌ای؛ اتصال مستقیم در نسخه بعدی فعال می‌شود. تا آن موقع می‌توانی دستی ثبت کنی."
+    : status === "connected" ? "دستگاه وصل است ولی هنوز داده‌ای همگام نشده."
+    : "ساعت نداری؟ مشکلی نیست؛ خواب و ضربان استراحت را دستی وارد کن.";
 
   return (
     <Panel className="mb-6">
-      <SectionHeading title="دستگاه‌ها و داده‌های سلامت" subtitle="ساعت، اپ سلامت یا ورود دستی" />
+      <SectionHeading title="داده‌های هوشمند" subtitle="ساعت، اپ سلامت یا ورود دستی" />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Pill color={statusColor[status]}>{CONNECTION_STATUS_LABEL[status]}</Pill>
+        {isDemo && <Pill>نمونه نمایشی</Pill>}
         <Button size="sm" variant="outline" onClick={() => setManualOpen(true)}><Plus /> ورود دستی</Button>
-        <Link to="/athlete/health" className="text-xs font-semibold text-primary">جزئیات</Link>
+        <Link to="/athlete/health" className="text-xs font-semibold text-primary">مدیریت دستگاه‌ها</Link>
       </div>
 
-      {connections.length > 0 && (
-        <ul className="mb-4 divide-y divide-border/60 rounded-xl bg-muted/30">
-          {connections.map((c) => (
-            <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
-              <div>
-                <div className="text-sm font-semibold">{PROVIDER_LABEL[c.provider]}</div>
-                <div className="text-[11px] text-muted-foreground">آخرین همگام‌سازی: {c.lastSyncAt ?? "هنوز همگام‌سازی نشده"}</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Pill color={statusColor[c.status]}>{CONNECTION_STATUS_LABEL[c.status]}</Pill>
-                <Button size="sm" variant="ghost" onClick={() => setNotice(healthDataService.requestConnect(c.provider).message)}><Link2 /> اتصال</Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-      {notice && <p role="status" className="mb-4 rounded-lg bg-info/10 p-3 text-xs leading-6 text-info">{notice}</p>}
+      <WearableConnections athleteId={athleteId} connections={connections} onChanged={onChanged} />
 
-      {keys.length ? (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {keys.map((k) => (
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        {SLOTS.map((k) => {
+          const m = latest[k];
+          return (
             <div key={k} className="rounded-xl bg-muted/40 p-3">
               <div className="text-[11px] text-muted-foreground">{METRIC_DEFS[k].label}</div>
-              <div className="num mt-1 text-lg font-bold">{latest[k]!.value.toLocaleString("en-US")} <span className="text-[10px] font-normal text-muted-foreground">{latest[k]!.unit}</span></div>
-              <div className="text-[10px] text-muted-foreground">{latest[k]!.source === "manual" ? "دستی" : PROVIDER_LABEL[latest[k]!.source]} · {latest[k]!.startTime.slice(0, 10)}</div>
+              {m ? (
+                <>
+                  <div className="num mt-1 text-lg font-bold">{m.value.toLocaleString("en-US")} <span className="text-[10px] font-normal text-muted-foreground">{m.unit}</span></div>
+                  <div className="text-[10px] text-muted-foreground">{PROVIDER_LABEL[m.source]} · <span className="num">{fmtDate(m.startTime)}</span></div>
+                </>
+              ) : (
+                <>
+                  <div className="num mt-1 text-lg font-bold text-muted-foreground/50">—</div>
+                  <div className="text-[10px] text-muted-foreground">هنوز ثبت نشده</div>
+                </>
+              )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-border p-5 text-center">
-          <p className="text-sm font-semibold">هنوز داده سلامتی ثبت نشده.</p>
-          <p className="mt-1 text-xs text-muted-foreground">ساعت نداری؟ مشکلی نیست؛ خواب و ضربان استراحت را دستی وارد کن.</p>
-        </div>
-      )}
+          );
+        })}
+      </div>
+      {!hasAny && <p className="mt-3 text-xs leading-6 text-muted-foreground">{emptyCopy}</p>}
+      <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-5 text-muted-foreground"><ShieldCheck className="mt-0.5 size-3.5 shrink-0" />{PRIVACY_NOTE}</p>
       <ManualHealthDialog open={manualOpen} onOpenChange={setManualOpen} athleteId={athleteId} onSaved={onChanged} />
     </Panel>
   );
@@ -154,7 +218,7 @@ export function ManualHealthDialog({ open, onOpenChange, athleteId, onSaved }: {
           <Input type="datetime-local" dir="ltr" value={measuredAt} onChange={(e) => setMeasuredAt(e.target.value)} className="mt-1 bg-muted/40" />
         </label>
         <div className="grid grid-cols-2 gap-3">
-          {(Object.keys(METRIC_DEFS) as HealthMetricType[]).map((k) => (
+          {MANUAL_METRICS.map((k) => (
             <label key={k} className="text-xs font-semibold">
               <span className="flex justify-between">{METRIC_DEFS[k].label}<span className="font-mono text-[10px] text-muted-foreground">{METRIC_DEFS[k].unit}</span></span>
               <Input dir="ltr" inputMode="decimal" value={vals[k] ?? ""} onChange={(e) => setVals((v) => ({ ...v, [k]: e.target.value }))} aria-invalid={Boolean(errors[k])} className="mt-1 bg-muted/40 font-mono" placeholder="—" />

@@ -34,7 +34,8 @@ function CommonAssessment() {
   const template = assessmentEngine.getCommonTemplate();
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
   const [body, setBody] = useState<BodyIntakeState>(emptyBodyIntake);
-  const [wearable, setWearable] = useState<WearableIntakeState>({ providers: [] });
+  // Restore any earlier selection so going back/forward keeps the choice.
+  const [wearable, setWearable] = useState<WearableIntakeState>(() => ({ intent: healthDataService.intent("ath_001"), providers: healthDataService.selectedProviders("ath_001") }));
   const [bodyErrors, setBodyErrors] = useState<Record<string, string>>({});
   const completion = useMemo(() => assessmentEngine.completion(template, answers), [template, answers]);
 
