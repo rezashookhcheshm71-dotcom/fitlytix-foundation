@@ -13,6 +13,8 @@ import {
   METRIC_DEFS,
   PROVIDER_LABEL,
   PROVIDER_SCOPES,
+  PROVIDER_TRANSPORT,
+  TRANSPORT_NOTE,
   type ConnectionStatus,
   type HealthMetricType,
   type HealthProvider,
@@ -30,11 +32,13 @@ const fmtDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString("fa-IR
 export type WearableIntakeState = { intent?: WearableIntent | undefined; providers: HealthProvider[] };
 
 export function WearableIntake({ state, onChange }: { state: WearableIntakeState; onChange: (s: WearableIntakeState) => void }) {
-  const toggle = (p: HealthProvider) => {
-    const providers = state.providers.includes(p) ? state.providers.filter((x) => x !== p) : [...state.providers, p];
-    onChange({ providers, intent: providers.length ? "yes" : undefined });
-  };
-  const exclusive = (intent: "no" | "manual") => onChange(state.intent === intent ? { providers: [] } : { intent, providers: [] });
+  const choices: { v: WearableIntent; l: string; icon: typeof Watch }[] = [
+    { v: "yes", l: "بله، ساعت/سنسور دارم", icon: Watch },
+    { v: "no", l: "خیر، فعلاً استفاده نمی‌کنم", icon: Unplug },
+    { v: "manual", l: "اطلاعاتم را دستی وارد می‌کنم", icon: PenLine },
+  ];
+  const toggle = (p: HealthProvider) =>
+    onChange({ intent: "yes", providers: state.providers.includes(p) ? state.providers.filter((x) => x !== p) : [...state.providers, p] });
   const tile = (on: boolean) =>
     cn("h-auto min-h-11 justify-start gap-2 rounded-xl px-3 py-2 text-start text-xs font-semibold whitespace-normal", on ? "border-primary bg-primary-soft text-primary" : "bg-muted/40 text-muted-foreground");
 
@@ -44,26 +48,38 @@ export function WearableIntake({ state, onChange }: { state: WearableIntakeState
         <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"><Watch className="size-5" /></span>
         <div>
           <h3 id="wearable-title" className="text-base font-bold">از ساعت یا سنسور هوشمند استفاده می‌کنی؟</h3>
-          <p className="text-xs leading-6 text-muted-foreground">با اتصال داده‌های تمرین، خواب و ریکاوری، FitLytix می‌تواند شناخت دقیق‌تری از عملکرد و وضعیت بدنت داشته باشد.</p>
+          <p className="text-xs leading-6 text-muted-foreground">اگر داده‌های تمرین، خواب و ریکاوری‌ات را با FitLytix به اشتراک بگذاری، می‌توانیم شناخت دقیق‌تری از وضعیت و عملکردت داشته باشیم.</p>
         </div>
       </header>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="منبع داده سلامت">
-        {HEALTH_PROVIDERS.map((p) => {
-          const on = state.providers.includes(p);
+      <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="استفاده از ساعت هوشمند">
+        {choices.map((c) => {
+          const on = state.intent === c.v;
           return (
-            <Button key={p} type="button" variant="outline" aria-pressed={on} onClick={() => toggle(p)} className={tile(on)}>
-              {on ? <Check className="size-3.5 shrink-0" /> : <WatchIcon className="size-3.5 shrink-0 opacity-50" />}{PROVIDER_LABEL[p]}
+            <Button key={c.v} type="button" variant="outline" role="radio" aria-checked={on} className={tile(on)}
+              onClick={() => onChange(on ? { providers: [] } : { intent: c.v, providers: c.v === "yes" ? state.providers : [] })}>
+              <c.icon className="size-3.5 shrink-0" />{c.l}
             </Button>
           );
         })}
       </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <Button type="button" variant="outline" aria-pressed={state.intent === "manual"} onClick={() => exclusive("manual")} className={tile(state.intent === "manual")}><PenLine className="size-3.5 shrink-0" />اطلاعاتم را دستی وارد می‌کنم</Button>
-        <Button type="button" variant="outline" aria-pressed={state.intent === "no"} onClick={() => exclusive("no")} className={tile(state.intent === "no")}>فعلاً استفاده نمی‌کنم</Button>
-      </div>
-      <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-        {state.intent === "yes" ? "عالی؛ اتصال بعد از ساخت حساب از داشبورد انجام می‌شود. الان فقط منبع را مشخص می‌کنی." : "اختیاری است و هر وقت خواستی می‌توانی تغییرش بدهی."}
-      </p>
+      {state.intent === "yes" && (
+        <div className="mt-4 animate-rise">
+          <div className="mb-2 text-xs font-semibold">از کدام دستگاه یا سرویس؟</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="منبع داده سلامت">
+            {HEALTH_PROVIDERS.map((p) => {
+              const on = state.providers.includes(p);
+              return (
+                <Button key={p} type="button" variant="outline" aria-pressed={on} onClick={() => toggle(p)} className={tile(on)}>
+                  {on ? <Check className="size-3.5 shrink-0" /> : <WatchIcon className="size-3.5 shrink-0 opacity-50" />}{PROVIDER_LABEL[p]}
+                </Button>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[11px] leading-5 text-muted-foreground">اتصال بعد از ساخت حساب از داشبورد انجام می‌شود؛ الان فقط منبع را مشخص می‌کنی.</p>
+        </div>
+      )}
+      {state.intent === "manual" && <p className="mt-3 text-[11px] leading-5 text-muted-foreground">بعد از ورود، از داشبورد هر وقت خواستی چند عدد پایه را ثبت کن؛ کاملاً اختیاری است.</p>}
+      <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-5 text-muted-foreground"><ShieldCheck className="mt-0.5 size-3.5 shrink-0" />فقط داده‌هایی که خودت اجازه بدهی استفاده می‌شوند و می‌توانی دسترسی را بعداً مدیریت یا قطع کنی.</p>
     </section>
   );
 }
@@ -85,6 +101,7 @@ export function ConnectPermissionDialog({ provider, onOpenChange }: { provider: 
             <div className="flex flex-wrap gap-1.5">{PROVIDER_SCOPES[provider].map((s) => <Pill key={s}>{HEALTH_SCOPE_LABEL[s]}</Pill>)}</div>
           </div>
         )}
+        {provider && <Pill>{TRANSPORT_NOTE[PROVIDER_TRANSPORT[provider]]}</Pill>}
         {result && !result.available && <p role="status" className="rounded-lg bg-info/10 p-3 text-xs leading-6 text-info">{result.message}</p>}
         <DialogFooter className="gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>بستن</Button>
@@ -99,10 +116,11 @@ export function ConnectPermissionDialog({ provider, onOpenChange }: { provider: 
 
 const statusColor: Record<ConnectionStatus, string> = {
   not_connected: "var(--muted-foreground)",
-  ready_to_connect: "var(--info)",
+  pending: "var(--info)",
   connected: "var(--success)",
-  sync_error: "var(--destructive)",
-  manual: "var(--primary)",
+  syncing: "var(--info)",
+  error: "var(--destructive)",
+  revoked: "var(--muted-foreground)",
 };
 
 export function WearableConnections({ athleteId, connections, onChanged }: { athleteId: string; connections: HealthProviderConnection[]; onChanged: () => void }) {
@@ -147,20 +165,29 @@ export function HealthDataPanel({ athleteId, empty, version, onChanged }: { athl
   const latest = empty ? {} : healthDataService.latestByType(athleteId);
   const status: ConnectionStatus = empty ? "not_connected" : healthDataService.overallStatus(athleteId);
   const hasAny = Object.keys(latest).length > 0;
+  const manualCount = empty ? 0 : healthDataService.listManualEntries(athleteId).length;
+  const sources = empty ? [] : Array.from(new Set(healthDataService.listMetrics(athleteId).map((m) => m.source)));
+  const lastSync = connections.map((c) => c.lastSyncAt).filter(Boolean).sort().at(-1);
   const isDemo = Object.values(latest).some((m) => m?.metadata?.["demo"] === true);
   const emptyCopy =
-    status === "ready_to_connect" ? "دستگاهت را انتخاب کرده‌ای؛ اتصال مستقیم در نسخه بعدی فعال می‌شود. تا آن موقع می‌توانی دستی ثبت کنی."
+    status === "pending" ? "دستگاهت را انتخاب کرده‌ای؛ اتصال مستقیم در نسخه بعدی فعال می‌شود. تا آن موقع می‌توانی دستی ثبت کنی."
     : status === "connected" ? "دستگاه وصل است ولی هنوز داده‌ای همگام نشده."
     : "ساعت نداری؟ مشکلی نیست؛ خواب و ضربان استراحت را دستی وارد کن.";
 
   return (
     <Panel className="mb-6">
-      <SectionHeading title="داده‌های هوشمند" subtitle="ساعت، اپ سلامت یا ورود دستی" />
+      <SectionHeading title="داده‌های سلامت و پوشیدنی‌ها" subtitle="ساعت، اپ سلامت یا ورود دستی" />
+      <dl className="mb-4 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+        <div className="rounded-xl bg-muted/30 p-3"><dt className="text-muted-foreground">دستگاه‌ها</dt><dd className="num mt-1 font-bold">{connections.length}</dd></div>
+        <div className="rounded-xl bg-muted/30 p-3"><dt className="text-muted-foreground">آخرین همگام‌سازی</dt><dd className="num mt-1 font-bold">{fmtDate(lastSync) ?? "هنوز نه"}</dd></div>
+        <div className="rounded-xl bg-muted/30 p-3"><dt className="text-muted-foreground">منابع داده</dt><dd className="mt-1 font-bold">{sources.length ? sources.map((x) => PROVIDER_LABEL[x]).join("، ") : "—"}</dd></div>
+        <div className="rounded-xl bg-muted/30 p-3"><dt className="text-muted-foreground">ثبت دستی</dt><dd className="num mt-1 font-bold">{manualCount}</dd></div>
+      </dl>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Pill color={statusColor[status]}>{CONNECTION_STATUS_LABEL[status]}</Pill>
         {isDemo && <Pill>نمونه نمایشی</Pill>}
         <Button size="sm" variant="outline" onClick={() => setManualOpen(true)}><Plus /> ورود دستی</Button>
-        <Link to="/athlete/health" className="text-xs font-semibold text-primary">مدیریت دستگاه‌ها</Link>
+        <Link to="/athlete/health" className="text-xs font-semibold text-primary">مدیریت اتصال‌ها</Link>
       </div>
 
       <WearableConnections athleteId={athleteId} connections={connections} onChanged={onChanged} />
@@ -197,15 +224,16 @@ export function ManualHealthDialog({ open, onOpenChange, athleteId, onSaved }: {
   const [measuredAt, setMeasuredAt] = useState(() => new Date().toISOString().slice(0, 16));
   const [vals, setVals] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [notes, setNotes] = useState("");
   const save = () => {
     const values = Object.fromEntries(Object.entries(vals).filter(([, v]) => v.trim() !== "").map(([k, v]) => [k, Number(v)]));
-    const parsed = healthDataService.validateManual({ measuredAt, values });
+    const parsed = healthDataService.validateManual({ measuredAt, values, ...(notes.trim() ? { notes } : {}) });
     if (!parsed.success) {
       setErrors(Object.fromEntries(parsed.error.issues.map((i) => [String(i.path.at(-1)), i.message])));
       return;
     }
     healthDataService.addManual(athleteId, parsed.data);
-    setVals({}); setErrors({}); onOpenChange(false); onSaved();
+    setVals({}); setNotes(""); setErrors({}); onOpenChange(false); onSaved();
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -226,6 +254,10 @@ export function ManualHealthDialog({ open, onOpenChange, athleteId, onSaved }: {
             </label>
           ))}
         </div>
+        <label className="text-xs font-semibold">یادداشت (اختیاری)
+          <Input value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} placeholder="مثلاً: بعد از تمرین سنگین دیروز" className="mt-1 bg-muted/40" />
+          {errors["notes"] && <span className="mt-1 block text-[10px] text-destructive">{errors["notes"]}</span>}
+        </label>
         {errors["values"] && <p className="text-xs text-destructive">{errors["values"]}</p>}
         <p className="text-[11px] text-muted-foreground">فعلاً ذخیره‌سازی دائمی وصل نیست؛ با رفرش صفحه پاک می‌شود.</p>
         <DialogFooter className="gap-2">
