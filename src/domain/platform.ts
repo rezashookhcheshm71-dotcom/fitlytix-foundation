@@ -9,10 +9,12 @@ import type { ExperienceLevel, SportId } from "./types";
 
 /* Health / wearables ------------------------------------------------------ */
 
-export const HEALTH_PROVIDERS = ["garmin", "apple_health", "google_health_connect", "whoop", "oura", "polar", "samsung", "fitbit", "other"] as const;
+export const HEALTH_PROVIDERS = ["garmin", "apple_health", "health_connect", "whoop", "oura", "polar", "fitbit", "samsung_health", "other"] as const;
 export type HealthProvider = (typeof HEALTH_PROVIDERS)[number];
 export type HealthSource = HealthProvider | "manual";
-export type ConnectionStatus = "not_connected" | "ready_to_connect" | "connected" | "sync_error" | "manual";
+/** Standard lifecycle for every provider connection. `connected`/`syncing` require a real server-side token. */
+export const CONNECTION_STATUSES = ["not_connected", "pending", "connected", "syncing", "error", "revoked"] as const;
+export type ConnectionStatus = (typeof CONNECTION_STATUSES)[number];
 /** yes = owns a device; manual = will enter data by hand; no = not using one; later = undecided. */
 export type WearableIntent = "yes" | "no" | "later" | "manual";
 
@@ -20,14 +22,19 @@ export type WearableIntent = "yes" | "no" | "later" | "manual";
 export type ProviderTransport = "mobile_bridge" | "cloud_oauth" | "none";
 export const PROVIDER_TRANSPORT: Record<HealthProvider, ProviderTransport> = {
   apple_health: "mobile_bridge",
-  google_health_connect: "mobile_bridge",
-  samsung: "mobile_bridge",
+  health_connect: "mobile_bridge",
+  samsung_health: "mobile_bridge",
   garmin: "cloud_oauth",
   whoop: "cloud_oauth",
   oura: "cloud_oauth",
   polar: "cloud_oauth",
   fitbit: "cloud_oauth",
   other: "none",
+};
+export const TRANSPORT_NOTE: Record<ProviderTransport, string> = {
+  mobile_bridge: "نیازمند اپ موبایل FitLytix",
+  cloud_oauth: "نیازمند اتصال API سرویس",
+  none: "فعلاً فقط ورود دستی",
 };
 
 export type HealthScope = "workouts" | "heart_rate" | "hrv" | "sleep" | "activity" | "body" | "recovery";
@@ -44,11 +51,11 @@ export const HEALTH_SCOPE_LABEL: Record<HealthScope, string> = {
 export const PROVIDER_SCOPES: Record<HealthProvider, HealthScope[]> = {
   garmin: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
   apple_health: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
-  google_health_connect: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
+  health_connect: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
   whoop: ["workouts", "heart_rate", "hrv", "sleep", "recovery"],
   oura: ["heart_rate", "hrv", "sleep", "activity", "recovery"],
   polar: ["workouts", "heart_rate", "hrv", "sleep", "activity"],
-  samsung: ["workouts", "heart_rate", "sleep", "activity", "body"],
+  samsung_health: ["workouts", "heart_rate", "sleep", "activity", "body"],
   fitbit: ["workouts", "heart_rate", "hrv", "sleep", "activity", "body"],
   other: [],
 };
@@ -56,11 +63,11 @@ export const PROVIDER_SCOPES: Record<HealthProvider, HealthScope[]> = {
 export const PROVIDER_LABEL: Record<HealthSource, string> = {
   garmin: "Garmin",
   apple_health: "Apple Watch / Apple Health",
-  google_health_connect: "Google Health Connect",
+  health_connect: "Google Health Connect",
   whoop: "WHOOP",
   oura: "Oura",
   polar: "Polar",
-  samsung: "Samsung Galaxy Watch",
+  samsung_health: "Samsung Health",
   fitbit: "Fitbit",
   other: "سایر",
   manual: "ورود دستی",
@@ -68,10 +75,11 @@ export const PROVIDER_LABEL: Record<HealthSource, string> = {
 
 export const CONNECTION_STATUS_LABEL: Record<ConnectionStatus, string> = {
   not_connected: "وصل نیست",
-  ready_to_connect: "انتخاب شده · اتصال در نسخه بعدی",
+  pending: "انتخاب شده · اتصال به‌زودی",
   connected: "وصل",
-  sync_error: "خطا در همگام‌سازی",
-  manual: "ورود دستی",
+  syncing: "در حال همگام‌سازی",
+  error: "خطا در اتصال",
+  revoked: "دسترسی قطع شد",
 };
 
 export interface HealthProviderConnection {
