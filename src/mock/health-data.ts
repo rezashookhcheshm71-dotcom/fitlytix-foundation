@@ -3,7 +3,7 @@ import type { HealthMetric, HealthMetricType, HealthProviderConnection } from "@
 import { METRIC_DEFS } from "@/domain/platform";
 
 export const DEMO_CONNECTIONS: HealthProviderConnection[] = [
-  { id: "hc_demo_garmin", athleteId: "ath_001", provider: "garmin", status: "ready_to_connect", scopes: [], createdAt: "2026-09-01T08:00:00Z", updatedAt: "2026-09-01T08:00:00Z" },
+  { id: "hc_demo_garmin", athleteId: "ath_001", provider: "garmin", status: "pending", scopes: [], createdAt: "2026-09-01T08:00:00Z", updatedAt: "2026-09-01T08:00:00Z" },
 ];
 
 const days = ["2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28"];

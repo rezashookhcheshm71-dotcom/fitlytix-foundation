@@ -52,9 +52,12 @@ create policy "coach sees own links" on public.coach_athletes for select to auth
 create table public.wearable_connections (
   id uuid primary key default gen_random_uuid(),
   athlete_id uuid not null references public.athletes(id) on delete cascade,
-  provider text not null check (provider in ('garmin','apple_health','google_health_connect','whoop','oura','polar','samsung','fitbit','other')),
-  status text not null default 'not_connected' check (status in ('not_connected','ready_to_connect','connected','sync_error','manual')),
-  external_account_id text,
+  provider text not null check (provider in ('garmin','apple_health','health_connect','whoop','oura','polar','fitbit','samsung_health','other')),
+  status text not null default 'not_connected' check (status in ('not_connected','pending','connected','syncing','error','revoked')),
+  scopes text[] not null default '{}',
+  external_user_id text,
+  connected_at timestamptz,
+  metadata jsonb,
   last_sync_at timestamptz,
   last_error text,
   created_at timestamptz not null default now(),
@@ -76,7 +79,7 @@ grant all on public.wearable_connections to service_role;
 alter table public.wearable_connections enable row level security;
 create policy "athlete/coach read connections" on public.wearable_connections for select to authenticated using (public.can_access_athlete(athlete_id));
 create policy "athlete manages own connections" on public.wearable_connections for insert to authenticated
-  with check (exists (select 1 from public.athletes a where a.id = athlete_id and a.user_id = auth.uid()) and status in ('not_connected','ready_to_connect','manual'));
+  with check (exists (select 1 from public.athletes a where a.id = athlete_id and a.user_id = auth.uid()) and status in ('not_connected','pending'));
 
 create table public.health_metrics (
   id uuid primary key default gen_random_uuid(),
@@ -91,11 +94,33 @@ create table public.health_metrics (
   external_id text,
   device_id text,
   metadata jsonb,
-  raw_payload jsonb,
+  raw_data jsonb,
   created_at timestamptz not null default now(),
   unique (source, external_id)
 );
 create index on public.health_metrics (athlete_id, metric_type, start_time desc);
+-- metric_type stays free text (validated in the app's normalize layer) so new types need no migration.
+
+-- What the athlete typed by hand; each entry is also written to health_metrics with source = 'manual'.
+create table public.manual_health_entries (
+  id uuid primary key default gen_random_uuid(),
+  athlete_id uuid not null references public.athletes(id) on delete cascade,
+  metric_type text not null,
+  value numeric not null,
+  unit text not null,
+  measured_at timestamptz not null,
+  notes text check (char_length(notes) <= 500),
+  created_at timestamptz not null default now()
+);
+create index on public.manual_health_entries (athlete_id, measured_at desc);
+grant select, insert, delete on public.manual_health_entries to authenticated;
+grant all on public.manual_health_entries to service_role;
+alter table public.manual_health_entries enable row level security;
+create policy "read own or coached manual entries" on public.manual_health_entries for select to authenticated using (public.can_access_athlete(athlete_id));
+create policy "athlete writes own manual entries" on public.manual_health_entries for insert to authenticated
+  with check (exists (select 1 from public.athletes a where a.id = athlete_id and a.user_id = auth.uid()));
+create policy "athlete deletes own manual entries" on public.manual_health_entries for delete to authenticated
+  using (exists (select 1 from public.athletes a where a.id = athlete_id and a.user_id = auth.uid()));
 grant select, insert on public.health_metrics to authenticated;
 grant all on public.health_metrics to service_role;
 alter table public.health_metrics enable row level security;
