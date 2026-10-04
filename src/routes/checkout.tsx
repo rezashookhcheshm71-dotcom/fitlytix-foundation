@@ -41,6 +41,7 @@ function Checkout() {
                 <h2 className="text-xl font-extrabold">عضویت آزمایشی فعال شد</h2>
                 <p className="mt-1 text-sm text-muted-foreground">این یک تراکنش نمایشی بود. هیچ مبلغی برداشت نشد.</p>
                 <Button variant="hero" size="lg" className="mt-6" onClick={() => navigate({ to: "/athlete/dashboard" })}>ورود به داشبورد</Button>
+                <Button variant="outline" size="lg" className="mt-3" onClick={() => navigate({ to: "/athlete/health" })}>اتصال داده‌های سلامت</Button>
               </div>
             ) : (
               <>

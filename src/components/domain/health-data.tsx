@@ -33,9 +33,9 @@ export type WearableIntakeState = { intent?: WearableIntent | undefined; provide
 
 export function WearableIntake({ state, onChange }: { state: WearableIntakeState; onChange: (s: WearableIntakeState) => void }) {
   const choices: { v: WearableIntent; l: string; icon: typeof Watch }[] = [
-    { v: "yes", l: "بله، ساعت/سنسور دارم", icon: Watch },
-    { v: "no", l: "خیر، فعلاً استفاده نمی‌کنم", icon: Unplug },
-    { v: "manual", l: "اطلاعاتم را دستی وارد می‌کنم", icon: PenLine },
+    { v: "yes", l: "بله، از ساعت یا سنسور هوشمند استفاده می‌کنم", icon: Watch },
+    { v: "no", l: "نه، فعلاً استفاده نمی‌کنم", icon: Unplug },
+    { v: "manual", l: "اطلاعاتم را فعلاً دستی وارد می‌کنم", icon: PenLine },
   ];
   const toggle = (p: HealthProvider) =>
     onChange({ intent: "yes", providers: state.providers.includes(p) ? state.providers.filter((x) => x !== p) : [...state.providers, p] });
@@ -48,7 +48,7 @@ export function WearableIntake({ state, onChange }: { state: WearableIntakeState
         <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary"><Watch className="size-5" /></span>
         <div>
           <h3 id="wearable-title" className="text-base font-bold">از ساعت یا سنسور هوشمند استفاده می‌کنی؟</h3>
-          <p className="text-xs leading-6 text-muted-foreground">اگر داده‌های تمرین، خواب و ریکاوری‌ات را با FitLytix به اشتراک بگذاری، می‌توانیم شناخت دقیق‌تری از وضعیت و عملکردت داشته باشیم.</p>
+          <p className="text-xs leading-6 text-muted-foreground">اگر داده‌های تمرین و ریکاوری‌ات را با FitLytix به اشتراک بگذاری، می‌توانیم شناخت دقیق‌تری از عملکرد و شرایط بدنت داشته باشیم.</p>
         </div>
       </header>
       <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="استفاده از ساعت هوشمند">
