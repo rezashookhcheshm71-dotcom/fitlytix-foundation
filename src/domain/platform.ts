@@ -132,7 +132,7 @@ export const METRIC_DEFS: Record<HealthMetricType, { label: string; unit: string
   heart_rate: { label: "ضربان قلب", unit: "bpm", min: 25, max: 230 },
   sleep_score: { label: "امتیاز خواب", unit: "/100", min: 0, max: 100 },
   active_calories: { label: "کالری فعال", unit: "kcal", min: 0, max: 10000 },
-  workout: { label: "جلسه تمرین", unit: "min", min: 0, max: 600 },
+  workout: { label: "خلاصه تمرین (مدت)", unit: "min", min: 0, max: 600, manual: true },
   respiratory_rate: { label: "تنفس", unit: "br/min", min: 4, max: 60 },
   recovery: { label: "ریکاوری", unit: "/100", min: 0, max: 100 },
   readiness: { label: "آمادگی", unit: "/100", min: 0, max: 100 },
@@ -144,6 +144,7 @@ export const manualHealthInputSchema = z
   .object({
     measuredAt: z.string().min(8, "تاریخ را وارد کن"),
     values: z.record(z.string(), z.number()),
+    notes: z.string().trim().max(500, "حداکثر ۵۰۰ کاراکتر").optional(),
   })
   .superRefine((v, ctx) => {
     const entries = Object.entries(v.values) as [HealthMetricType, number][];
@@ -155,6 +156,18 @@ export const manualHealthInputSchema = z
     }
   });
 export type ManualHealthInput = z.infer<typeof manualHealthInputSchema>;
+
+/** What the athlete typed (audit trail). Each entry also yields canonical HealthMetric rows with source "manual". */
+export interface ManualHealthEntry {
+  id: string;
+  athleteId: string;
+  metricType: HealthMetricType;
+  value: number;
+  unit: string;
+  measuredAt: string;
+  notes?: string;
+  createdAt: string;
+}
 
 /* Readiness / recovery ---------------------------------------------------- */
 
