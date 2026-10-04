@@ -12,6 +12,7 @@ import type { ExperienceLevel, SportId } from "./types";
 export const HEALTH_PROVIDERS = ["garmin", "apple_health", "health_connect", "whoop", "oura", "polar", "fitbit", "samsung_health", "other"] as const;
 export type HealthProvider = (typeof HEALTH_PROVIDERS)[number];
 export type HealthSource = HealthProvider | "manual";
+export type WearableProvider = HealthProvider;
 /** Standard lifecycle for every provider connection. `connected`/`syncing` require a real server-side token. */
 export const CONNECTION_STATUSES = ["not_connected", "pending", "connected", "syncing", "error", "revoked"] as const;
 export type ConnectionStatus = (typeof CONNECTION_STATUSES)[number];
@@ -67,7 +68,7 @@ export const PROVIDER_LABEL: Record<HealthSource, string> = {
   whoop: "WHOOP",
   oura: "Oura",
   polar: "Polar",
-  samsung_health: "Samsung Health",
+  samsung_health: "Samsung Galaxy Watch / Samsung Health",
   fitbit: "Fitbit",
   other: "سایر",
   manual: "ورود دستی",
@@ -167,6 +168,15 @@ export interface ManualHealthEntry {
   measuredAt: string;
   notes?: string;
   createdAt: string;
+}
+
+export type WearableConnection = HealthProviderConnection;
+/** What the athlete told us in the assessment; no permission is requested at that point. */
+export interface UserWearablePreference {
+  athleteId: string;
+  intent: WearableIntent;
+  providers: HealthProvider[];
+  updatedAt: string;
 }
 
 /* Readiness / recovery ---------------------------------------------------- */

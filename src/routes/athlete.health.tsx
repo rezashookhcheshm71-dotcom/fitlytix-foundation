@@ -24,7 +24,7 @@ function HealthPage() {
   void v;
   return (
     <AppShell mode="athlete" userName={`${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`} userRole="داده سلامت">
-      <PageHeader eyebrow="سلامت" title="ساعت و داده‌های سلامت" description="اتصال مستقیم به Garmin، Apple Health و بقیه به‌زودی؛ فعلاً داده را دستی وارد کن." actions={<MockBadge label="بدون اتصال واقعی" />} />
+      <PageHeader eyebrow="سلامت" title="ساعت و داده‌های سلامت" description="با اتصال داده‌های سلامت و تمرین، FitLytix می‌تواند شناخت دقیق‌تری از تمرین، خواب، ریکاوری و عملکردت داشته باشد. اتصال مستقیم در مرحله بعدی فعال می‌شود." actions={<MockBadge label="بدون اتصال واقعی" />} />
       <HealthDataPanel athleteId={demoAthlete.id} version={v} onChanged={() => setV((x) => x + 1)} />
       <Panel>
         <SectionHeading title="آخرین ثبت‌ها" subtitle="هر ثبت یک رکورد جدا با منبع و زمان" />
