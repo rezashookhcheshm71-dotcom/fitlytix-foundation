@@ -15,6 +15,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
 import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
 import { Route as AthleteDashboardRouteImport } from './routes/athlete.dashboard'
@@ -65,6 +66,11 @@ const PlansRoute = PlansRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssessmentCommonRoute = AssessmentCommonRouteImport.update({
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
   '/register': typeof RegisterRoute
+  '/api/health': typeof ApiHealthRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
   '/register': typeof RegisterRoute
+  '/api/health': typeof ApiHealthRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
   '/register': typeof RegisterRoute
+  '/api/health': typeof ApiHealthRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/plans'
     | '/register'
+    | '/api/health'
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/plans'
     | '/register'
+    | '/api/health'
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/plans'
     | '/register'
+    | '/api/health'
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
@@ -358,6 +370,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlansRoute: typeof PlansRoute
   RegisterRoute: typeof RegisterRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   AssessmentCommonRoute: typeof AssessmentCommonRoute
   AssessmentSportRoute: typeof AssessmentSportRoute
   AthleteDashboardRoute: typeof AthleteDashboardRoute
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assessment/common': {
@@ -582,6 +602,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlansRoute: PlansRoute,
   RegisterRoute: RegisterRoute,
+  ApiHealthRoute: ApiHealthRoute,
   AssessmentCommonRoute: AssessmentCommonRoute,
   AssessmentSportRoute: AssessmentSportRoute,
   AthleteDashboardRoute: AthleteDashboardRoute,
