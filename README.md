@@ -116,3 +116,49 @@ npm run dev
 
 ## Architecture
 See [docs/architecture.md](docs/architecture.md) and the unapplied future schema in docs/schema/future-schema.sql.
+
+## Self-hosted cPanel / Node.js deployment
+
+The production build targets Nitro's **`node-server`** preset (set in `vite.config.ts`) and produces a standalone Node server:
+
+- Output: `.output/` (server entry `.output/server/index.mjs`, static assets `.output/public/`)
+- Start: `npm run start` (= `node .output/server/index.mjs`) or the Passenger startup file `app.js`
+- Health check: `GET /api/health` → `{"ok":true,"service":"fitlytix","environment":"production"}`
+- Node.js: **22** recommended (20.19+ minimum)
+- The server reads `PORT` and `HOST` from the environment; no port is hard-coded.
+
+Host the app on **app.fitlytix.ir**. The existing `fitlytix.ir` landing/WordPress site stays separate.
+
+### Steps
+
+```sh
+# 1. Get the code (first time: git clone <repo-url> ~/fitlytix-app)
+cd ~/fitlytix-app && git pull
+# 2. Install (dev dependencies are needed to build)
+npm install
+# 3. Build → .output/server/index.mjs
+npm run build
+```
+
+4. cPanel → **Setup Node.js App** (Application Manager) → Create / Edit:
+
+| Field | Value |
+| --- | --- |
+| Node.js version | `22.x` (or `20.x` if 22 is unavailable) |
+| Application mode | `Production` |
+| Application root | `fitlytix-app` *(placeholder — the folder you cloned into, relative to home)* |
+| Application URL | `app.fitlytix.ir` *(create the subdomain in cPanel → Domains first)* |
+| Application startup file | `app.js` |
+| Environment variables | `NODE_ENV=production` (do **not** set `PORT`; Passenger assigns it) |
+
+5. Click **Start** (or **Restart** after every new build). Over SSH you can also run `touch tmp/restart.txt` in the application root.
+6. Verify: `curl https://app.fitlytix.ir/api/health` should return HTTP 200 JSON. Optional smoke test on the server: `PORT=3000 npm run start`, then in another shell `PORT=3000 npm run verify:prod`.
+
+See `.env.example` for the only variables used at this stage. Never commit real secrets or put them in `VITE_*` variables.
+
+### Troubleshooting
+
+- **Build fails**: run the build inside the app's Node environment (`source ~/nodevenv/<app-root>/22/bin/activate`), check `node -v` is 20.19+/22, delete `node_modules` and re-run `npm install`. Low-memory hosts may need `NODE_OPTIONS=--max-old-space-size=2048 npm run build`.
+- **Missing startup file / "Cannot find module .output/server/index.mjs"**: the build was not run in the application root, or `.output` was deleted. Run `npm run build` there and restart.
+- **500 error**: check the Passenger/app log shown in cPanel (or `~/logs/`), run `PORT=3000 npm run start` over SSH to see the stack trace, and confirm the Node version.
+- **404 on refresh / deep link**: every route is served by the Node server; make sure the subdomain points to the Node app (not a static `public_html` folder) and no `.htaccess` rewrite in its document root intercepts requests.

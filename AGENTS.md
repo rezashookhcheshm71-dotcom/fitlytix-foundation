@@ -17,3 +17,4 @@
 - Workout completion is local UI state only until a real session/feedback persistence layer exists; never imply saved results.
 - Platform domains (health, readiness, nutrition, goals, decisions, proposals, notifications, packages) are typed in `src/domain/platform.ts` and served by one service per domain under `src/services/*`; UI never imports mock data for these. See docs/architecture.md.
 - Coach proposals are drafts (`needs_review`) until an explicit coach approval; nothing auto-publishes. Wearables never show `connected` without a real server-side token.
+- Production builds target Nitro `node-server` (vite.config.ts) for self-hosted cPanel/Passenger via `app.js`; why: the app is deployed on our own Node server, not a worker host.
