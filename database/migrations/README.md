@@ -25,6 +25,7 @@ These migrations target the current cPanel MySQL/MariaDB schema (UUIDs stored as
    - `wearable_connections`, `wearable_sync_logs`
    - `audit_logs`
 5. Confirm `schema_migrations` contains version `001_fitlytix_product_domains`.
+6. Optionally import `002_fitlytix_core_auth_assessments.sql` to ensure `user_sessions`, `athlete_profiles`, `assessments`, `assessment_answers`, `body_analysis_records`, `health_metrics`, and the 5 canonical `sports` rows (`crossfit`, `hyrox`, `functional`, `bodybuilding`, `running`) are present if any are missing.
 
 If import reports a foreign-key or collation error, stop and share the error text only (do not share credentials). Do not try random ALTER statements.
 

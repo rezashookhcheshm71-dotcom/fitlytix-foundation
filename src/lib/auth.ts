@@ -1,7 +1,45 @@
-import { supabase } from "./supabase";
+export interface SessionUserDto {
+  id: string;
+  athleteId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: "athlete" | "coach" | "head_coach" | "admin";
+  primarySport: string;
+}
 
-export async function signInWithEmail(email: string, password: string) {
-  return supabase.auth.signInWithPassword({ email, password });
+export async function signInWithEmail(
+  email: string,
+  password: string,
+): Promise<{ data: { user: SessionUserDto | null }; error: { message: string } | null }> {
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
+    const json = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      user?: SessionUserDto;
+      error?: string;
+    };
+
+    if (!res.ok || !json.ok || !json.user) {
+      return {
+        data: { user: null },
+        error: { message: json.error ?? "ایمیل یا رمز عبور صحیح نیست." },
+      };
+    }
+
+    return { data: { user: json.user }, error: null };
+  } catch {
+    return {
+      data: { user: null },
+      error: { message: "ارتباط با سرور برقرار نشد. لطفاً اتصال اینترنت خود را بررسی کنید." },
+    };
+  }
 }
 
 export async function signUpWithEmail(input: {
@@ -10,50 +48,85 @@ export async function signUpWithEmail(input: {
   firstName: string;
   lastName: string;
   phone: string;
-}) {
-  return supabase.auth.signUp({
-    email: input.email,
-    password: input.password,
-    options: {
-      data: {
-        first_name: input.firstName,
-        last_name: input.lastName,
-        phone: input.phone,
-      },
-    },
-  });
+}): Promise<{ data: { user: SessionUserDto | null }; error: { message: string } | null }> {
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(input),
+    });
+    const json = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      user?: SessionUserDto;
+      error?: string;
+    };
+
+    if (!res.ok || !json.ok || !json.user) {
+      return {
+        data: { user: null },
+        error: { message: json.error ?? "ثبت‌نام انجام نشد. لطفاً دوباره تلاش کنید." },
+      };
+    }
+
+    return { data: { user: json.user }, error: null };
+  } catch {
+    return {
+      data: { user: null },
+      error: { message: "ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید." },
+    };
+  }
 }
 
-export async function ensureProfile(userId: string, input: {
-  firstName: string;
-  lastName: string;
-  phone: string;
-}) {
-  return supabase.from("profiles").upsert({
-    user_id: userId,
-    first_name: input.firstName,
-    last_name: input.lastName,
-    phone: input.phone,
-  });
+/**
+ * Retained for backward compatibility: `/api/auth/register` now creates
+ * the user and athlete profile atomically in a single server request.
+ */
+export async function ensureProfile(
+  _userId: string,
+  _input: { firstName: string; lastName: string; phone: string },
+): Promise<{ error: null }> {
+  return { error: null };
 }
 
-export async function createAthleteProfile(userId: string) {
-  return supabase.from("athletes").upsert(
-    {
-      user_id: userId,
-      primary_sport: "crossfit",
-      experience: "beginner",
-    },
-    { onConflict: "user_id" },
-  );
+export async function createAthleteProfile(_userId: string): Promise<{ error: null }> {
+  return { error: null };
 }
 
-export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) return { user: null, error };
-  return { user: data.user, error: null };
+export async function getCurrentUser(): Promise<{
+  user: SessionUserDto | null;
+  error: { message: string } | null;
+}> {
+  try {
+    const res = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!res.ok) {
+      return { user: null, error: { message: "UNAUTHENTICATED" } };
+    }
+    const json = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      authenticated?: boolean;
+      user?: SessionUserDto | null;
+    };
+    if (!json.ok || !json.authenticated || !json.user) {
+      return { user: null, error: { message: "UNAUTHENTICATED" } };
+    }
+    return { user: json.user, error: null };
+  } catch {
+    return { user: null, error: { message: "NETWORK_ERROR" } };
+  }
 }
 
-export async function signOut() {
-  return supabase.auth.signOut();
+export async function signOut(): Promise<{ error: { message: string } | null }> {
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    return { error: null };
+  } catch {
+    return { error: { message: "خطا در خروج از حساب کاربری." } };
+  }
 }

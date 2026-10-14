@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Clock, Moon, Play, Target, Zap } from "lucide-react";
 import { z } from "zod";
@@ -8,8 +8,11 @@ import { Bar, MockBadge, Panel, Pill, ProgressRing, SectionHeading, Stat } from 
 import { DnaRadarChart, RecoveryBars } from "@/components/domain/charts";
 import { BodyChangesPanel } from "@/components/domain/body-analysis";
 import { AddBodyAnalysisDialog } from "@/components/domain/body-analysis-dialog";
+import type { BodyAnalysisRecord } from "@/domain/body-analysis";
 import { SPORTS, SPORT_LIST } from "@/domain/sports";
 import type { SportId } from "@/domain/types";
+import { getCurrentUser, type SessionUserDto } from "@/lib/auth";
+import { assessmentEngine } from "@/services/assessment/engine";
 import { athleteDashboardService } from "@/services/athlete/dashboard";
 import { bodyAnalysisService } from "@/services/body-analysis/service";
 import { demoAthlete, demoRecovery, demoRecoveryHistory } from "@/mock/athlete";
@@ -42,19 +45,47 @@ export const Route = createFileRoute("/athlete/dashboard")({
 function AthleteDashboard() {
   const { sport: selectedSport, body, pkg, health } = Route.useSearch();
   const [healthVersion, setHealthVersion] = useState(0);
+  const [sessionUser, setSessionUser] = useState<SessionUserDto | null>(null);
+  const [persistedSport, setPersistedSport] = useState<SportId | null>(null);
+  const [persistedBodyRecords, setPersistedBodyRecords] = useState<BodyAnalysisRecord[] | null>(null);
   const navigate = useNavigate();
-  const sport: SportId = selectedSport ?? demoAthlete.primarySport;
+
+  useEffect(() => {
+    let active = true;
+    getCurrentUser().then(({ user }) => {
+      if (!active || !user) return;
+      setSessionUser(user);
+    });
+    assessmentEngine.loadCurrentState().then((state) => {
+      if (!active || !state.authenticated) return;
+      if (state.primarySport) setPersistedSport(state.primarySport);
+      if (state.bodyRecords && state.bodyRecords.length > 0) {
+        setPersistedBodyRecords(state.bodyRecords);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const sport: SportId = selectedSport ?? persistedSport ?? demoAthlete.primarySport;
+  const activeAthleteId = sessionUser?.athleteId ?? demoAthlete.id;
   const data = athleteDashboardService.getSnapshot(demoAthlete.id, sport);
   const sportMeta = SPORTS[sport];
-  const name = `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
+  const firstName = sessionUser?.firstName || demoAthlete.identity.firstName;
+  const name = sessionUser
+    ? `${sessionUser.firstName} ${sessionUser.lastName}`.trim()
+    : `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
   const [addOpen, setAddOpen] = useState(false);
   const [bodyVersion, setBodyVersion] = useState(0);
   const bodyRecords = useMemo(() => {
-    const all = bodyAnalysisService.list(demoAthlete.id);
+    const all = persistedBodyRecords && persistedBodyRecords.length > 0
+      ? persistedBodyRecords
+      : bodyAnalysisService.list(demoAthlete.id);
     // Demo-only views for QA: ?body=empty | ?body=single
     return body === "empty" ? [] : body === "single" ? all.slice(-1) : all;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [body, bodyVersion]);
+  }, [body, bodyVersion, persistedBodyRecords]);
   const pack = subscriptionService.getPackage(demoAthlete.id, pkg);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const ctx = useMemo(() => decisionEngine.context(demoAthlete.id, sport, pkg), [sport, pkg, healthVersion]);
@@ -93,7 +124,7 @@ function AthleteDashboard() {
         <div className="relative overflow-hidden rounded-2xl bg-gradient-carbon p-6 ring-1 ring-border md:p-8 animate-rise">
           <div className="relative">
             <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>امروز</span><span>·</span><MockBadge label="پیشنهاد نمایشی" /></div>
-            <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">سلام {demoAthlete.identity.firstName}</h1>
+            <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">سلام {firstName}</h1>
             <div className="mt-4 flex items-start gap-3 rounded-xl bg-background/50 p-4 ring-1 ring-border/70">
               <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary"><Target className="size-4" /></span>
               <div><div className="text-xs font-bold text-primary">تمرکز امروز</div><p className="mt-1 text-sm leading-7">{data.focus}</p></div>
@@ -141,10 +172,10 @@ function AthleteDashboard() {
         </Panel>
       ) : <div className="mb-6"><PackageNotice included={false} what="nutrition" /></div>}
 
-      <HealthDataPanel athleteId={demoAthlete.id} empty={health === "empty"} version={healthVersion} onChanged={() => setHealthVersion((v) => v + 1)} />
+      <HealthDataPanel athleteId={activeAthleteId} empty={health === "empty"} version={healthVersion} onChanged={() => setHealthVersion((v) => v + 1)} />
 
       <BodyChangesPanel records={bodyRecords} sport={sport} onAdd={() => setAddOpen(true)} />
-      <AddBodyAnalysisDialog open={addOpen} onOpenChange={setAddOpen} athleteId={demoAthlete.id} onSaved={() => setBodyVersion((v) => v + 1)} />
+      <AddBodyAnalysisDialog open={addOpen} onOpenChange={setAddOpen} athleteId={activeAthleteId} onSaved={() => setBodyVersion((v) => v + 1)} />
 
       <section className="mb-6 grid gap-4 lg:grid-cols-[1.1fr_1fr]">
         <Panel><SectionHeading title="برداشت این هفته" subtitle={sportMeta.name} /><div className="space-y-3">{data.dna.insights.map((insight) => <div key={insight.label} className="grid grid-cols-[90px_1fr] gap-3 border-b border-border/60 pb-3 last:border-0"><span className="text-xs font-semibold text-muted-foreground">{insight.label}</span><p className="text-sm">{insight.text}</p></div>)}</div></Panel>

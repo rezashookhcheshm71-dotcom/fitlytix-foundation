@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Panel } from "@/components/domain/primitives";
 import { signInWithEmail } from "@/lib/auth";
 
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/login")({
+  validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [
       { title: "ورود — FitLytix" },
@@ -18,6 +24,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,11 +40,16 @@ function LoginPage() {
     setLoading(false);
 
     if (authError) {
-      setError("ایمیل یا رمز عبور صحیح نیست.");
+      setError(authError.message || "ایمیل یا رمز عبور صحیح نیست.");
       return;
     }
 
-    navigate({ to: "/athlete/dashboard" });
+    if (redirect && redirect.startsWith("/")) {
+      window.location.href = redirect;
+      return;
+    }
+
+    navigate({ to: "/athlete/dashboard", search: {} });
   }
 
   return (
@@ -61,7 +73,9 @@ function LoginPage() {
             </Button>
           </form>
           <div className="mt-6 flex items-center justify-between text-xs text-muted-foreground">
-            <Link to="/register" className="text-primary hover:underline">حساب ندارید؟ ثبت‌نام</Link>
+            <Link to="/register" search={redirect ? { redirect } : {}} className="text-primary hover:underline">
+              حساب ندارید؟ ثبت‌نام
+            </Link>
             <Link to="/coach" className="hover:text-foreground">ورود مربی</Link>
           </div>
         </Panel>

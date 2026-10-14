@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { z } from "zod";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Panel } from "@/components/domain/primitives";
-import { createAthleteProfile, ensureProfile, signUpWithEmail } from "@/lib/auth";
+import { signUpWithEmail } from "@/lib/auth";
+
+const searchSchema = z.object({
+  redirect: z.string().optional(),
+});
 
 export const Route = createFileRoute("/register")({
+  validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [
       { title: "ثبت‌نام — FitLytix" },
@@ -19,6 +25,7 @@ export const Route = createFileRoute("/register")({
 });
 
 function RegisterPage() {
+  const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", email: "", password: "" });
   const [done, setDone] = useState(false);
@@ -43,21 +50,13 @@ function RegisterPage() {
       return;
     }
 
-    const profileResult = await ensureProfile(data.user.id, form);
-    if (profileResult.error) {
-      setLoading(false);
-      setError("حساب ساخته شد اما ذخیره اطلاعات پروفایل کامل نشد.");
-      return;
-    }
-
-    const athleteResult = await createAthleteProfile(data.user.id);
-    if (athleteResult.error) {
-      setLoading(false);
-      setError("حساب ساخته شد اما ساخت پروفایل ورزشکار کامل نشد.");
-      return;
-    }
-
     setLoading(false);
+
+    if (redirect && redirect.startsWith("/")) {
+      window.location.href = redirect;
+      return;
+    }
+
     setDone(true);
   }
 
@@ -72,10 +71,23 @@ function RegisterPage() {
               </span>
               <h1 className="text-2xl font-extrabold">حساب FitLytix ساخته شد</h1>
               <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                اگر تأیید ایمیل فعال باشد، لینک تأیید برای شما ارسال شده است. سپس می‌توانید وارد شوید و ارزیابی را شروع کنید.
+                نشست کاربری شما فعال شد. اکنون می‌توانید ارزیابی عمومی را تکمیل کنید یا وارد داشبورد شوید.
               </p>
-              <Button variant="hero" size="lg" className="mt-6 w-full" onClick={() => navigate({ to: "/login" })}>
-                ورود به FitLytix
+              <Button
+                variant="hero"
+                size="lg"
+                className="mt-6 w-full"
+                onClick={() => navigate({ to: "/assessment/common" })}
+              >
+                شروع ارزیابی عمومی
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="mt-3 w-full"
+                onClick={() => navigate({ to: "/athlete/dashboard", search: {} })}
+              >
+                ورود به داشبورد ورزشکار
               </Button>
             </div>
           </Panel>
@@ -102,7 +114,10 @@ function RegisterPage() {
             </Button>
           </form>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            حساب دارید؟ <Link to="/login" className="text-primary hover:underline">ورود</Link>
+            حساب دارید؟{" "}
+            <Link to="/login" search={redirect ? { redirect } : {}} className="text-primary hover:underline">
+              ورود
+            </Link>
           </p>
         </Panel>
       </div>

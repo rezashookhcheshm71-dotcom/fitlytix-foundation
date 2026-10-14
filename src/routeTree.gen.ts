@@ -15,6 +15,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ApiAssessmentRouteImport } from './routes/api/assessment'
+import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
 import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
@@ -36,6 +38,10 @@ import { Route as CoachNutritionRouteImport } from './routes/coach.nutrition'
 import { Route as CoachPerformanceRouteImport } from './routes/coach.performance'
 import { Route as CoachProfileRouteImport } from './routes/coach.profile'
 import { Route as CoachProgramsRouteImport } from './routes/coach.programs'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth.login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth.logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth.me'
+import { Route as ApiAuthRegisterRouteImport } from './routes/api/auth.register'
 import { Route as CoachAthleteIdRouteImport } from './routes/coach.athlete.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -66,6 +72,16 @@ const PlansRoute = PlansRouteImport.update({
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAssessmentRoute = ApiAssessmentRouteImport.update({
+  id: '/api/assessment',
+  path: '/api/assessment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDbTestRoute = ApiDbTestRouteImport.update({
+  id: '/api/db-test',
+  path: '/api/db-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -173,6 +189,26 @@ const CoachProgramsRoute = CoachProgramsRouteImport.update({
   path: '/coach/programs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthRegisterRoute = ApiAuthRegisterRouteImport.update({
+  id: '/api/auth/register',
+  path: '/api/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoachAthleteIdRoute = CoachAthleteIdRouteImport.update({
   id: '/coach/athlete/$id',
   path: '/coach/athlete/$id',
@@ -186,6 +222,8 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
   '/register': typeof RegisterRoute
+  '/api/assessment': typeof ApiAssessmentRoute
+  '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -207,6 +245,10 @@ export interface FileRoutesByFullPath {
   '/coach/profile': typeof CoachProfileRoute
   '/coach/programs': typeof CoachProgramsRoute
   '/coach/': typeof CoachIndexRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
 export interface FileRoutesByTo {
@@ -216,6 +258,8 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
   '/register': typeof RegisterRoute
+  '/api/assessment': typeof ApiAssessmentRoute
+  '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -237,6 +281,10 @@ export interface FileRoutesByTo {
   '/coach/profile': typeof CoachProfileRoute
   '/coach/programs': typeof CoachProgramsRoute
   '/coach': typeof CoachIndexRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
 export interface FileRoutesById {
@@ -247,6 +295,8 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
   '/register': typeof RegisterRoute
+  '/api/assessment': typeof ApiAssessmentRoute
+  '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -268,6 +318,10 @@ export interface FileRoutesById {
   '/coach/profile': typeof CoachProfileRoute
   '/coach/programs': typeof CoachProgramsRoute
   '/coach/': typeof CoachIndexRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/coach/athlete/$id': typeof CoachAthleteIdRoute
 }
 export interface FileRouteTypes {
@@ -279,6 +333,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/plans'
     | '/register'
+    | '/api/assessment'
+    | '/api/db-test'
     | '/api/health'
     | '/assessment/common'
     | '/assessment/sport'
@@ -300,6 +356,10 @@ export interface FileRouteTypes {
     | '/coach/profile'
     | '/coach/programs'
     | '/coach/'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/register'
     | '/coach/athlete/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -309,6 +369,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/plans'
     | '/register'
+    | '/api/assessment'
+    | '/api/db-test'
     | '/api/health'
     | '/assessment/common'
     | '/assessment/sport'
@@ -330,6 +392,10 @@ export interface FileRouteTypes {
     | '/coach/profile'
     | '/coach/programs'
     | '/coach'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/register'
     | '/coach/athlete/$id'
   id:
     | '__root__'
@@ -339,6 +405,8 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/plans'
     | '/register'
+    | '/api/assessment'
+    | '/api/db-test'
     | '/api/health'
     | '/assessment/common'
     | '/assessment/sport'
@@ -360,6 +428,10 @@ export interface FileRouteTypes {
     | '/coach/profile'
     | '/coach/programs'
     | '/coach/'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/register'
     | '/coach/athlete/$id'
   fileRoutesById: FileRoutesById
 }
@@ -370,6 +442,8 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PlansRoute: typeof PlansRoute
   RegisterRoute: typeof RegisterRoute
+  ApiAssessmentRoute: typeof ApiAssessmentRoute
+  ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
   AssessmentCommonRoute: typeof AssessmentCommonRoute
   AssessmentSportRoute: typeof AssessmentSportRoute
@@ -391,6 +465,10 @@ export interface RootRouteChildren {
   CoachProfileRoute: typeof CoachProfileRoute
   CoachProgramsRoute: typeof CoachProgramsRoute
   CoachIndexRoute: typeof CoachIndexRoute
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiAuthRegisterRoute: typeof ApiAuthRegisterRoute
   CoachAthleteIdRoute: typeof CoachAthleteIdRoute
 }
 
@@ -436,6 +514,20 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/assessment': {
+      id: '/api/assessment'
+      path: '/api/assessment'
+      fullPath: '/api/assessment'
+      preLoaderRoute: typeof ApiAssessmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/db-test': {
+      id: '/api/db-test'
+      path: '/api/db-test'
+      fullPath: '/api/db-test'
+      preLoaderRoute: typeof ApiDbTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -585,6 +677,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoachProgramsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/register': {
+      id: '/api/auth/register'
+      path: '/api/auth/register'
+      fullPath: '/api/auth/register'
+      preLoaderRoute: typeof ApiAuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/coach/athlete/$id': {
       id: '/coach/athlete/$id'
       path: '/coach/athlete/$id'
@@ -602,6 +722,8 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PlansRoute: PlansRoute,
   RegisterRoute: RegisterRoute,
+  ApiAssessmentRoute: ApiAssessmentRoute,
+  ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
   AssessmentCommonRoute: AssessmentCommonRoute,
   AssessmentSportRoute: AssessmentSportRoute,
@@ -623,6 +745,10 @@ const rootRouteChildren: RootRouteChildren = {
   CoachProfileRoute: CoachProfileRoute,
   CoachProgramsRoute: CoachProgramsRoute,
   CoachIndexRoute: CoachIndexRoute,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiAuthRegisterRoute: ApiAuthRegisterRoute,
   CoachAthleteIdRoute: CoachAthleteIdRoute,
 }
 export const routeTree = rootRouteImport
