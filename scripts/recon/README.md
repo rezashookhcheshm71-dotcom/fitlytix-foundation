@@ -11,11 +11,11 @@ over the application without capturing those first destroys them permanently.
 All three scripts are read-only. None of them writes to the application tree,
 and none mutates the database.
 
-| script | runs on | writes to |
-| --- | --- | --- |
-| `server-inventory.mjs` | cPanel host | a directory you choose (`--out`) |
-| `git-inventory.mjs` | anywhere with the repo | a file you choose (`--out`) |
-| `compare.mjs` | anywhere | optionally `--out` |
+| script                 | runs on                | writes to                        |
+| ---------------------- | ---------------------- | -------------------------------- |
+| `server-inventory.mjs` | cPanel host            | a directory you choose (`--out`) |
+| `git-inventory.mjs`    | anywhere with the repo | a file you choose (`--out`)      |
+| `compare.mjs`          | anywhere               | optionally `--out`               |
 
 ## Step 1 — inventory the server
 
@@ -58,7 +58,7 @@ node scripts/recon/git-inventory.mjs --out /tmp/git-manifest.json
 ```
 
 This reads from `HEAD` by default, not from the working tree, because the
-question is what is *committed*. Uncommitted paths are reported separately so
+question is what is _committed_. Uncommitted paths are reported separately so
 they cannot hide inside either side. Use `--rev <sha>` to inventory another
 commit.
 
@@ -73,12 +73,12 @@ node scripts/recon/compare.mjs \
 
 Output falls into four buckets:
 
-| bucket | meaning | action |
-| --- | --- | --- |
+| bucket          | meaning                       | action                                            |
+| --------------- | ----------------------------- | ------------------------------------------------- |
 | **server-only** | a git deploy would destroy it | pull it into git, or accept the loss deliberately |
-| **differs** | same path, different bytes | a human decision, file by file |
-| **git-only** | new from git | safe to deploy |
-| **identical** | matches byte for byte | nothing to do |
+| **differs**     | same path, different bytes    | a human decision, file by file                    |
+| **git-only**    | new from git                  | safe to deploy                                    |
+| **identical**   | matches byte for byte         | nothing to do                                     |
 
 Lockfiles (`package-lock.json`, `bun.lock`) and generated files
 (`src/routeTree.gen.ts`, `.output/`) are listed apart, never counted as
@@ -91,14 +91,14 @@ deploying loses work, so it is safe to wire into a deploy gate.
 
 Each of these was produced by running the tools, not by reading them:
 
-| test | result |
-| --- | --- |
-| inventory of this repo | 199 files, 0 errors, `node_modules`/`.git`/`.output` skipped |
-| `.env.example` | inventoried **and** copied (it is a template, not a secret) |
-| a real `.env` | inventoried but **not** copied — absent from `files/` |
-| `manifest.txt` raw spaces | **0** across all 199 data rows |
-| compare, uncommitted files present | 3 server-only, exit **1** |
-| compare, trees matched | 0 server-only, 198 identical, exit **0** |
+| test                               | result                                                       |
+| ---------------------------------- | ------------------------------------------------------------ |
+| inventory of this repo             | 199 files, 0 errors, `node_modules`/`.git`/`.output` skipped |
+| `.env.example`                     | inventoried **and** copied (it is a template, not a secret)  |
+| a real `.env`                      | inventoried but **not** copied — absent from `files/`        |
+| `manifest.txt` raw spaces          | **0** across all 199 data rows                               |
+| compare, uncommitted files present | 3 server-only, exit **1**                                    |
+| compare, trees matched             | 0 server-only, 198 identical, exit **0**                     |
 
 Two bugs were caught this way that reading would not have found: the
 copy-safe rendering was still padding with raw spaces (defeating its own
