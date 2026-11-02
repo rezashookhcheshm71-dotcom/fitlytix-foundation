@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitLytix — نقشه‌یِ وضعیت و پیشنهادها</title>
+<!--
+  خودبسنده: بدونِ قلمِ بیرونی، بدونِ کتابخانه، بدونِ تصویرِ بیرونی.
+  همه‌یِ نشانه‌ها SVGِ جاسازی‌شده‌اند. رنگ‌ها عیناً از src/styles.css رونوشت شده‌اند.
+  رفتارِ پیمایش: همان چیزی است که در P15 تأیید شد.
+-->
+<style>
+/* ── توکن‌ها — رونوشتِ عینی از src/styles.css:114-168 ───────────────── */
+:root{
+  --radius:0.875rem;
+  --background:oklch(0.145 0.006 260);
+  --foreground:oklch(0.96 0.005 80);
+  --card:oklch(0.185 0.007 260);
+  --card-elevated:oklch(0.22 0.008 260);
+  --primary:oklch(0.72 0.19 45);
+  --primary-foreground:oklch(0.13 0.02 45);
+  --primary-soft:oklch(0.72 0.19 45 / 14%);
+  --secondary:oklch(0.25 0.008 260);
+  --muted:oklch(0.23 0.007 260);
+  --muted-foreground:oklch(0.65 0.01 260);
+  --accent:oklch(0.26 0.01 260);
+  --destructive:oklch(0.6 0.22 25);
+  --success:oklch(0.74 0.17 155);
+  --warning:oklch(0.82 0.16 85);
+  --info:oklch(0.72 0.13 230);
+  --border:oklch(1 0 0 / 9%);
+  --chart-1:oklch(0.72 0.19 45);
+  --chart-2:oklch(0.72 0.13 230);
+  --chart-3:oklch(0.74 0.17 155);
+  --chart-4:oklch(0.82 0.16 85);
+  --chart-5:oklch(0.7 0.16 330);
+  --sport-crossfit:oklch(0.72 0.19 45);
+  --sport-hyrox:oklch(0.82 0.16 85);
+  --sport-functional:oklch(0.74 0.15 175);
+  --sport-bodybuilding:oklch(0.65 0.2 20);
+  --sport-running:oklch(0.72 0.13 230);
+  --shadow-glow:0 0 0 1px oklch(0.72 0.19 45 / 25%), 0 8px 24px -8px oklch(0.72 0.19 45 / 45%);
+  --shadow-glow-lg:0 0 0 1px oklch(0.72 0.19 45 / 35%), 0 16px 48px -12px oklch(0.72 0.19 45 / 60%);
+  --shadow-card:0 1px 0 0 oklch(1 0 0 / 4%) inset, 0 12px 32px -16px oklch(0 0 0 / 60%);
+  --font-sans:"Vazirmatn","Segoe UI",Tahoma,ui-sans-serif,system-ui,sans-serif;
+  --font-display:"Space Grotesk","Vazirmatn","Segoe UI",Tahoma,ui-sans-serif,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:dark}
+body{
+  background:var(--background);color:var(--foreground);
+  font-family:var(--font-sans);font-size:15px;line-height:1.75;
+  min-height:100vh;overflow-x:hidden;
+  background-image:
+    radial-gradient(900px 460px at 88% -8%, oklch(0.72 0.19 45 / 11%), transparent 62%),
+    radial-gradient(760px 420px at 6% 106%, oklch(0.72 0.13 230 / 9%), transparent 60%);
+  background-attachment:fixed;
+}
+.fd{font-family:var(--font-display)}
+.mono{font-family:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;direction:ltr;unicode-bidi:embed}
+
+/* ── اسکلت ─────────────────────────────────────────────────────────── */
+.deck{display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px clamp(14px,4vw,64px) 14px calc(14px + 62px);
+  border-bottom:1px solid var(--border);
+  background:oklch(0.165 0.006 260 / 82%);backdrop-filter:blur(9px);
+  position:sticky;top:0;z-index:40;
+}
+.brandmark{width:30px;height:30px;flex:none}
+.topbar h1{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.topbar .sub{font-size:11.5px;color:var(--muted-foreground);margin-top:1px}
+.topbar .spacer{flex:1}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+  padding:4px 10px;border-radius:999px;border:1px solid var(--border);
+  background:var(--muted);color:var(--foreground);white-space:nowrap;
+}
+.badge.b-primary{background:var(--primary-soft);border-color:oklch(0.72 0.19 45 / 34%);color:var(--primary)}
+.badge.b-ok{background:oklch(0.74 0.17 155 / 13%);border-color:oklch(0.74 0.17 155 / 32%);color:var(--success)}
+.badge.b-warn{background:oklch(0.82 0.16 85 / 13%);border-color:oklch(0.82 0.16 85 / 32%);color:var(--warning)}
+.badge.b-bad{background:oklch(0.6 0.22 25 / 14%);border-color:oklch(0.6 0.22 25 / 34%);color:var(--destructive)}
+.badge.b-info{background:oklch(0.72 0.13 230 / 13%);border-color:oklch(0.72 0.13 230 / 32%);color:var(--info)}
+
+.stage{position:relative;flex:1;padding:26px clamp(14px,4vw,64px) 132px}
+.slide{display:none;animation:rise .5s cubic-bezier(.22,1,.36,1) both}
+.slide.is-active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:none}}
+
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--primary);text-transform:uppercase}
+.slide > header{margin-bottom:18px;max-width:960px}
+.slide h2{font-size:clamp(20px,3.1vw,29px);font-weight:800;letter-spacing:-.02em;line-height:1.4;margin-top:5px}
+.slide .lede{margin-top:8px;color:var(--muted-foreground);font-size:13.5px;max-width:880px}
+
+/* ── سطح‌ها ────────────────────────────────────────────────────────── */
+.panel{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow-card);
+}
+.panel.elev{background:var(--card-elevated)}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+.ptitle{font-size:12.5px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.ptitle .n{
+  font-family:var(--font-display);font-size:11px;font-weight:700;color:var(--primary);
+  background:var(--primary-soft);border-radius:7px;padding:2px 7px;letter-spacing:.02em;
+}
+.hint{font-size:11.5px;color:var(--muted-foreground);line-height:1.7}
+.code{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;direction:ltr;text-align:left;
+  background:oklch(0.13 0.006 260);border:1px solid var(--border);border-radius:9px;
+  padding:9px 11px;color:oklch(0.86 0.01 260);overflow-x:auto;white-space:pre;line-height:1.65;
+}
+.code .c{color:var(--muted-foreground)}
+.code .k{color:var(--primary)}
+.code .s{color:var(--success)}
+
+/* ── جدول ──────────────────────────────────────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{
+  text-align:right;font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--muted-foreground);
+  padding:7px 9px;border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;
+}
+td{padding:8px 9px;border-bottom:1px solid oklch(1 0 0 / 5%);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:oklch(1 0 0 / 3%)}
+td.num{font-family:var(--font-display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tscroll{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--card)}
+
+/* ── میله (قاعده‌یِ RTL: کمینه در راست، بیشینه در چپ) ───────────────── */
+.bar-track{position:relative;height:9px;border-radius:999px;background:var(--muted);overflow:hidden}
+.bar-fill{position:absolute;top:0;right:0;bottom:0;border-radius:999px;background:var(--primary)}
+.bar-fill.ok{background:var(--success)} .bar-fill.warn{background:var(--warning)}
+.bar-fill.bad{background:var(--destructive)} .bar-fill.info{background:var(--info)}
+.range-track{position:relative;height:15px;border-radius:6px;background:var(--muted);overflow:visible}
+.range-band{position:absolute;top:0;bottom:0;border-radius:6px}
+.tick{position:absolute;top:-3px;bottom:-3px;width:1px;background:oklch(1 0 0 / 16%)}
+
+/* ── جایگاهِ تهیِ صادقانه (قانونِ نخست) ────────────────────────────── */
+.empty{
+  border:1px dashed oklch(1 0 0 / 20%);border-radius:11px;padding:12px 14px;
+  background:oklch(0.17 0.007 260);display:flex;gap:10px;align-items:flex-start;
+}
+.empty .ic{flex:none;margin-top:2px;color:var(--muted-foreground)}
+.empty b{display:block;font-size:12px;font-weight:800;color:var(--foreground)}
+.empty span{font-size:11.5px;color:var(--muted-foreground);line-height:1.65}
+
+/* ── زنجیر ─────────────────────────────────────────────────────────── */
+.chain{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.chain .link{flex:1 1 190px;min-width:170px}
+.chain .arrow{align-self:center;color:var(--primary);flex:none;opacity:.85}
+
+/* ── نقطه‌یِ وضعیت ─────────────────────────────────────────────────── */
+.dot{display:inline-block;width:8px;height:8px;border-radius:999px;flex:none;margin-top:6px}
+.dot.ok{background:var(--success)} .dot.warn{background:var(--warning)}
+.dot.bad{background:var(--destructive)} .dot.info{background:var(--info)}
+.dot.none{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted-foreground)}
+.rowdot{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;padding:6px 0;border-bottom:1px solid oklch(1 0 0 / 5%)}
+.rowdot:last-child{border-bottom:none}
+.rowdot .t{flex:1}
+.rowdot .t b{font-weight:700}
+.rowdot .t em{font-style:normal;color:var(--muted-foreground);font-size:11.5px;display:block;line-height:1.6}
+
+/* ── فازها ─────────────────────────────────────────────────────────── */
+.phase{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid oklch(1 0 0 / 6%)}
+.phase:last-child{border-bottom:none}
+.phase .ph{
+  flex:none;width:46px;text-align:center;font-family:var(--font-display);font-size:10.5px;font-weight:700;
+  padding:5px 0;border-radius:9px;background:var(--muted);border:1px solid var(--border);color:var(--foreground);
+}
+.phase.now .ph{background:var(--primary);color:var(--primary-foreground);border-color:var(--primary);box-shadow:var(--shadow-glow)}
+.phase .body{flex:1;min-width:0}
+.phase .body b{font-size:13px;font-weight:800;display:block}
+.phase .body .wk{font-size:11px;color:var(--muted-foreground)}
+.gate{
+  margin-top:6px;font-size:11.5px;padding:6px 10px;border-radius:9px;
+  background:oklch(0.72 0.19 45 / 9%);border-inline-start:2px solid var(--primary);color:oklch(0.9 0.03 60);
+}
+
+/* ── کنترل‌ها ──────────────────────────────────────────────────────── */
+/* دکمه‌ها فیزیکی‌اند (نه منطقی) چون قاعده‌یِ P15 صریح است: در RTL چپ = بعدی */
+.nav{
+  position:fixed;top:50%;transform:translateY(-50%);z-index:50;
+  width:46px;height:46px;border-radius:999px;cursor:pointer;
+  display:grid;place-items:center;
+  background:oklch(0.22 0.008 260 / 94%);border:1px solid oklch(1 0 0 / 14%);
+  color:var(--foreground);box-shadow:var(--shadow-card);
+  transition:background .16s,border-color .16s,box-shadow .16s;
+}
+.nav:hover{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground);box-shadow:var(--shadow-glow)}
+.nav:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.nav-next{left:12px}   /* در RTL: چپ = بعدی */
+.nav-prev{right:12px}   /* در RTL: راست = قبلی */
+.controls{
+  position:fixed;left:0;right:0;bottom:0;z-index:45;
+  background:oklch(0.165 0.006 260 / 94%);backdrop-filter:blur(9px);
+  border-top:1px solid var(--border);padding:10px clamp(14px,4vw,64px) 12px;
+}
+.progress{height:3px;border-radius:999px;background:var(--muted);overflow:hidden;margin-bottom:10px}
+/* در RTL پر شدن از راست آغاز می‌شود */
+.progress span{display:block;height:100%;width:0;background:var(--primary);border-radius:999px;transition:width .3s linear}
+.crow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.dots{display:flex;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
+.dots button{
+  width:9px;height:9px;border-radius:999px;cursor:pointer;padding:0;
+  background:oklch(1 0 0 / 18%);border:none;transition:all .18s;
+}
+.dots button:hover{background:oklch(1 0 0 / 38%)}
+.dots button[aria-current="true"]{background:var(--primary);width:24px;border-radius:999px}
+.dots button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.meta{display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--muted-foreground);white-space:nowrap}
+.btn{
+  font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;
+  padding:5px 12px;border-radius:999px;border:1px solid var(--border);
+  background:var(--muted);color:var(--foreground);transition:all .16s;
+}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.btn[aria-pressed="true"]{background:var(--primary-soft);border-color:oklch(0.72 0.19 45 / 40%);color:var(--primary)}
+.slidename{font-weight:700;color:var(--foreground);font-size:12px}
+
+.src{margin-top:11px;font-size:10.5px;color:var(--muted-foreground);line-height:1.8}
+.src a{color:var(--info);text-decoration:none;border-bottom:1px dotted oklch(0.72 0.13 230 / 50%)}
+.kpi{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.kpi .v{font-family:var(--font-display);font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.kpi .u{font-size:11px;color:var(--muted-foreground)}
+
+@media (max-width:640px){
+  .stage{padding:20px 14px 150px}
+  .nav{width:40px;height:40px}
+  .nav-next{left:6px}.nav-prev{right:6px}
+  .topbar{padding-inline:14px 54px}
+  .slidename{display:none}
+}
+@media print{
+  body{background:#fff;color:#111}
+  .nav,.controls,.topbar{display:none}
+  .slide{display:block!important;page-break-after:always;animation:none}
+  .stage{padding:0}
+  .panel,.tscroll{background:#fff;border-color:#ccc;box-shadow:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .slide{animation:none}.progress span{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<header class="topbar">
+  <svg class="brandmark" viewBox="0 0 32 32" aria-hidden="true">
+    <circle cx="16" cy="16" r="14.5" fill="none" stroke="oklch(0.72 0.19 45)" stroke-width="2.4" stroke-dasharray="62 30" transform="rotate(-90 16 16)"/>
+    <path d="M10 20.5 L14.5 13 L18 17.5 L22.5 9.5" fill="none" stroke="oklch(0.96 0.005 80)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div>
+    <h1 class="fd">FitLytix — نقشه‌یِ وضعیت و پیشنهادها</h1>
+    <div class="sub">۲۰۲۶-۱۱-۰۲ · شاخه‌یِ <span class="mono">arena/39aa6cff-fitlytix-foundation</span> · پایه <span class="mono">cce631a</span></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="badge b-primary"><span class="dot ok" style="margin:0"></span> کد دست‌نخورده</span>
+  <span class="badge">۱۴ اسلاید</span>
+</header>
+
+<main class="stage" id="stage">
+
+<!-- ══ ۱ · جلد ══════════════════════════════════════════════════════ -->
+<section class="slide" data-name="جلد">
+  <header>
+    <div class="eyebrow fd">Status &amp; Proposals · 2026-11-02</div>
+    <h2>یک نقشه از همه‌چیز: چه چیزی هست، چه چیزی نیست، و چه باید کرد</h2>
+    <p class="lede">این تمپلیت از دو منبع ساخته شده و هیچ سومی ندارد: <b>کدِ واقعیِ ریپو</b> (هر عدد با <span class="mono">مسیر:خط</span>) و <b>قیمت‌هایِ منتشرشده‌یِ بازار</b> (هر عدد با پیوند). قانونِ نخستِ پروژه اینجا هم حاکم بود: <b>هیچ عددی ساخته نشد.</b> آنجا که داده نداریم، جایگاهِ تهیِ صادقانه گذاشته شده.</p>
+  </header>
+
+  <div class="grid g3" style="margin-bottom:12px">
+    <div class="panel">
+      <div class="kpi"><span class="v" style="color:var(--destructive)">۲</span><span class="u">نسخه‌یِ واگرایِ کد</span></div>
+      <p class="hint" style="margin-top:7px">سرورِ cPanel و گیت از هم دور افتاده‌اند — <b>در هر دو جهت</b>. تبِ عملکرد رویِ سرور ۴۰۳ خط با صفر داده‌یِ نمایشی است؛ در گیت ۱۲۴ خط با ۱۶ ارجاعِ نمایشی.</p>
+    </div>
+    <div class="panel">
+      <div class="kpi"><span class="v" style="color:var(--warning)">۶</span><span class="u">یافته‌یِ فوریِ ناگفته در سند</span></div>
+      <p class="hint" style="margin-top:7px">از جمله یک مسیرِ <b>بی‌صدایِ از‌دست‌رفتنِ داده</b> (ستونِ <span class="mono">answer_json</span>) و پیش‌فرضِ <span class="mono">"crossfit"</span> در شش جا.</p>
+    </div>
+    <div class="panel">
+      <div class="kpi"><span class="v" style="color:var(--primary)">۱۰</span><span class="u">پیشنهادِ فنیِ تازه · P33–P42</span></div>
+      <p class="hint" style="margin-top:7px">به‌علاوه‌یِ یک برنامه‌یِ بیزینسیِ کامل در پنج فاز با دروازه‌هایِ تصمیم، و دو برگه‌یِ پیشنهادِ آماده‌یِ ارسال.</p>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="panel">
+      <div class="ptitle"><span class="n">A</span> وضعیتِ تجاریِ امروز</div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>درآمد: صفر</b><em>مسیرِ پرداخت کاملاً ماک است — <span class="mono">paymentStatus()</span> همیشه <span class="mono">connected:false</span></em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>رابطه‌یِ کانال: صفر</b><em>نه مربی، نه باشگاه — پس فازِ نخست هیچ کدی ندارد</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>دسترسیِ مجانیِ فعال</b><em><span class="mono">checkout.tsx:41-43</span> پس از «پرداختِ نمایشی» درِ داشبورد را باز می‌کند</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>داراییِ کمیاب: توصیه با دلیل</b><em>هر توصیه <span class="mono">why</span> + <span class="mono">inputs</span> + <span class="mono">confidence</span> دارد — هیچ رقیبی این را نمی‌فروشد</em></span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">B</span> روشِ ساختِ این نقشه</div>
+      <div class="code"><span class="c"># هیچ حدسی زده نشد — اجرا و مشاهده</span>
+grep -rn <span class="s">'|| *"male"'</span>     src/  <span class="c">→ ۰</span>
+grep -rn <span class="s">'flx-'</span>            src/  <span class="c">→ ۰</span>
+grep -rn <span class="s">'health_metrics'</span>  src/  <span class="c">→ ۰</span>
+grep -rn <span class="s">'answer_json'</span>     src/  <span class="c">→ ۰</span>
+grep -ro <span class="s">'ath_001'</span>         src/  <span class="c">→ ۲۷</span>
+<span class="c"># شمارش با grep -o | wc -l، نه grep -c</span></div>
+      <p class="hint" style="margin-top:9px">شش سند در <span class="mono">docs/</span> نشسته‌اند: یافته‌هایِ فنی (P33–P42) · یافته‌هایِ بیزینسی · برنامه‌یِ چهار تصمیم · برگه‌یِ مربی · برگه‌یِ باشگاه · و تاریخچه‌یِ P01–P32.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۲ · دو بدنِ واگرا ═════════════════════════════════════════════ -->
+<section class="slide" data-name="دو بدنِ واگرا">
+  <header>
+    <div class="eyebrow fd">Finding · Structural</div>
+    <h2>پروژه دو بدن دارد — و این مهم‌ترین یافته است</h2>
+    <p class="lede">سندِ تو در بخشِ صفر می‌گوید «git در کار نیست». آن یک محدودیتِ موقت بود که به یک <b>معماریِ دوپاره</b> تبدیل شد. تا این آشتی نشود، P24 تا P32 رویِ پرونده‌هایی نوشته می‌شوند که در گیت وجود ندارند.</p>
+  </header>
+
+  <div class="tscroll" style="margin-bottom:12px">
+  <table>
+    <thead><tr><th>دارایی</th><th>در گیت (<span class="mono">cce631a</span>)</th><th>رویِ سرور (به گفته‌یِ سند)</th><th>وضعیت</th></tr></thead>
+    <tbody>
+      <tr><td><span class="mono">athlete.performance.tsx</span></td><td class="num">۱۲۴ خط · ۱۶ ارجاعِ نمایشی</td><td class="num">۴۰۳ خط · صفر ارجاع</td><td><span class="badge b-bad">واگرا</span></td></tr>
+      <tr><td><span class="mono">athlete.dashboard.tsx</span></td><td class="num">۱۸۹ خط · ۱۸ ارجاع · HRV ماک</td><td class="num">۲۸۰ خط · اسلایدی · HRV واقعی</td><td><span class="badge b-bad">واگرا</span></td></tr>
+      <tr><td><span class="mono">src/lib/reference-ranges.ts</span></td><td>نیست</td><td>نشانده شده <span class="mono">338f1f26…</span></td><td><span class="badge b-bad">فقط سرور</span></td></tr>
+      <tr><td><span class="mono">domain/metrics.tsx</span></td><td>نیست</td><td>۱۲٬۰۵۹ بایت</td><td><span class="badge b-bad">فقط سرور</span></td></tr>
+      <tr><td><span class="mono">domain/carousel.tsx</span></td><td>نیست (فقط <span class="mono">ui/carousel</span> بی‌مصرف)</td><td>نشانده شده <span class="mono">19632dcf…</span></td><td><span class="badge b-bad">فقط سرور</span></td></tr>
+      <tr><td><span class="mono">flx-system.css</span> / <span class="mono">flx-master.css</span></td><td>صفر پرونده · صفر ارجاع</td><td>لایه‌یِ دیداریِ یکپارچه</td><td><span class="badge b-bad">فقط سرور</span></td></tr>
+      <tr><td><span class="mono">GET /api/athlete/health</span></td><td>نیست (فقط liveness)</td><td>ساخته شده (P07)</td><td><span class="badge b-bad">فقط سرور</span></td></tr>
+      <tr><td>کوچ‌هایِ پایگاهِ داده</td><td class="num">۰۰۱ و ۰۰۲</td><td class="num">تا ۰۰۶</td><td><span class="badge b-warn">ناقص</span></td></tr>
+      <tr><td>فایلِ auth</td><td><span class="mono">routes/api/auth.me.ts</span> · ۳۰ خط</td><td><span class="mono">api/auth/me.ts</span> · ≥۸۳۹ خط</td><td><span class="badge b-bad">ساختارِ متفاوت</span></td></tr>
+      <tr><td>اسکریپت‌هایِ survey / apply / check</td><td>فقط <span class="mono">verify-prod.mjs</span> (۱۷ خط)</td><td>۱۴ پرونده با اثرانگشت</td><td><span class="badge b-bad">فقط سرور</span></td></tr>
+      <tr><td><span class="mono">server/athlete.repository.ts</span></td><td class="num">۱۰۱۷ خط · لایه‌یِ MySQL</td><td>نامعلوم</td><td><span class="badge b-info">فقط گیت؟</span></td></tr>
+      <tr><td><span class="mono">lib/auth.server.ts</span> · کوچِ ۰۰۱ (۱۶ جدول)</td><td>۴۰۰ خط · scrypt · کوکیِ نشست</td><td>نامعلوم</td><td><span class="badge b-info">فقط گیت؟</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="grid g3">
+    <div class="panel"><div class="ptitle"><span class="n">۱</span> چرا بحرانی است</div><p class="hint">P24 — نخستین کارِ بعدیِ سند — در گیت <b>قابلِ انجام نیست</b>: پرونده‌ای که باید درست شود وجود ندارد و <span class="mono">grep</span> رویِ کلِ <span class="mono">src/</span> هیچ <span class="mono">|| "male"</span> پیدا نمی‌کند.</p></div>
+    <div class="panel"><div class="ptitle"><span class="n">۲</span> سابقه دارد</div><p class="hint">همین ناهمگامی پیش‌تر باعثِ <b>حذفِ ناخواسته‌یِ گامِ سومِ ارزیابی</b> شد و یک نشستِ کامل صرفِ بازیابی‌اش شد (<span class="mono">PROJECT_RECOVERY…:24</span>). این بار دامنه بزرگ‌تر است: کلِ لایه‌یِ «داده‌یِ واقعی».</p></div>
+    <div class="panel"><div class="ptitle"><span class="n">۳</span> خطرِ خاموش</div><p class="hint">یک استقرارِ از گیت، تبِ عملکرد را از ۴۰۳ خطِ واقعی به ۱۲۴ خطِ نمایشی <b>برمی‌گرداند</b> — بیِ هیچ خطایی. ساخت نمی‌شکند؛ فقط حقیقت از دست می‌رود.</p></div>
+  </div>
+  <p class="src">درمان: <b>P33</b> — بررسیِ فقط‌خواندنیِ واگرایی، سپس ورودِ عینیِ پرونده‌هایِ زنده‌یِ سرور در یک کامیت، سپس وارونگیِ جهتِ جریان (گیت = سرچشمه، cPanel = مقصدِ ساخت).</p>
+</section>
+
+<!-- ══ ۳ · شش یافته‌یِ فوری ═════════════════════════════════════════ -->
+<section class="slide" data-name="شش یافته‌یِ فوری">
+  <header>
+    <div class="eyebrow fd">Findings · Urgent</div>
+    <h2>شش یافته‌یِ فوری که در سندِ P01–P32 نیستند</h2>
+    <p class="lede">اینها فقط با خواندنِ ریپو پیدا شدند. هر کدام شاهدِ <span class="mono">مسیر:خط</span> دارد.</p>
+  </header>
+
+  <div class="grid g2">
+    <div class="panel" style="border-inline-start:2px solid var(--destructive)">
+      <div class="ptitle"><span class="n">F1</span> پاسخ‌هایِ ارزیابی بی‌صدا گم می‌شوند <span class="badge b-bad">بحرانی</span></div>
+      <p class="hint">کد، ستونِ مقدار را از میانِ سه نام انتخاب می‌کند: <span class="mono">value_json</span> · <span class="mono">answer_value</span> · <span class="mono">value</span>. اما سندِ P09 با DESCRIBE ثابت کرد ستونِ کارآمدِ پایگاهِ زنده <b><span class="mono">answer_json</span></b> است — که در فهرست نیست. پس <span class="mono">valCol === null</span> و <b>کلِ بلوک بی‌صدا رد می‌شود</b>: بی‌استثنا، بی‌لاگ.</p>
+      <div class="code" style="margin-top:9px"><span class="c">// athlete.repository.ts:518-524</span>
+<span class="k">const</span> valCol = ansCols.has(<span class="s">"value_json"</span>) ? <span class="s">"value_json"</span>
+  : ansCols.has(<span class="s">"answer_value"</span>) ? <span class="s">"answer_value"</span>
+  : ansCols.has(<span class="s">"value"</span>) ? <span class="s">"value"</span> : <span class="k">null</span>;
+<span class="k">if</span> (valCol) { …insert… }  <span class="c">// ← هرگز اجرا نمی‌شود</span></div>
+    </div>
+
+    <div class="panel" style="border-inline-start:2px solid var(--destructive)">
+      <div class="ptitle"><span class="n">F2</span> پیش‌فرضِ «crossfit» در شش جا <span class="badge b-bad">نقضِ قانونِ نخست</span></div>
+      <p class="hint">سند می‌گوید «هیچ عددی ساخته نشود» — اما <b>هویت</b> ساخته می‌شود. یک مربی، یا ورزشکاری که رشته‌اش را انتخاب نکرده، <b>کراس‌فیترِ مبتدی ثبت می‌شود.</b></p>
+      <div class="rowdot" style="margin-top:6px"><span class="dot bad"></span><span class="t"><span class="mono">athlete.repository.ts:128</span><em><span class="mono">defaults?.primarySport ?? "crossfit"</span></em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><span class="mono">athlete.repository.ts:277</span> و <span class="mono">:417</span><em>در <span class="mono">registerAthlete</span> و <span class="mono">saveAssessment</span></em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><span class="mono">auth.server.ts:189</span> · <span class="mono">:204</span> · <span class="mono">:212</span><em>هنگامِ خواندنِ نشست هم همان پیش‌فرض</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><span class="mono">athlete.repository.ts:129</span><em><span class="mono">experience ?? "beginner"</span> — سطحِ تجربه هم ساخته می‌شود</em></span></div>
+    </div>
+
+    <div class="panel" style="border-inline-start:2px solid var(--warning)">
+      <div class="ptitle"><span class="n">F3</span> <span class="mono">health_metrics</span> ساخته شده، صفر کد می‌خواندش <span class="badge b-warn">بالا</span></div>
+      <p class="hint">جدول در کوچِ ۰۰۲ با <span class="mono">start_time DATETIME</span> تعریف شده، اما <span class="mono">grep -rn 'health_metrics' src/</span> → <b>صفر نتیجه</b>. لایه‌یِ سلامت در حافظه‌یِ ماژول است:</p>
+      <div class="code" style="margin-top:9px"><span class="c">// services/health-data/service.ts:23-26</span>
+<span class="k">let</span> connections = [...DEMO_CONNECTIONS];
+<span class="k">const</span> metrics   = [...DEMO_HEALTH_METRICS];
+<span class="k">const</span> intents   = <span class="k">new</span> Map([[<span class="s">"ath_001"</span>, <span class="s">"yes"</span>]]);</div>
+      <p class="hint" style="margin-top:9px">سه پیامد: با هر ری‌استارتِ Passenger داده‌یِ دستی می‌پرد · همه‌یِ کاربران یک ورزشکارِ ثابت‌اند · دو فرایند = دو جهانِ جدا. و <span class="mono">ath_001</span> هنوز <b>۲۷ بار</b> در <span class="mono">src/</span> هست — از جمله در یک مؤلفه‌یِ رابط: <span class="mono">AppShell.tsx:133</span> اعلان‌هایِ او را به <b>هر</b> کاربر نشان می‌دهد.</p>
+    </div>
+
+    <div class="panel" style="border-inline-start:2px solid var(--warning)">
+      <div class="ptitle"><span class="n">F4</span> در گیت، نام‌نویسیِ مربی ممکن نیست <span class="badge b-warn">کانالِ رشد بسته</span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><span class="mono">register.tsx:30</span><em>فرم فقط نام/تلفن/ایمیل/رمز دارد — <span class="mono">grep 'role|مربی|coach'</span> → صفر</em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><span class="mono">athlete.repository.ts:288</span><em><span class="mono">role: "athlete"</span> سخت‌کد</em></span></div>
+      <div class="rowdot"><span class="dot none"></span><span class="t">جدولِ <span class="mono">coach_profiles</span><em>در هیچ کوچی وجود ندارد</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><span class="mono">lib/auth.ts:85-94</span><em>دو بازمانده‌یِ Supabase که هیچ‌جا صدا زده نمی‌شوند · <span class="mono">lib/supabase.ts</span> بی‌واردکننده</em></span></div>
+      <p class="hint" style="margin-top:8px"><span class="mono">SessionUserDto</span> چهار نقش می‌شناسد (<span class="mono">auth.ts:8</span>) ولی راهِ رسیدن به سه تایِ دیگر نیست.</p>
+    </div>
+
+    <div class="panel" style="border-inline-start:2px solid var(--info)">
+      <div class="ptitle"><span class="n">F5</span> قراردادِ رابط از داده‌یِ نمایشی برآمده <span class="badge b-info">ریشه‌یِ P10</span></div>
+      <p class="hint"><span class="mono">mock/health-data.ts:9-16</span> برایِ هر سنجه <b>هفت روز</b> سری دارد — پس نمودارِ روند طبیعی به نظر می‌رسد. اما سندِ P10 کشف کرد پایگاهِ زنده برایِ هر نه سنجه <b>یک برچسبِ زمان</b> دارد. یعنی امضایِ مؤلفه‌ها بر پایه‌یِ شکلی از داده طراحی شده که <b>در واقعیت وجود ندارد</b>.</p>
+      <div class="empty" style="margin-top:9px">
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>
+        <div><b>پیامدِ تجاری</b><span>«روند» را نمی‌توان فروخت مگر اینکه نخست راهِ ثبتِ چند-نقطه‌ای ساخته شود. تصمیمِ تو «بله به روند» بود — پس این، زیرساختِ درآمدی است نه یک ویژگی.</span></div>
+      </div>
+    </div>
+
+    <div class="panel" style="border-inline-start:2px solid var(--info)">
+      <div class="ptitle"><span class="n">F6</span> هیچ آزمون و هیچ دروازه‌ای نیست <span class="badge b-info">P23 نیمه‌کاره</span></div>
+      <p class="hint"><span class="mono">package.json</span> هشت اسکریپت دارد و <b><span class="mono">test</span> میانِ آن‌ها نیست</b>. و <span class="mono">verify-prod.mjs</span> (۱۷ خط) فقط هفت مسیر را <span class="mono">fetch</span> می‌کند و کدِ وضعیت می‌سنجد — یک صفحه‌یِ کاملاً قلابی هم «سبز» پاس می‌شود.</p>
+      <p class="hint" style="margin-top:8px">سندِ P23 ارزشمندترین درسِ دوره را نوشت («تنها با اجرا کردنش چهار خطا گرفته شد») — اما <b>یک‌بار</b> اجرا شد و به عادت تبدیل شد، نه به دروازه.</p>
+      <div class="rowdot" style="margin-top:6px"><span class="dot warn"></span><span class="t">نشتیِ کوچکِ امنیتی<em><span class="mono">db.server.ts:10</span> نامِ پایگاهِ داده‌یِ میزبان را سخت‌کد کرده؛ <span class="mono">.env.example</span> نامِ حسابِ cPanel را دارد. رمز نیست، ولی در یک ریپویِ عمومی بهتر است عمومی نباشد.</em></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۴ · وضعیتِ تب‌ها ═════════════════════════════════════════════ -->
+<section class="slide" data-name="تب‌هایِ ورزشکار">
+  <header>
+    <div class="eyebrow fd">Current State · Athlete Tabs</div>
+    <h2>وضعیتِ نُه تبِ ورزشکار در گیت — امروز</h2>
+    <p class="lede">روشِ شمارش: <span class="mono">grep -oE 'demo[A-Za-z]*|mock[A-Za-z]*|@/mock' | wc -l</span> رویِ هر پرونده. این تعریفِ <b>من</b> است و با شمارِ سندِ P17 یکی نیست — پس عددِ سرور را هم کنارش گذاشته‌ام تا مقایسه صادق بماند.</p>
+  </header>
+
+  <div class="grid g2">
+    <div class="panel">
+      <div class="ptitle"><span class="n">گیت</span> ارجاعِ نمایشی به تفکیکِ تب</div>
+      <div id="tabchart"></div>
+      <p class="hint" style="margin-top:10px">مجموعِ ارجاع‌هایِ نمایشی در نُه تب: <b class="fd" style="color:var(--primary)">۸۰</b> · مجموعِ خط‌ها: <b class="fd">۸۷۳</b></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">مقایسه</span> گیت در برابرِ سرور (به گفته‌یِ سندِ P17)</div>
+      <div class="tscroll">
+      <table>
+        <thead><tr><th>تب</th><th>گیت: خط</th><th>گیت: ماک</th><th>سرور: خط</th><th>سرور: ماک</th></tr></thead>
+        <tbody id="cmpbody"></tbody>
+      </table>
+      </div>
+      <p class="hint" style="margin-top:9px">دو ستونِ آخر از سندِ P10/P17 آمده‌اند و <b>توسطِ من تأیید نشده‌اند</b> — چون دسترسی به سرور ندارم. این یک جایگاهِ تهیِ صادقانه است، نه یک داده.</p>
+    </div>
+  </div>
+
+  <div class="grid g3" style="margin-top:12px">
+    <div class="panel"><div class="ptitle"><span class="n">!</span> بدتر از داده‌یِ ماک</div><p class="hint"><span class="mono">athlete.performance.tsx:32-34</span> سه <b>عددِ سخت‌کد</b> دارد: <span class="mono">delta={8}</span> · <span class="mono">delta={13}</span> · <span class="mono">delta={7}</span> — بدونِ هیچ <span class="mono">MockBadge</span>. این‌ها «داده‌یِ نمایشی» نیستند؛ <b>عددِ ساخته‌شده</b> هستند.</p></div>
+    <div class="panel"><div class="ptitle"><span class="n">✓</span> آنچه پاک است</div><p class="hint">کلاس‌هایِ فیزیکیِ RTL در کدِ دستیِ پروژه فقط <b>۳</b> مورد است در برابرِ <b>۲۲</b> کلاسِ منطقی — و هر سه تزئینی. همه‌یِ ۱۰۶ موردِ دیگر در <span class="mono">components/ui/</span> تولیدشده‌یِ shadcn است. انضباطِ <span class="mono">locale.ts:3</span> رعایت شده.</p></div>
+    <div class="panel"><div class="ptitle"><span class="n">؟</span> آنچه نمی‌دانم</div>
+      <div class="empty"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7v.5"/><path d="M12 17.5v.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <div><b>سرور امروز چه چیزی را اجرا می‌کند؟</b><span>بدونِ دسترسی به cPanel قابلِ دانستن نیست. P33 دقیقاً برایِ همین است — نه برایِ حدس زدن.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۵ · ممیزیِ وعده ══════════════════════════════════════════════ -->
+<section class="slide" data-name="ممیزیِ وعده">
+  <header>
+    <div class="eyebrow fd">Promise Audit · src/mock/plans.ts</div>
+    <h2>سیزده وعده‌یِ پولی در برابرِ تواناییِ واقعیِ کد</h2>
+    <p class="lede">این وعده‌ها در صفحه‌یِ <b>عمومیِ</b> قیمت نمایش داده می‌شوند (<span class="mono">routes/plans.tsx</span>). چهار تایِ آن‌ها پشتیبانی ندارند — و یکی با استراتژیِ برندت در تضاد است.</p>
+  </header>
+
+  <div class="grid g2">
+    <div class="panel">
+      <div class="ptitle"><span class="dot ok"></span> واقعی — ۳ وعده</div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>تنظیمِ خودکار بر اساسِ ریکاوری</b><em>هر توصیه <span class="mono">why</span> + <span class="mono">inputs</span> + <span class="mono">confidence</span> دارد — <span class="mono">decision-engine/service.ts:3, 33-40</span></em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>پایگاهِ حرکات و اسکیلینگ</b><em>با شناسه‌یِ پایدارِ حرکت — <span class="mono">domain/exercise-education.ts</span></em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>بازبینیِ هفتگیِ مربی</b><em>پیش‌نویس تا تأییدِ صریحِ مربی — <span class="mono">AGENTS.md:19</span> · <span class="mono">ai-coaching/proposals.ts</span></em></span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="dot warn"></span> نسبی — ۴ وعده</div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>برنامه‌یِ شخصی‌سازی‌شده‌یِ هفتگی</b><em>موتور هست ولی از ماک می‌خواند</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>Fitness DNA و تحلیلِ عملکرد</b><em>رادار از اسنپ‌شات ساخته می‌شود، اما <b>مدلِ امتیازدهی هنوز رویِ کاغذ نیست</b> (خودِ سند، P29)</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>مربیِ اختصاصی</b><em>وابسته به کانالِ مربی — که در گیت ساخته نشده (F4)</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>برنامه‌نویسیِ دستیِ روزانه</b><em>نسبی</em></span></div>
+    </div>
+    <div class="panel" style="border-inline-start:2px solid var(--destructive)">
+      <div class="ptitle"><span class="dot bad"></span> بی‌پشتوانه — ۴ وعده</div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>تحلیلِ ویدیوییِ حرکات</b><em><span class="mono">grep -riE 'multipart|formData()|upload'</span> رویِ <span class="mono">routes</span>+<span class="mono">server</span>+<span class="mono">lib</span> → <b>صفر نتیجه</b>. و <span class="mono">exercise-guide.tsx:73-74</span> آیکونِ <span class="mono">VideoOff</span> با متنِ «ویدیویِ آموزش این حرکت به‌زودی اضافه می‌شود»</em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>چت با مربی</b><em><span class="mono">ai-coaching/engine.ts:7</span>: «intentionally NOT a chat surface» — هیچ ماژولِ پیامی نیست</em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>برنامه‌ریزیِ مسابقه</b><em><span class="mono">race</span> فقط یک <b>نوعِ هدف</b> است (<span class="mono">platform.ts:270</span>)، نه موتورِ دوره‌بندی</em></span></div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>پشتیبانیِ اولویت‌دار</b><em>وجود ندارد</em></span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="dot info"></span> دو موردِ باقی</div>
+      <div class="rowdot"><span class="dot info"></span><span class="t"><b>جلسه‌یِ ویدیوییِ ماهانه</b><em>بیرونِ پلتفرم — باید صریح برچسب بخورد</em></span></div>
+      <div class="rowdot"><span class="dot none"></span><span class="t"><b>«همه‌یِ امکاناتِ پلتفرم»</b><em>مبهم — چون «همه» تعریف نشده (§۱٫۱: دو فهرستِ متناقض)</em></span></div>
+      <div class="empty" style="margin-top:9px">
+        <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 9v4M12 16.5v.01"/></svg>
+        <div><b>تضاد با برند</b><span>«تحلیلِ ویدیویی» با محورِ معناییِ خودت در تضاد است: «واژگانِ سیگنال و اسکان بر عکس مقدم‌اند». پلنِ Hybrid چیزی را می‌فروشد که استراتژیِ برند عمداً کنار گذاشته.</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="src">تصمیمِ تو: <b>بمانند و واقعاً ساخته شوند</b>. مسیرِ اجرایی‌اش در اسلایدِ ۱۰ — با یک تفکیکِ حیاتی و یک دروازه‌یِ زیرساخت.</p>
+</section>
+
+<!-- ══ ۶ · چهار تصمیم ══════════════════════════════════════════════ -->
+<section class="slide" data-name="چهار تصمیم">
+  <header>
+    <div class="eyebrow fd">Your Decisions · 2026-11-02</div>
+    <h2>چهار تصمیمی که گرفتی — و پیامدِ هر کدام</h2>
+    <p class="lede">صادقانه: این <b>سخت‌ترین ترکیبِ ممکن</b> است. نه برایِ دلسرد کردنت — برایِ اینکه نقشه‌یِ راه بر اساسِ واقعیتِ این چهار جواب نوشته شود، نه بر اساسِ خوش‌بینی. هیچ‌کدام وتو نشد؛ مسیرِ اجراییِ هر چهار نوشته شد.</p>
+  </header>
+
+  <div class="grid g2">
+    <div class="panel elev">
+      <div class="ptitle"><span class="n">۱</span> مشتریِ اصلی <span class="badge b-primary">هر سه</span></div>
+      <p class="hint"><b>ریسک:</b> سه جنبشِ فروشِ متفاوت با بودجه‌یِ صفر = هیچ‌کدام عمیق نمی‌شود.<br><b>راه‌حل:</b> این سه، سه کسب‌وکار نیستند — <b>یک زنجیر</b> است (اسلایدِ ۷). «هر سه» یعنی یک قرارداد با سه ذی‌نفع، نه سه قیفِ موازی. ولی نقطه‌یِ <b>ورود</b> باید یکی باشد.</p>
+    </div>
+    <div class="panel elev">
+      <div class="ptitle"><span class="n">۲</span> درآمدِ امروز <span class="badge b-bad">صفر</span></div>
+      <p class="hint"><b>پیامد:</b> اولین هدفِ محصول، «ویژگی» نیست — <b>اولین ده کاربرِ پولی</b> است. پس گران‌ترین وعده‌ها (ویدیو) <b>آخر</b> ساخته می‌شوند، نه اول. و فازِ ۰ <b>هیچ کدی ندارد</b>.</p>
+    </div>
+    <div class="panel elev">
+      <div class="ptitle"><span class="n">۳</span> رابطه‌یِ کانال <span class="badge b-bad">صفر</span></div>
+      <p class="hint"><b>پیامد:</b> گلوگاهِ تو امروز مهندسی نیست. نسبتِ واقع‌بینانه‌یِ فروشِ B2B بی‌سابقه: <b>۱۰ تا ۲۰ گفت‌وگو برایِ یک «بله»</b> — یعنی دو تا سه هفته با روزی دو تماسِ مؤثر. دو برگه‌یِ پیشنهادِ آماده‌یِ ارسال نوشته شد.</p>
+    </div>
+    <div class="panel elev" style="border:1px solid oklch(0.72 0.19 45 / 34%)">
+      <div class="ptitle"><span class="n">۴</span> وعده‌هایِ بی‌پشتوانه <span class="badge b-primary">بمانند و ساخته شوند</span></div>
+      <p class="hint"><b>پیامد:</b> گران‌ترین گزینه‌یِ فهرست، و یک <b>دروازه‌یِ زیرساختیِ سخت</b> دارد (اسلایدِ ۱۰). اگر آن دروازه بسته باشد، وعده رویِ میزبانیِ فعلی <b>اصلاً قابلِ تحویل نیست</b> — و وعده‌یِ غیرقابلِ تحویل همان چیزی است که قانونِ نخستِ برندت ممنوع کرده.<br><b>راه‌حل:</b> تحویلِ دستیِ صادقانه، کد بعداً.</p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="ptitle"><span class="n">★</span> ترتیبِ پیشنهادیِ من در سه جمله</div>
+    <div class="grid g3">
+      <div><p class="hint"><b style="color:var(--primary)">۱.</b> معماریِ پیشنهاد را یکی کن (اسکان · سیگنال · مربی) و متنِ وعده‌ها را راست کن — بدونِ این، هر تبلیغی پولِ هدر است.</p></div>
+      <div><p class="hint"><b style="color:var(--primary)">۲.</b> دفترِ درآمدِ دستی بساز و <span class="mono">checkout</span> را از «دسترسیِ مجانی» درآور — تا بتوانی اندازه بگیری.</p></div>
+      <div><p class="hint"><b style="color:var(--primary)">۳.</b> کانالِ مربی را باز کن و پایلوتِ ۹۰ روزه را با یک «روزِ اسکان» شروع کن — <b>سپس</b> برو سراغِ P33 تا P42.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۷ · زنجیر ═══════════════════════════════════════════════════ -->
+<section class="slide" data-name="زنجیرِ سه حلقه">
+  <header>
+    <div class="eyebrow fd">Go-To-Market · One Chain</div>
+    <h2>«هر سه» را نجات بده: یک زنجیر، نه سه کسب‌وکار</h2>
+    <p class="lede">باشگاه مربی را استخدام می‌کند · مربی ورزشکار را می‌آورد · ورزشکار پول می‌دهد. پس «هر سه» یک <b>قراردادِ سه‌لایه</b> است — ولی برایِ ورود باید <b>یک</b> حلقه را انتخاب کنی.</p>
+  </header>
+
+  <div class="chain" style="margin-bottom:12px">
+    <div class="panel link" style="border-top:2px solid var(--sport-functional)">
+      <div class="ptitle">باشگاه <span class="badge">حلقه‌یِ ۲</span></div>
+      <p class="hint"><b>می‌دهد:</b> مکان · عضو · دستگاهِ InBody · اعتبار<br><b>می‌گیرد:</b> ابزارِ حفظِ عضو + درآمدِ «روزِ اسکان»</p>
+      <p class="hint" style="margin-top:7px;color:var(--success)">لنگر: عضوِ باشگاهِ تخصصیِ تهران همین حالا ۲٫۵ تا ۵٫۵ میلیون تومان <b>ماهانه</b> می‌دهد</p>
+    </div>
+    <div class="arrow"><svg width="26" height="18" viewBox="0 0 26 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M25 9H2"/><path d="M9 2L2 9l7 7"/></svg></div>
+    <div class="panel link" style="border-top:2px solid var(--primary);box-shadow:var(--shadow-glow)">
+      <div class="ptitle">مربی <span class="badge b-primary">نقطه‌یِ ورود</span></div>
+      <p class="hint"><b>می‌دهد:</b> ورزشکار · تخصص · اعتمادِ شخصی<br><b>می‌گیرد:</b> ابزارِ رایگان + سهمِ درآمدی + زمانِ آزاد</p>
+      <p class="hint" style="margin-top:7px;color:var(--primary)"><b>چرا اول:</b> یک نفر با یک تصمیم — نه یک سازمان با سه امضا. و مربیِ شاغل در باشگاه، خودش پلِ ورودِ تو به همان باشگاه است.</p>
+    </div>
+    <div class="arrow"><svg width="26" height="18" viewBox="0 0 26 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M25 9H2"/><path d="M9 2L2 9l7 7"/></svg></div>
+    <div class="panel link" style="border-top:2px solid var(--sport-running)">
+      <div class="ptitle">ورزشکار <span class="badge">حلقه‌یِ ۳</span></div>
+      <p class="hint"><b>می‌دهد:</b> پول · داده‌یِ هفتگی<br><b>می‌گیرد:</b> اسکان · روند · توجهِ مربی</p>
+      <p class="hint" style="margin-top:7px;color:var(--warning)">فروشِ مستقیم: <b>آخر از همه</b> — گران‌ترین کانال با بودجه‌یِ صفر، و رقیب بودجه‌یِ محتوایی دارد</p>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="panel">
+      <div class="ptitle"><span class="n">۱</span> چرا مربی، با عدد</div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t">میانه‌یِ درآمدِ شغلِ «مربی ورزش»: <b class="fd">۳۰ میلیون تومان</b><em>e-estekhdam.com</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t">یک مربی با <b>۱۰ شاگرد</b> × ۱ میلیون تومان = <b class="fd">۱۰ میلیون تومان در ماه</b><em>sunika.ir/job-sports-coach</em></span></div>
+      <div class="rowdot"><span class="dot info"></span><span class="t">درآمدِ مربی به «<b>تعداد شاگردان</b>» هم بستگی دارد — یعنی سقفِ رشدش <b>زمان</b> است، نه دانش<em>e-estekhdam.com</em></span></div>
+      <div class="gate" style="margin-top:9px"><b>زاویه‌یِ فروش:</b> چیزی که مربی می‌خرد <b>برنامه نیست — ظرفیت است.</b> «با همان تعدادِ شاگرد، درآمدت را بالا ببر؛ چون کارِ تکراری از دوشت برداشته می‌شود و گزارشِ داده‌محور، توجیهِ قیمتِ بالاتر است.»</div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">۲</span> سهمِ درآمدی — لنگرها</div>
+      <table>
+        <thead><tr><th>سناریو</th><th>سهمِ مربی</th><th>چرا</th></tr></thead>
+        <tbody>
+          <tr><td>مربی ورزشکار را آورده</td><td class="num" style="color:var(--success)"><b>۷۰–۸۰٪</b></td><td class="hint">او کانالِ توزیع است</td></tr>
+          <tr><td>از باشگاهِ طرفِ قرارداد</td><td class="num" style="color:var(--warning)">۵۰–۶۰٪</td><td class="hint">باشگاه هم سهم می‌خواهد</td></tr>
+          <tr><td>ورزشکار خودش آمده</td><td class="num">—</td><td class="hint">لایه‌یِ «مربی» فروخته نمی‌شود</td></tr>
+        </tbody>
+      </table>
+      <p class="hint" style="margin-top:9px">نرخِ کمیسیون در پلتفرم‌هایِ ایرانی از ۱٪ تا ۲۰٪ در دسته‌هایِ معمول و تا ۷۵٪ برایِ همکارانِ برتر است (<a href="https://narmafzaran.com/" style="color:var(--info)">narmafzaran.com</a>) — اما آن‌ها برایِ <b>فروشِ محصول</b> است، نه مربی‌ای که <b>خودش مشتری می‌آورد</b>.</p>
+      <div class="empty" style="margin-top:9px"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.2 2.4c-.5.2-.7.7-.7 1.3v.3"/><path d="M12 17v.01"/></svg>
+      <div><b>آزمونِ نقطه‌یِ شکست</b><span>از مربی بپرس «چه سهمی تو را وادار می‌کند ۱۰ شاگردت را بیاوری؟» — عددی که می‌گوید، کفِ پیشنهادِ توست. این عدد را من نمی‌دانم و نساختم.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۸ · سه لایه‌یِ پیشنهاد ═══════════════════════════════════════ -->
+<section class="slide" data-name="سه لایه‌یِ پیشنهاد">
+  <header>
+    <div class="eyebrow fd">Offer Architecture</div>
+    <h2>اسکان · سیگنال · مربی — از زبانِ خودِ برندت</h2>
+    <p class="lede">دو فهرستِ متناقضِ امروز (<span class="mono">plans.ts</span> × <span class="mono">subscriptions.PACKAGES</span> = نُه ترکیبِ ممکنِ وصل‌نشده) به <b>یک محورِ روشن</b> تبدیل می‌شود: <b>لایه × افزودنی</b>. و واژگانش را از پیش انتخاب کرده‌ای: «سیگنال و اسکان بر عکس مقدم‌اند».</p>
+  </header>
+
+  <div class="grid g3" style="margin-bottom:12px">
+    <div class="panel" style="border-top:2px solid var(--info)">
+      <div class="ptitle">اسکان <span class="badge b-info">یک‌بار</span></div>
+      <p class="hint">ارزیابیِ کاملِ رشته + آنالیزِ ترکیبِ بدن (InBody <b>یا</b> دستی) + گزارشِ Fitness DNA با <b>منبعِ هر بازه</b>.</p>
+      <div class="kpi" style="margin-top:10px"><span class="v" style="color:var(--info)">۲۵۰–۴۵۰</span><span class="u">هزار تومان · فرضیه</span></div>
+      <p class="hint" style="margin-top:9px"><b>نقش:</b> ورودیِ کم‌اصطکاک. بدونِ درگاهِ دوره‌ای هم فروخته می‌شود · داراییِ داده می‌سازد · <b>نقطه‌یِ اولِ روند است</b> · در باشگاه به‌عنوانِ رویداد قابلِ اجراست.</p>
+      <p class="hint" style="margin-top:7px;color:var(--success)"><b>زنجیره‌اش ساخته شده:</b> نوعِ دامنه ← فرمِ ورودی ← <span class="mono">addBodyAnalysisRecord</span> ← خواندنِ تاریخ‌دار ← پنلِ نمودار (<span class="mono">body-analysis.tsx:115</span>)</p>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--primary);box-shadow:var(--shadow-glow)">
+      <div class="ptitle">سیگنال <span class="badge b-primary">۴۵/۹۰ روز</span></div>
+      <p class="hint">ثبتِ هفتگیِ سه سنجه + <b>روند</b> + جایگاهِ مرجع + ناسازگاری‌ها + توصیه با <span class="mono">why</span>.</p>
+      <div class="kpi" style="margin-top:10px"><span class="v" style="color:var(--primary)">۳۹۰–۶۵۰</span><span class="u">هزار تومان / ۴۵ روز · فرضیه</span></div>
+      <p class="hint" style="margin-top:9px"><b>نقش:</b> موتورِ تمدید. چون تو «بله به روند» گفتی، این لایه <b>دلیلِ بازگشتِ هفته‌یِ چهارم</b> است. افزودنیِ «تغذیه»: <span class="u">+۱۵۰–۲۵۰ هزار تومان</span>.</p>
+      <p class="hint" style="margin-top:7px;color:var(--warning)"><b>پیش‌نیاز:</b> P35 (لایه‌یِ سلامتِ واقعی) — چون <span class="mono">health_metrics</span> امروز صفر مصرف‌کننده دارد (F3).</p>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--success)">
+      <div class="ptitle">مربی <span class="badge b-ok">سهمِ درآمدی</span></div>
+      <p class="hint">مربیِ انسانی رویِ سیگنال: بازبینیِ پیشنهادها، تأیید، برنامه‌یِ دستی، <b>بازبینیِ ویدیویی</b>، چتِ رشته‌ای.</p>
+      <div class="kpi" style="margin-top:10px"><span class="v" style="color:var(--success)">۱٫۲–۲٫۵</span><span class="u">میلیون تومان / ۴۵ روز · فرضیه</span></div>
+      <p class="hint" style="margin-top:9px"><b>نقش:</b> حاشیه‌یِ سود <b>و</b> کانالِ رشد. لنگرش بازارِ مربیِ آنلاین است: ۱٫۵ تا ۳٫۵ میلیون تومان در ماه.</p>
+      <p class="hint" style="margin-top:7px;color:var(--destructive)"><b>پیش‌نیاز:</b> P39 — دروازه‌یِ نام‌نویسیِ مربی امروز بسته است (F4).</p>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="panel">
+      <div class="ptitle"><span class="n">✕</span> مشکلِ معماریِ فعلی</div>
+      <p class="hint">هر دو فهرستِ امروز از سمتِ <b>عرضه</b> نام‌گذاری شده‌اند («تمرین»، «تغذیه»، «AI»، «Human») — از زبانِ تو، نه از زبانِ مشتری. مشتری نمی‌پرسد «combined می‌خواهم یا training؟»؛ می‌پرسد «بدنم چه وضعی دارد؟» و «کی مرا می‌بیند؟».</p>
+      <div class="code" style="margin-top:9px"><span class="c">// دو محورِ جدا که هیچ‌جا ترکیب نمی‌شوند</span>
+suggestPlan(coachingType)  <span class="c">// commerce/service.ts:16 → فقط نوعِ مربی</span>
+getPackage(athleteId)      <span class="c">// subscriptions:16-18 → فقط محتوا، پیش‌فرض "training"</span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">✓</span> یک قاعده‌یِ سختِ تجاری، از دلِ قانونِ نخست</div>
+      <div class="gate" style="margin-top:2px"><b>هیچ لایه‌ای نباید ویژگیِ لایه‌یِ بالاتر را وعده بدهد، و هیچ وعده‌ای نباید بدونِ <span class="mono">capabilityId</span>ِ گره‌خورده به کد نمایش داده شود.</b></div>
+      <p class="hint" style="margin-top:9px">پیشنهاد: یک دروازه‌یِ دائمی در <span class="mono">npm run verify</span> — هر متنی که در <span class="mono">plans.tsx</span> یا <span class="mono">index.tsx</span> به‌عنوانِ ویژگیِ پولی نمایش داده می‌شود باید به یک ماژولِ واقعی گره خورده باشد. وعده‌یِ بی‌گره = شکستِ ساخت. این، قانونِ نخست را از <b>داده</b> به <b>بازاریابی</b> گسترش می‌دهد — جایی که امروز بیشترین نقض را دارد.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۹ · قیمت در برابرِ بازار ════════════════════════════════════ -->
+<section class="slide" data-name="قیمت در برابرِ بازار">
+  <header>
+    <div class="eyebrow fd">Pricing · Market Evidence</div>
+    <h2>قیمتِ تو در برابرِ بازارِ واقعی — کم‌فروشیِ شدید</h2>
+    <p class="lede">قاعده‌یِ نمودار در راست‌به‌چپ: <b>کمینه در راست، بیشینه در چپ</b>. میله‌هایِ نارنجی قیمت‌هایِ خودِ کدِ تو هستند (<span class="mono">src/mock/plans.ts:9,17,27</span>، تقسیم بر ۱۰ به تومان). مقیاس تا ۶ میلیون تومان است؛ هر چه فراتر رود با نشانِ «بیرونِ مقیاس» علامت خورده.</p>
+  </header>
+
+  <div class="panel" style="margin-bottom:12px">
+    <div id="pricechart"></div>
+    <div class="bar-track" style="margin-top:12px;height:1px;background:var(--border)"></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted-foreground);margin-top:5px" class="fd">
+      <span>۶٬۰۰۰٬۰۰۰ تومان / ماه ←</span><span>→ ۰ (کمینه در راست)</span>
+    </div>
+  </div>
+
+  <div class="grid g3">
+    <div class="panel"><div class="ptitle"><span class="n">الف</span> کم‌فروشی</div><p class="hint">لایه‌یِ هوشمندِ تو ۱۴۹ هزار تومان/ماه است؛ ارزان‌ترین لایه‌یِ رقیبِ هوشمند ۳۵۰ هزار تومان <b>برایِ ۴۵ روز</b> ≈ ۲۳۳ هزار تومان/ماه. یعنی حدود <b class="fd" style="color:var(--destructive)">۳۶٪ زیرِ ارزان‌ترین رقیبِ مستقیم</b>. لایه‌یِ مربیِ انسانی‌ات ۷۵۰ هزار تومان است در برابرِ ۱٫۵ تا ۳٫۵ میلیونِ بازار — <b>نصفِ پایین‌ترین نقطه</b>.</p></div>
+    <div class="panel"><div class="ptitle"><span class="n">ب</span> واحدِ زمانیِ غلط</div><p class="hint">بازار <b>بلوکی</b> می‌خرد نه ماهانه: فیتاپ ۴۵ روز · آسان‌اسپرت ۱۲ جلسه · مربیِ خصوصی ۱۲ جلسه. کدِ تو <span class="mono">priceMonthly</span> دارد. سه سودِ تغییرش: هم‌خوانی با عادتِ خرید · نقدینگیِ جلو · <b>حذفِ نیاز به تمدیدِ خودکار</b> (سخت‌ترین بخشِ پرداخت در ایران).</p></div>
+    <div class="panel"><div class="ptitle"><span class="n">ج</span> اقتصادِ مربی می‌شکند</div><p class="hint">۷۵۰ هزار تومان به‌ازایِ هر ورزشکار یعنی مربی برایِ زنده ماندن به <b>چند ده شاگرد</b> نیاز دارد — و آن‌وقت «برنامه‌نویسیِ دستیِ روزانه» و «پشتیبانیِ اولویت‌دار» عملاً ناممکن می‌شود. یعنی <b>وعده‌یِ همان پلن از درون می‌شکند.</b></p></div>
+  </div>
+
+  <p class="src">
+    <b>منابعِ نمودار:</b>
+    <a href="https://fittup.ir/">fittup.ir</a> (۳۵۰/۸۰۰/۱٬۲۰۰/۱٬۸۰۰ هزار تومان برایِ ۴۵ روز؛ و «مربیِ سنتی: ماهانه ۲–۵ میلیون تومان») ·
+    <a href="https://asansports.com/">asansports.com</a> (مربیِ آنلاین: ۱٬۵۰۰٬۰۰۰ تومان / ۱۲ جلسه · کلاسِ گروهیِ کراس‌فیت مشهد: ۱۵۰٬۰۰۰ / ۱۲ جلسه) ·
+    <a href="https://66-market.com/">66-market.com</a> (خصوصیِ تهران ۶–۲۰ میلیون / ۱۲ جلسه · شهرستان ~۲ میلیون به بالا · آنلاین از ۳٫۵ میلیون/ماه) ·
+    <a href="https://hyleplus.com/best-fitness-clubs-in-tehran/">hyleplus.com</a> (باشگاهِ تخصصیِ تهران ۲٫۵–۵٫۵ میلیون تومان/ماه) ·
+    <a href="https://www.e-estekhdam.com/">e-estekhdam.com</a> (میانه‌یِ درآمدِ مربی: ۳۰ میلیون تومان) ·
+    <a href="https://sunika.ir/job-sports-coach">sunika.ir</a> (۱۰ شاگرد × ۱ میلیون = ۱۰ میلیون/ماه).
+    <br><b>یادداشتِ روش:</b> «معادلِ ماهانه» برایِ بسته‌هایِ ۴۵ روزه با <span class="mono">×۳۰/۴۵</span> محاسبه شده و صریحاً <b>مشتقِ ما</b> است، نه عددِ منبع.
+  </p>
+</section>
+
+<!-- ══ ۱۰ · دروازه‌یِ زیرساخت ══════════════════════════════════════ -->
+<section class="slide" data-name="دروازه‌یِ ویدیو">
+  <header>
+    <div class="eyebrow fd">Infrastructure Gate · Decision #4</div>
+    <h2>دروازه‌یِ زیرساختِ ویدیو — پیش از نوشتنِ یک خط کد</h2>
+    <p class="lede">تو گفتی «بمانند و واقعاً ساخته شوند». این تصمیم محترم است؛ کارِ من این است که بگویم <b>چگونه</b> ممکن است. و پاسخ، سه پرسش است که باید همین هفته <b>کتبی</b> از میزبان بپرسی.</p>
+  </header>
+
+  <div class="grid g2" style="margin-bottom:12px">
+    <div class="panel" style="border-inline-start:2px solid var(--destructive)">
+      <div class="ptitle"><span class="dot bad"></span> شکافِ سه‌رقمی</div>
+      <div id="limitchart"></div>
+      <p class="hint" style="margin-top:10px">و بدترین بخش: nginx درخواست را <b>پیش از اجرایِ کدِ تو</b> رد می‌کند — <b>بدونِ لاگ، بدونِ اثر</b>، بی‌آنکه چیزی برایِ دیباگ بماند. پس «کد را نوشتم ولی کار نمی‌کند» حتی قابلِ تشخیص نیست.</p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">؟</span> سه پرسشی که باید کتبی بپرسی</div>
+      <div class="rowdot"><span class="dot bad"></span><span class="t"><b>۱. سقفِ اندازه‌یِ بدنه‌یِ درخواست</b> در این اپلیکیشنِ Passenger چقدر است و آیا اجازه‌یِ تغییرش را دارم؟<em>اگر پاسخ «۱ مگابایت و نه» باشد — بارگذاریِ ویدیو رویِ این سرور <b>ممکن نیست</b>. نقطه.</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>۲. سهمیه‌یِ دیسک و اینود</b> چقدر است؟<em>۲۰ ورزشکار × ۴ ویدیویِ ماهانه × ۲۰۰ مگابایت = <b>۱۶ گیگابایت در ماه</b>. میزبانیِ اشتراکی را در چند ماه می‌بلعد.</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>۳. پهنایِ باند</b> چقدر است؟<em>هر ویدیو یک بار بالا می‌رود و دستِ کم دو بار پایین می‌آید (مربی + ورزشکار).</em></span></div>
+      <div class="gate" style="margin-top:10px"><b>اگر جوابِ پرسشِ ۱ «نه» بود</b> (که رویِ میزبانیِ اشتراکی محتمل‌ترین جواب است): ویدیو <b>هرگز</b> رویِ سرورِ اپ نرود — مستقیم به یک فضایِ ابریِ سازگار با S3 برود و اپ فقط <b>نشانی و فراداده</b> را در پایگاهِ داده نگه دارد. این، محدودیتِ بدنه را دور می‌زند چون بارگذاری از سرورِ تو عبور نمی‌کند.</div>
+      <p class="hint" style="margin-top:9px">نکته‌یِ امنیتی: سقفِ بزرگ را <b>فقط رویِ مسیرِ بارگذاری</b> بگذار، نه کلِ سایت — و <span class="mono">client_max_body_size 0</span> رویِ مسیرِ عمومی <b>هرگز</b>.</p>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="panel" style="border-inline-start:2px solid var(--success)">
+      <div class="ptitle"><span class="n">★</span> راهِ میانه: وعده راست بماند، تحویل دستی، کد بعداً</div>
+      <div class="code">ورزشکار ویدیو را در واتساپ/تلگرام برایِ مربی می‌فرستد
+  <span class="k">→</span> مربی بازبینی و حاشیه‌نویسی می‌کند
+  <span class="k">→</span> نتیجه در FitLytix به‌عنوانِ «پیشنهادِ تأییدشده» ثبت می‌شود
+     <span class="c">(معماری‌اش از پیش هست: needs_review → تأییدِ مربی، AGENTS.md:19)</span></div>
+      <p class="hint" style="margin-top:9px">وعده‌یِ «بازبینیِ ویدیوییِ حرکات <b>توسطِ مربی</b>» کاملاً راست است — مربی واقعاً می‌بیند و نظرِ کارشناسی می‌دهد. تنها چیزی که ساخته نشده، <b>بارگذاریِ درون‌برنامه‌ای</b> است: یک جزئیاتِ راحتی، نه خودِ خدمت.</p>
+      <p class="hint" style="margin-top:7px"><b>سه سود:</b> خدمتِ واقعی با انسانِ واقعی تحویل می‌شود · پیش از سرمایه‌گذاری در زیرساختِ گران، <b>تقاضا آزموده می‌شود</b> (اگر ویدیو نفرستادند، بارگذاریِ درون‌برنامه‌ای هم نمی‌خواستند) · با قانونِ نخست هم‌خوان است.</p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">≠</span> دو تفکیکِ حیاتی</div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>«تحلیلِ ویدیویی» دو چیزِ متفاوت است</b><em>(الف) بازبینیِ <b>انسانی</b>: هزینه‌یِ کم، هفته‌ها، ارزشِ تجاریِ بالا — همان چیزی که مشتری ۱٫۵ تا ۳٫۵ میلیون برایش می‌دهد.<br>(ب) تحلیلِ <b>خودکارِ</b> حرکت (pose estimation): یک پروژه‌یِ جدیِ یادگیریِ ماشین، ماه‌ها تا سال، نیازمندِ GPU و داده‌یِ آموزشی.</em></span></div>
+      <div class="gate" style="margin-top:8px"><b>(الف) را بساز و متن را عوض کن:</b> «تحلیلِ ویدیویی حرکات» → «بازبینیِ ویدیوییِ حرکات <b>توسطِ مربی</b>». این عقب‌نشینی نیست، ارتقاست: راست‌تر است، و گران‌تر می‌فروشد — چون توجهِ انسانِ متخصص کمیاب‌ترین چیزِ این بازار است.</div>
+      <div class="rowdot" style="margin-top:10px"><span class="dot ok"></span><span class="t"><b>«چت با مربی» ≠ «چت با AI»</b><em>آن <span class="mono">engine.ts:7</span> که گفته «NOT a chat surface» درباره‌یِ <b>موتورِ هوشمند</b> است. پیام‌رسانیِ انسان-انسان هیچ تضادی با معماری ندارد — و پایه‌اش آماده است: <span class="mono">notifications/service.ts</span> + معماریِ «پیش‌نویس تا تأیید».</em></span></div>
+      <p class="hint" style="margin-top:8px"><b>پیشنهاد:</b> چت را <b>رشته‌یِ موضوع‌دار</b> کن، نه چتِ آزاد — هر رشته به یک <span class="mono">proposal</span> یا <span class="mono">session</span> گره بخورد. سه سود: ارزشِ هر پیام بالاتر · تاریخچه‌یِ مربی‌گری خودبه‌خود ساخته می‌شود (داراییِ داده) · با معماریِ موجود هم‌خوان است.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۱۱ · پیشنهادهایِ فنی ════════════════════════════════════════ -->
+<section class="slide" data-name="P33–P42">
+  <header>
+    <div class="eyebrow fd">Technical Proposals · P33 – P42</div>
+    <h2>ده پیشنهادِ فنیِ تازه — ادامه‌یِ P01 تا P32</h2>
+    <p class="lede">هر کدام با بلوکِ پرامپتِ آماده‌یِ رونوشت در <span class="mono">docs/proposals-2026-11.md</span> آمده، تا بتوانی به یک نشستِ تازه بدهی. «فاز» به نقشه‌یِ اسلایدِ ۱۲ ارجاع می‌دهد.</p>
+  </header>
+
+  <div class="grid g2" id="techgrid"></div>
+
+  <p class="src">بازگشتِ P24 تا P32 سندِ خودت: همه‌شان <b>پسِ</b> P33 معنا دارند، چون به پرونده‌هایی تکیه می‌کنند که یا در گیت نیستند یا با سرور فرق دارند. استثنا: <b>P36</b> (مرجع‌ها) را می‌توان پیش از آشتی از صفر در گیت نوشت، چون پرونده‌اش در گیت وجود ندارد.</p>
+</section>
+
+<!-- ══ ۱۲ · نقشه‌یِ راه ════════════════════════════════════════════ -->
+<section class="slide" data-name="نقشه‌یِ راه">
+  <header>
+    <div class="eyebrow fd">Roadmap · Phases 0 – 4</div>
+    <h2>نقشه‌یِ راه — با دروازه‌یِ خروج برایِ هر فاز</h2>
+    <p class="lede">قاعده: <b>هیچ ویژگیِ تازه‌ای پیش از پاس شدنِ دروازه‌یِ فازِ قبل ساخته نشود.</b> این همان قانونِ سومِ سندِ خودت است («هر مرحله پیش از رفتن به مرحله‌یِ بعد تأیید شود») — فقط این بار در سطحِ کسب‌وکار.</p>
+  </header>
+
+  <div class="grid g2">
+    <div class="panel">
+      <div class="phase now">
+        <div class="ph fd">فازِ ۰</div>
+        <div class="body">
+          <b>بدونِ کد <span class="badge b-primary" style="margin-inline-start:6px">همین حالا</span></b>
+          <span class="wk">هفته‌یِ ۱ تا ۳</span>
+          <p class="hint" style="margin-top:5px">فهرستِ ۲۰ مربی · سه پرسشِ زیرساخت از میزبان (کتبی) · آماده‌سازیِ برگه‌یِ پیشنهاد · ۲۰ گفت‌وگو · راست‌کردنِ متنِ صفحه‌یِ قیمت</p>
+          <div class="gate"><b>دروازه:</b> یا یک مربیِ بله داری، یا ۲۰ «نه» — و <b>هر دو اطلاعاتِ ارزشمند است</b>. ۲۰ «نه» یعنی پیشنهاد اشکال دارد، نه محصول.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph fd">فازِ ۱</div>
+        <div class="body">
+          <b>حداقل کد برایِ اولینِ درآمد</b>
+          <span class="wk">هفته‌یِ ۴ تا ۶</span>
+          <p class="hint" style="margin-top:5px">۱) <b>P33 آشتیِ سرور و گیت</b> · ۲) درمانِ <b>F1</b> (<span class="mono">answer_json</span>) و <b>F2</b> (پیش‌فرضِ <span class="mono">crossfit</span>) · ۳) بستنِ دسترسیِ مجانیِ <span class="mono">checkout.tsx:41-43</span> · ۴) دفترِ پرداختِ دستی · ۵) <b>اسکان</b> به‌عنوانِ محصولِ یک‌بارفروش + گزارشِ PDF</p>
+          <div class="gate"><b>دروازه:</b> نخستین تراکنشِ واقعیِ ثبت‌شده — حتی یک اسکانِ ۲۵۰ هزار تومانی.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph fd">فازِ ۲</div>
+        <div class="body">
+          <b>حلقه‌یِ ماندگاری</b>
+          <span class="wk">هفته‌یِ ۷ تا ۱۲</span>
+          <p class="hint" style="margin-top:5px">۱) <b>P35</b> لایه‌یِ سلامتِ واقعی · ۲) سه سنجه‌یِ هفتگی: وزن · ضربانِ استراحت · خواب · ۳) ریتمِ «سیگنالِ هفته» · ۴) جایگاهِ تهی ← اقدامِ قابلِ خرید · ۵) کانالِ مربی: نام‌نویسیِ نقش + <span class="mono">coach_profiles</span> (<b>P39</b>)</p>
+          <div class="gate"><b>دروازه:</b> WAR ≥ ۵۰٪ <b>و</b> بازگشتِ هفته‌یِ چهارم ≥ ۳۰٪.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="phase">
+        <div class="ph fd">فازِ ۳</div>
+        <div class="body">
+          <b>ویدیو و چت <span class="badge b-warn" style="margin-inline-start:6px">مشروط</span></b>
+          <span class="wk">هفته‌یِ ۱۳+ — <b>فقط اگر فازِ ۲ پاس شد</b></span>
+          <p class="hint" style="margin-top:5px">۱) ذخیره‌سازیِ بیرونیِ ویدیو · ۲) بارگذاری + پخش + حاشیه‌نویسیِ زمانی · ۳) چتِ رشته‌ایِ موضوع‌دار</p>
+          <div class="gate"><b>چرا آخر؟</b> گران‌ترین بخش است و تنها بخشی است که <b>بدونِ کاربرِ فعال هیچ ارزشی ندارد</b>. ویدیو برایِ ورزشکاری که هفته‌ای یک بار وزنش را ثبت نمی‌کند، بی‌معنا است. در تمامِ این مدت وعده <b>راست</b> می‌ماند — چون تحویلِ دستی انجام می‌شود.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="ph fd">فازِ ۴</div>
+        <div class="body">
+          <b>باشگاه و فروشِ مستقیم</b>
+          <span class="wk">پسِ اثبات</span>
+          <p class="hint" style="margin-top:5px">«روزِ اسکان» در باشگاهِ مربیِ اول (ورودِ حلقه‌یِ دومِ زنجیر) · لایسنسِ سایتیِ ماهانه · سپس فروشِ مستقیم به ورزشکار — <b>آخر از همه</b>، چون گران‌ترین کانال است.</p>
+          <div class="gate"><b>چرا بعد از روزِ اسکان؟</b> مدیرِ باشگاه یک <b>رویدادِ موفق</b> را به یک قراردادِ ماهانه تبدیل می‌کند، نه یک دموی نرم‌افزار را.</div>
+        </div>
+      </div>
+      <div class="panel elev" style="margin-top:12px">
+        <div class="ptitle"><span class="n">!</span> تنها کدی که <b>پیش از</b> اولین روزِ اسکان لازم است</div>
+        <p class="hint"><b>F2</b> — پیش‌فرضِ <span class="mono">"crossfit"</span> در شش جا. یعنی در اولین رویدادِ تجاریِ تاریخِ محصولت، <b>هر عضوِ باشگاهِ بدنسازی بی‌آنکه بگوید «کراس‌فیتر» ثبت می‌شود</b> و گزارشش غلط از آب درمی‌آید. ارزان‌ترین بیمه‌یِ کلِ برنامه.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ۱۳ · شاخص‌ها ════════════════════════════════════════════════ -->
+<section class="slide" data-name="شاخص‌ها">
+  <header>
+    <div class="eyebrow fd">KPIs &amp; Pivot Criteria</div>
+    <h2>پنج شاخص — و نشانه‌هایِ تغییرِ مسیر</h2>
+    <p class="lede">همه‌یِ پنج شاخص <b>بدونِ ابزارِ تحلیلیِ بیرونی</b> قابلِ محاسبه‌اند — از جدول‌هایی که کوچِ ۰۰۱ و ۰۰۲ ساخته‌اند (<span class="mono">assessments</span> · <span class="mono">health_metrics</span> · <span class="mono">subscriptions</span> · <span class="mono">payment_transactions</span> · <span class="mono">audit_logs</span>).</p>
+  </header>
+
+  <div class="grid g2" style="margin-bottom:12px">
+    <div class="panel">
+      <div class="ptitle"><span class="n">۵</span> شاخص‌ها</div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>WAR — ثبتِ هفتگیِ سیگنال</b><em>شمارِ ورزشکارانی که در هفته‌یِ گذشته <b>یک سیگنال ثبت کرده‌اند</b>. MAU بی‌فایده است: ورود بدونِ ثبت، داده نمی‌سازد. آستانه‌یِ فازِ ۲: ≥ ۵۰٪</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>بازگشتِ هفته‌یِ چهارم</b><em>چند درصدِ کاربرانِ هفته‌یِ ۱ در هفته‌یِ ۴ هم ثبت کرده‌اند. نقطه‌یِ تصمیمِ تمدید، و نقطه‌ای که نخستین خطِ روندِ واقعی دیده می‌شود. آستانه: ≥ ۳۰٪</em></span></div>
+      <div class="rowdot"><span class="dot info"></span><span class="t"><b>اسکانِ پولی در ماه</b><em>تنها درآمدِ بی‌وابسته به درگاهِ دوره‌ای</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>درصدِ تهیِ داشبورد</b><em>چند درصد از جایگاه‌هایِ یک ورزشکارِ فعال تهی است. <b>هم</b> صحتِ محصول، <b>هم</b> درآمد، <b>هم</b> صداقتِ برند — چون درصدِ خالی بودن را اندازه می‌گیری و به کاربر هم نشان می‌دهی، به‌جایِ اینکه با عددِ قلابی پُرش کنی</em></span></div>
+      <div class="rowdot"><span class="dot info"></span><span class="t"><b>سهمِ مربی از درآمد</b><em>اگر زیرِ ~۵۰٪ ماند، کانالِ رشد کار نمی‌کند</em></span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><span class="n">⚑</span> معیارهایِ تغییرِ مسیر — پیش از شروع، نه بعد از شکست</div>
+      <div class="tscroll">
+      <table>
+        <thead><tr><th>نشانه</th><th>معنا</th><th>اقدام</th></tr></thead>
+        <tbody>
+          <tr><td>۲۰ گفت‌وگو → ۰ بله</td><td class="hint">پیشنهاد اشتباه است، نه محصول</td><td class="hint">سه پرسشِ تشخیصیِ §۶٫۲</td></tr>
+          <tr><td>میزبان اجازه‌یِ تغییرِ سقفِ بارگذاری نمی‌دهد</td><td class="hint">ویدیو رویِ این سرور ممکن نیست</td><td class="hint">ذخیره‌سازیِ بیرونی، یا بازتعریفِ دائمیِ وعده به «بازبینیِ دستی»</td></tr>
+          <tr><td>WAR &lt; ۳۰٪ در هفته‌هایِ ۷–۱۲</td><td class="hint">ریتمِ هفتگی نمی‌چسبد</td><td class="hint">«روند» را نفروش — چیزی برایِ نشان دادن نیست</td></tr>
+          <tr><td>بازگشتِ هفته‌یِ ۴ &lt; ۲۵٪</td><td class="hint">بلوکِ ۴۵ روزه تمدید نمی‌شود</td><td class="hint">پیش از هر تبلیغی، ارزشِ هفته‌یِ چهارم را پیدا کن</td></tr>
+          <tr><td>مربیِ اول ورزشکارش را نیاورد</td><td class="hint">سهمِ درآمدی جذاب نیست</td><td class="hint">سهم را با عددِ واقعیِ خودش باز کن</td></tr>
+          <tr><td>درصدِ تهی پسِ ۸ هفته پایین نیامد</td><td class="hint">کاربر داده ثبت نمی‌کند</td><td class="hint">اصطکاکِ ثبت را کم کن، نه ویژگی‌ها را زیاد</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="gate" style="margin-top:10px">قانونِ نخست را برایِ <b>تصمیم‌هایِ تجاری</b> هم بگذار: هر عددی که اینجا می‌بینی یا از کد آمده، یا از بازارِ مستند، یا صریحاً «فرضیه» نامیده شده. هیچ‌کدام ساخته نشده.</div>
+    </div>
+  </div>
+
+  <div class="grid g4">
+    <div class="panel"><div class="ptitle">حلقه‌یِ «سیگنالِ هفته»</div><p class="hint">شنبه، ساعتِ ۹ — <b>۱.</b> یک عدد که تکان خورده · <b>۲.</b> چرا تکان خورده (<span class="mono">why</span> + <span class="mono">inputs</span> — امروز در کد هست) · <b>۳.</b> یک اقدامِ مشخص · <b>۴.</b> کجایِ بازه هستی. چهار عنصر، <b>سه تایشان ساخته‌اند</b> — جز عنصرِ ۱ که به داده‌یِ چند-نقطه‌ای نیاز دارد (P35). یعنی این حلقه یک کارِ <b>وصل‌کردن</b> است، نه <b>ساختن</b>.</p></div>
+    <div class="panel"><div class="ptitle">کمینه‌یِ داده برایِ روند</div><p class="hint">سه سنجه × هفته‌ای یک بار = <b class="fd" style="color:var(--primary)">۱۲ نقطه در ماه</b> → نخستین خطِ روندِ واقعی در هفته‌یِ چهارم. <b>وزن · ضربانِ استراحت · خواب</b> — هر سه بازه‌یِ مرجعِ مستند دارند (P12). HRV و بارِ تمرین <b>عمداً</b> نیستند: مرجعِ معتبر ندارند، و سنجه‌یِ بی‌مرجع را نمی‌توان فروخت.</p></div>
+    <div class="panel"><div class="ptitle">جایگاهِ تهی = صفحه‌یِ فروش</div><p class="hint">«روند نداریم» ← وزنِ این هفته را ثبت کن (رایگان، ولی کاربر را به ریتم می‌آورد) · «ترکیبِ بدن نداریم» ← <b>اسکان رزرو کن</b> (پولی) · «مرجعِ HRV نداریم» ← <b>هیچ اقدامِ پولی</b>، فقط صداقت. قاعده: هر جایگاهِ تهی <b>یا</b> اقدامِ رایگان دارد <b>یا</b> پیشنهادِ پولی — و <b>هرگز</b> عددِ قلابی.</p></div>
+    <div class="panel"><div class="ptitle">اعتماد: تنها خندق</div><p class="hint">رقیب «آنالیزِ ویدیویی + آزمایش خون + عکس» می‌فروشد و مربیِ سنتی را به «نظراتِ ذهنی و متغیر» متهم می‌کند. تو می‌توانی <b>«داده‌یِ قابلِ اتکا»</b> بفروشی: منبعِ هر بازه + دلیلِ هر توصیه. سه کارِ ارزان: منبع را در UI نشان بده · <span class="mono">audit_logs</span> را به «تاریخچه‌یِ داده‌یِ من» تبدیل کن · صفحه‌یِ عمومیِ «چه ذخیره می‌کنیم / هرگز چه را نه».</p></div>
+  </div>
+</section>
+
+<!-- ══ ۱۴ · این هفته ═══════════════════════════════════════════════ -->
+<section class="slide" data-name="این هفته">
+  <header>
+    <div class="eyebrow fd">This Week · Zero Code</div>
+    <h2>این هفته، سه کار — هیچ‌کدام کد نیست</h2>
+    <p class="lede">چون صفر رابطه و صفر درآمد داری، گلوگاهِ تو امروز مهندسی نیست. این سه کار باید <b>پیش از</b> اولین گفت‌وگو آماده باشند — چون مربی در آن جلسه، صفحه‌یِ قیمتِ تو را باز می‌کند.</p>
+  </header>
+
+  <div class="grid g3" style="margin-bottom:12px">
+    <div class="panel" style="border-top:2px solid var(--destructive)">
+      <div class="ptitle"><span class="n">۱</span> سه پرسش از میزبان</div>
+      <p class="hint">یک تیکت یا ایمیل. <b>هزینه‌اش صفر است</b> و کلِ فازِ ۳ به آن گره خورده — اگر جواب «نه» باشد، وعده‌یِ ویدیو رویِ این سرور ممکن نیست و باید به فضایِ ابری برود.</p>
+      <div class="code" style="margin-top:8px;font-size:10.5px">۱. سقفِ اندازه‌یِ بدنه‌یِ درخواستِ این اپِ
+   Passenger چقدر است؟ اجازه‌یِ تغییر دارم؟
+۲. سهمیه‌یِ دیسک و اینود؟
+۳. سقفِ پهنایِ باندِ ماهانه؟</div>
+      <p class="hint" style="margin-top:8px;color:var(--primary)"><b>اول این را بگذار</b> — چون جوابش ارزان‌ترین اطلاعاتی است که می‌توانی بخری.</p>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--primary)">
+      <div class="ptitle"><span class="n">۲</span> فهرستِ ۲۰ مربی</div>
+      <p class="hint">دو ساعت کار، بدونِ کد. جست‌وجویِ اینستاگرام با همان پنج رشته‌یِ محصول: <span class="mono">crossfit · hyrox · functional · bodybuilding · running</span>.</p>
+      <div class="rowdot" style="margin-top:6px"><span class="dot ok"></span><span class="t"><b>معیارِ انتخاب</b><em>مربی‌ای که <b>همین حالا</b> آنلاین برنامه می‌فروشد — یعنی دردِ «مدیریتِ ۲۰ شاگردِ پراکنده» را امروز حس می‌کند</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><b>برایِ هر کدام سه داده</b><em>نام/آیدی · رشته · نشانه‌یِ فروشِ آنلاین · <b>یک نکته‌یِ شخصی از محتوایش</b></em></span></div>
+      <div class="gate" style="margin-top:8px">آن نکته‌یِ شخصی، تفاوتِ بینِ «پیامِ انبوه» و «گفت‌وگو» است. پنج تایِ اول را <b>دستی</b> پیام بده. اگر از پنج تا صفر جواب گرفتی، <b>پیشنهاد اشکال دارد نه فهرست.</b></div>
+    </div>
+    <div class="panel" style="border-top:2px solid var(--warning)">
+      <div class="ptitle"><span class="n">۳</span> راست‌کردنِ متنِ قیمت</div>
+      <p class="hint">سه جمله — هر سه کوچک، هر سه پیش از اولین جلسه:</p>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>«تحلیلِ ویدیویی حرکات»</b><em>→ «بازبینیِ ویدیوییِ حرکات <b>توسطِ مربی</b>» — یک کلمه، و کلِ تفاوتِ بینِ وعده‌یِ راست و وعده‌یِ گمراه‌کننده</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>توصیه‌یِ ساختگی</b><em><span class="mono">plans.tsx:40</span> به هر بازدیدکننده می‌گوید «Fitness DNA «موتور قدرتی» و هدفِ Snatch ۹۰ کیلو». مشروطش کن به ارزیابیِ واقعی — یا بگو «نمونه»</em></span></div>
+      <div class="rowdot"><span class="dot warn"></span><span class="t"><b>واحدِ قیمت</b><em>از <span class="mono">priceMonthly</span> به بلوکِ ۴۵ روزه — بازار بلوکی می‌خرد</em></span></div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="panel elev">
+      <div class="ptitle"><span class="n">★</span> پیش‌نیازِ هر دو جلسه‌یِ فروش: یک گزارشِ نمونه‌یِ واقعی</div>
+      <p class="hint">امروز نمی‌توانی گزارشِ واقعی نشان بدهی، چون داده‌یِ چند-نقطه‌ای نداری — همه‌یِ نه سنجه‌یِ پایگاهِ زنده <b>یک</b> برچسبِ زمان دارند (P10).</p>
+      <div class="gate" style="margin-top:8px"><b>راه‌حل، بیِ صبر کردن برایِ کد:</b> یک نفر (خودت یا یک ورزشکارِ داوطلب) را اسکان کن — ارزیابیِ کامل + یک اندازه‌گیریِ ترکیبِ بدن. گزارشِ واقعیِ همان یک نفر، <b>به‌همراهِ جایگاه‌هایِ خالیِ صادقانه‌اش</b>، قوی‌ترین چیزِ جلسه است: چون نشان می‌دهد وقتی داده نیست، دروغ نمی‌گویی.</div>
+    </div>
+    <div class="panel elev">
+      <div class="ptitle"><span class="n">✓</span> شش سندِ تحویل‌شده در <span class="mono">docs/</span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><span class="mono">project-prompts.md</span><em>تاریخچه‌یِ P01–P32 (سندِ خودت، اکنون زیرِ نسخه‌کنترل)</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><span class="mono">proposals-2026-11.md</span><em>پیشنهادهایِ فنیِ P33–P42 با بلوکِ پرامپتِ آماده</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><span class="mono">business-proposals-2026-11.md</span><em>یافته‌هایِ بیزینسی + قیمتِ بازار + ممیزیِ وعده</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><span class="mono">business-plan-decisions-2026-11.md</span><em>چهار تصمیمِ تو + نقشه‌یِ فازهایِ ۰ تا ۴</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><span class="mono">offer-sheet-coach.md</span><em>برگه‌یِ مربی + متنِ پیامِ نخست + سناریویِ جلسه + چهار «نه» و جوابشان</em></span></div>
+      <div class="rowdot"><span class="dot ok"></span><span class="t"><span class="mono">offer-sheet-gym.md</span><em>برگه‌یِ «روزِ اسکان» + مدلِ درآمدی + پیامِ نخست برایِ مدیرِ باشگاه</em></span></div>
+      <p class="hint" style="margin-top:9px;color:var(--success)"><b>هیچ کدی تغییر نکرد</b> · <span class="mono">git diff --stat</span> خالی است · هیچ کامیتی زده نشد · هیچ قیمتی در <span class="mono">plans.ts</span> عوض نشد.</p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px;text-align:center">
+    <p class="hint" style="font-size:12.5px">
+      <b class="fd" style="color:var(--primary)">«بدنت را بشناس. مسیرت را بساز.»</b>
+      &nbsp;·&nbsp; این تمپلیت هم با همان قانون ساخته شد: هر عدد یا از کد آمده با <span class="mono">مسیر:خط</span>، یا از بازارِ مستند با پیوند، یا صریحاً «فرضیه» نامیده شده.
+      <b>هیچ عددی ساخته نشد.</b>
+    </p>
+  </div>
+</section>
+
+</main>
+
+<!-- دکمه‌هایِ پیمایش: گرد، ۴۶ پیکسل، همیشه پیدا، بر لبه‌یِ اسلاید — نه در حالتِ هاور -->
+<button class="nav nav-prev" id="prev" aria-label="اسلایدِ قبلی" title="قبلی (→)">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+</button>
+<button class="nav nav-next" id="next" aria-label="اسلایدِ بعدی" title="بعدی (←)">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+</button>
+
+<footer class="controls">
+  <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+  <div class="crow">
+    <div class="meta">
+      <button class="btn" id="toggle" aria-pressed="false">توقف</button>
+      <span class="slidename" id="slidename">جلد</span>
+    </div>
+    <div class="dots" id="dots" role="tablist" aria-label="اسلایدها"></div>
+    <div class="meta"><span class="fd" id="counter">۱ / ۱۴</span><span>·</span><span>← → · کشیدن با انگشت</span></div>
+  </div>
+</footer>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ── داده‌ها: همه از بررسیِ واقعیِ ریپو ───────────────────────────── */
+var TABS = [
+  {n:"dashboard",   fa:"داشبورد",        gl:189, gm:18, sl:280, sm:10},
+  {n:"program",     fa:"برنامه",         gl:253, gm:6,  sl:257, sm:5},
+  {n:"performance", fa:"عملکرد",         gl:124, gm:16, sl:403, sm:0},
+  {n:"nutrition",   fa:"تغذیه",          gl:63,  gm:9,  sl:68,  sm:4},
+  {n:"fitness-dna", fa:"دی‌ان‌ای",       gl:61,  gm:6,  sl:66,  sm:5},
+  {n:"passport",    fa:"گذرنامه",        gl:54,  gm:4,  sl:58,  sm:3},
+  {n:"goals",       fa:"هدف‌ها",          gl:47,  gm:6,  sl:52,  sm:5},
+  {n:"recovery",    fa:"ریکاوری",        gl:46,  gm:9,  sl:51,  sm:7},
+  {n:"health",      fa:"سلامت",          gl:36,  gm:6,  sl:43,  sm:4}
+];
+var PRICES = [
+  {l:"FitLytix · AI Coach",           v:149000,  mine:true,  s:"کدِ تو — plans.ts:9"},
+  {l:"فیتاپ · اقتصادی (۴۵ روز)",      v:233333,  s:"۳۵۰٬۰۰۰ / ۴۵ روز · fittup.ir"},
+  {l:"FitLytix · Hybrid",             v:390000,  mine:true,  s:"کدِ تو — plans.ts:17"},
+  {l:"فیتاپ · استاندارد (۴۵ روز)",    v:533333,  s:"۸۰۰٬۰۰۰ / ۴۵ روز · fittup.ir"},
+  {l:"FitLytix · Human Coach Pro",    v:750000,  mine:true,  s:"کدِ تو — plans.ts:27"},
+  {l:"فیتاپ · پیشرفته (۴۵ روز)",      v:800000,  s:"۱٬۲۰۰٬۰۰۰ / ۴۵ روز · fittup.ir"},
+  {l:"فیتاپ · حرفه‌ای (۴۵ روز)",      v:1200000, s:"۱٬۸۰۰٬۰۰۰ / ۴۵ روز · fittup.ir"},
+  {l:"مربیِ آنلاین (۱۲ جلسه)",        v:1500000, s:"asansports.com"},
+  {l:"باشگاهِ تخصصیِ تهران (کمینه)",  lo:2500000, hi:5500000, s:"hyleplus.com"},
+  {l:"مشاوره‌یِ آنلاینِ مربیِ سرشناس", v:3500000, s:"۶۶-market.com"},
+  {l:"مربیِ خصوصیِ تهران (۱۲ جلسه)",  lo:6000000, hi:20000000, over:true, s:"۶۶-market.com"}
+];
+var LIMITS = [
+  {l:"nginx · client_max_body_size", v:1,     c:"bad",  s:"پیش‌فرض — getpagespeed.com"},
+  {l:"PHP · upload_max_filesize",    v:2,     c:"bad",  s:"pulsetic.com"},
+  {l:"پارسرِ JSON در Express",       v:0.1,   c:"bad",  s:"pulsetic.com"},
+  {l:"PHP · post_max_size",          v:8,     c:"warn", s:"pulsetic.com"},
+  {l:"Cloudflare · Free/Pro",        v:100,   c:"info", s:"pulsetic.com"},
+  {l:"ویدیویِ تمرین با موبایل",      lo:50, hi:500, c:"ok", s:"بازه‌یِ واقعیت"}
+];
+var TECH = [
+  {id:"P33", t:"آشتیِ دو بدن",                ph:"فازِ ۱", c:"bad",  e:"بزرگ",
+   why:"تا نشود، P24–P32 رویِ پرونده‌هایی نوشته می‌شوند که در گیت نیستند. و هر استقرارِ از گیت، شش مرحله کارِ تأییدشده را بی‌صدا برمی‌گرداند.",
+   del:"بررسیِ فقط‌خواندنیِ واگرایی · یک کامیتِ آشتی · docs/deploy-cpanel.md",
+   v:"«واگرایی: ۰ پرونده» و صفر ارجاعِ ماک در تبِ عملکرد"},
+  {id:"P34", t:"طرحواره‌یِ نسخه‌دار + دروازه‌یِ ستون", ph:"فازِ ۱", c:"bad", e:"متوسط",
+   why:"«DESCRIBE بزن، حدس نزن» یک عادت است و عادت فراموش می‌شود. F1 دقیقاً از همین‌جا آمد. کوچ‌هایِ ۰۰۳–۰۰۶ هم در گیت نیستند.",
+   del:"schema-snapshot.mjs · کوچ‌هایِ ۰۰۳–۰۰۶ تولیدشده از اسنپ‌شات · verify:schema · درمانِ F1",
+   v:"امروز باید بشکند (چون answer_json را نمی‌شناسد) — آن شکست دلیلِ وجودیِ دروازه است"},
+  {id:"P35", t:"لایه‌یِ سلامتِ واقعی",        ph:"فازِ ۲", c:"warn", e:"بزرگ",
+   why:"health_metrics ساخته شده ولی صفر کد می‌خواندش؛ لایه‌یِ سلامت در حافظه‌یِ ماژول است و با هر ری‌استارت می‌میرد (F3).",
+   del:"health.repository.ts · GET /api/athlete/health · تعویضِ درونِ سرویس بیِ تغییرِ امضا",
+   v:"پس از ری‌استارتِ Passenger هم همان نه سنجه برگردند — آزمونِ واقعیِ «ماندگار شد»"},
+  {id:"P36", t:"مرجع‌هایِ آزمون‌شده",        ph:"فازِ ۲", c:"warn", e:"متوسط",
+   why:"P12 گفت «چهار خطا تنها با اجرا کردنش گرفته شد» — ولی آن اجرا دستی بود و در نشستی که دیگر در دسترس نیست. بیِ آزمون، همان چهار خطا تکرار می‌شود.",
+   del:"domain/reference-ranges.ts با شناسنامه‌یِ منبع · NO_REFERENCE صریح · tests با node --test",
+   v:"اعدادِ تأییدشده‌یِ P12 قفل شوند؛ و عمداً یک بازه را خراب کن تا ببینی آزمون می‌گیردش"},
+  {id:"P37", t:"قراردادِ جایگاهِ تهی + دیوارِ آتشِ ماک", ph:"فازِ ۲", c:"warn", e:"بزرگ",
+   why:"قانونِ نخست امروز با نظمِ انسان اجرا می‌شود. شاهدِ شکنندگی: delta={8} و {13} و {7} سخت‌کد در performance.tsx:32-34، بیِ MockBadge.",
+   del:"domain/evidence.ts با Slot<T> چهارحالته · <EmptySlot> واحد · قاعده‌یِ ESLint · verify-leak.mjs",
+   v:"npm run lint باید امروز قرمز شود — اگر نشد، قاعده درست نصب نشده"},
+  {id:"P38", t:"گذرگاهِ پیش‌نمونه‌یِ زنده (/lab)", ph:"فازِ ۰", c:"info", e:"متوسط",
+   why:"P15→P16 دو پیاده‌سازی برایِ یک چیز ساخت (HTMLِ خودبسنده، بعد TSX). آن محدودیتِ محیطی اینجا نیست: سرورِ زنده و پیش‌نمایش داریم.",
+   del:"src/lab/ فقط-توسعه · <PrototypeFrame> · سه پیش‌نمونه‌یِ نخست",
+   v:"با چشم ببینی؛ و grep -rl 'lab' .output/public باید صفر بدهد"},
+  {id:"P39", t:"جداییِ نقش‌ها از ریشه",      ph:"فازِ ۲", c:"bad",  e:"متوسط",
+   why:"در گیت راهِ ساختنِ مربی نیست (F4) و هر کاربرِ تازه سه مقدارِ ساخته‌شده می‌گیرد (F2). هر چه دیرتر، داده‌یِ آلوده‌یِ بیشتری می‌نشیند.",
+   del:"نقش در فرم · registerUser({role}) · کوچِ coach_profiles · پاک‌سازیِ لایه‌یِ مرده‌یِ Supabase",
+   v:"مربی → در users نقشِ coach و در athlete_profiles صفر ردیف؛ ورزشکار → primary_sport تهی تا خودش انتخاب کند"},
+  {id:"P40", t:"معقولیت به‌عنوانِ داده‌یِ دامنه", ph:"فازِ ۲", c:"info", e:"متوسط",
+   why:"P25 را در مؤلفه اجرا نکن: هر مصرف‌کننده‌یِ تازه باید دوباره بداند. mock/health-data.ts:15 هم training_load: 0 دارد که در میانگین بی‌صدا خراب می‌کند.",
+   del:"domain/plausibility.ts با کدهایِ دلیل · پرچم در خروجیِ API · aggregate() با ورودیِ Slot<T>",
+   v:"گام ۴ و زمانِ تمرین ۴ دقیقه ok:false بگیرند و در هیچ حلقه‌ای ظاهر نشوند"},
+  {id:"P41", t:"دروازه‌یِ دائمیِ تأیید",      ph:"فازِ ۰", c:"ok",   e:"کوچک",
+   why:"P23 را یک‌بار اجرا کردیم و ارزشمندترین درسِ دوره شد — ولی به عادت تبدیل شد، نه به دروازه. بخشِ ۸ سند هفده درس دارد و همه نثر هستند.",
+   del:"npm run verify با نُه نگهبان · scripts/guards/ با rx() و mark() و شمارشِ درست",
+   v:"عمداً یک باگِ کوچک بساز و ببین verify می‌گیردش. دروازه‌ای که هیچ‌وقت قرمز نشده، آزموده نشده"},
+  {id:"P42", t:"راست‌به‌چپِ آزمون‌شدنی",     ph:"فازِ ۲", c:"ok",   e:"کوچک",
+   why:"کدِ دستیِ تو پاک است (۳ فیزیکی در برابرِ ۲۲ منطقی) ولی ۱۰۶ کلاسِ فیزیکی در ui/ هست، و ui/carousel.tsx:45-48 به embla فقط axis می‌دهد — direction: \"rtl\" نمی‌دهد.",
+   del:"survey-rtl.mjs · نگهبانِ «سه، نه بیشتر» · tests/rtl.test.ts · تصمیمِ مستندِ embla",
+   v:"منطقِ پیمایش سبز شود؛ و عمداً یک ml-4 در route بگذار تا ببینی نگهبان می‌گیردش"}
+];
+
+/* ── ابزارهایِ قالب‌بندی ─────────────────────────────────────────── */
+var FA = ["۰","۱","۲","۳","۴","۵","۶","۷","۸","۹"];
+function fa(n){ return String(n).replace(/\d/g,function(d){return FA[+d];}); }
+/* هم‌قاعده با formatIRR در src/mock/plans.ts:33 — جداکننده‌یِ هزارگانِ فارسی (U+066C)،
+   نه کامایِ ASCII که در متنِ راست‌به‌چپ غلط می‌نشیند. */
+var NF0 = new Intl.NumberFormat("fa-IR",{maximumFractionDigits:0});
+var NF1 = new Intl.NumberFormat("fa-IR",{maximumFractionDigits:1});
+function money(n){ return NF0.format(Math.round(n)); }
+function mb(n){ return n>=1000 ? NF0.format(n/1000)+" گیگابایت" : NF1.format(n)+" مگابایت"; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* ── نمودارِ تب‌ها (کمینه در راست، بیشینه در چپ) ─────────────────── */
+(function(){
+  var host=document.getElementById("tabchart"); if(!host) return;
+  var max=Math.max.apply(null,TABS.map(function(t){return t.gm;}))||1;
+  host.innerHTML=TABS.map(function(t){
+    var pct=Math.max(2,(t.gm/max)*100);
+    var tone=t.gm===0?"ok":(t.gm>=12?"bad":(t.gm>=8?"warn":"info"));
+    return '<div style="display:grid;grid-template-columns:78px 1fr 62px;gap:9px;align-items:center;padding:4px 0">'
+      +'<span style="font-size:11.5px;color:var(--muted-foreground)">'+esc(t.fa)+'</span>'
+      +'<span class="bar-track"><span class="bar-fill '+tone+'" style="width:'+pct.toFixed(1)+'%"></span></span>'
+      +'<span class="fd num" style="font-size:11px;text-align:left;color:var(--foreground)">'+fa(t.gm)+' ماک · '+fa(t.gl)+' خط</span>'
+      +'</div>';
+  }).join("");
+})();
+
+/* ── جدولِ مقایسه‌یِ گیت/سرور ────────────────────────────────────── */
+(function(){
+  var host=document.getElementById("cmpbody"); if(!host) return;
+  host.innerHTML=TABS.map(function(t){
+    return '<tr><td><span class="mono" style="font-size:11px">'+esc(t.n)+'</span></td>'
+      +'<td class="num">'+fa(t.gl)+'</td>'
+      +'<td class="num" style="color:'+(t.gm===0?'var(--success)':(t.gm>=12?'var(--destructive)':'var(--warning)'))+'"><b>'+fa(t.gm)+'</b></td>'
+      +'<td class="num" style="color:var(--muted-foreground)">'+fa(t.sl)+'</td>'
+      +'<td class="num" style="color:'+(t.sm===0?'var(--success)':'var(--muted-foreground)')+'">'+fa(t.sm)+'</td></tr>';
+  }).join("");
+})();
+
+/* ── نمودارِ قیمت (RTL: صفر در راست) ─────────────────────────────── */
+(function(){
+  var host=document.getElementById("pricechart"); if(!host) return;
+  var MAX=6000000;
+  function pos(v){ return Math.min(100,(v/MAX)*100); }
+  host.innerHTML=PRICES.map(function(p){
+    var a,b,band,bg,label;
+    if(p.lo!=null){ a=pos(p.lo); b=pos(Math.min(p.hi,MAX))-a;
+      band='right:'+a.toFixed(2)+'%;width:'+Math.max(b,1.5).toFixed(2)+'%';
+      bg=p.over?'linear-gradient(to left, var(--sport-bodybuilding), oklch(0.72 0.19 45 / 55%))':'var(--sport-functional)';
+      label=p.over?money(p.lo)+' تا '+money(p.hi)+' ‹بیرونِ مقیاس›':money(p.lo)+' تا '+money(p.hi);
+    } else { a=0; b=pos(p.v);
+      band='right:0;width:'+Math.max(b,1.2).toFixed(2)+'%';
+      bg=p.mine?'var(--primary)':'var(--info)';
+      label=money(p.v)+(p.s.indexOf('۴۵ روز')>=0?' ‹معادلِ ماهانه›':'');
+    }
+    return '<div style="display:grid;grid-template-columns:minmax(148px,215px) 1fr;gap:10px;align-items:center;padding:5px 0">'
+      +'<span style="font-size:11.5px;line-height:1.5;'+(p.mine?'font-weight:800;color:var(--primary)':'color:var(--foreground)')+'">'+esc(p.l)+'</span>'
+      +'<span style="display:flex;align-items:center;gap:9px">'
+        +'<span class="range-track" style="flex:1"><span class="range-band" style="'+band+';background:'+bg+'"></span></span>'
+        +'<span class="fd num" style="font-size:10.5px;min-width:118px;color:var(--muted-foreground)" title="'+esc(p.s)+'">'+label+'</span>'
+      +'</span></div>';
+  }).join("");
+})();
+
+/* ── نمودارِ سقف‌هایِ بارگذاری (مقیاسِ لگاریتمی — چون شکاف سه‌رقمی است) ── */
+(function(){
+  var host=document.getElementById("limitchart"); if(!host) return;
+  var MIN=0.1, MAX=500;
+  function lp(v){ return (Math.log(v)-Math.log(MIN))/(Math.log(MAX)-Math.log(MIN))*100; }
+  host.innerHTML=LIMITS.map(function(x){
+    var a,b,tone;
+    if(x.lo!=null){ a=lp(x.lo); b=lp(x.hi)-a; tone=x.c;
+      var lbl=mb(x.lo)+' تا '+mb(x.hi);
+    } else { a=0; b=lp(x.v); tone=x.c; var lbl=mb(x.v); }
+    return '<div style="display:grid;grid-template-columns:minmax(120px,168px) 1fr;gap:9px;align-items:center;padding:4px 0">'
+      +'<span style="font-size:11px;color:var(--muted-foreground);line-height:1.45">'+esc(x.l)+'</span>'
+      +'<span style="display:flex;align-items:center;gap:8px">'
+        +'<span class="range-track" style="flex:1;height:11px"><span class="range-band" style="right:'+Math.max(a,0).toFixed(2)+'%;width:'+Math.max(b,1.5).toFixed(2)+'%;background:var(--'+tone+')"></span></span>'
+        +'<span class="fd num" style="font-size:10.5px;min-width:96px;color:var(--foreground)">'+lbl+'</span>'
+      +'</span></div>';
+  }).join("")
+  +'<p class="hint" style="margin-top:9px">مقیاس <b>لگاریتمی</b> است — چون شکافِ بینِ «۱ مگابایتِ پیش‌فرض» و «ویدیویِ واقعی» سه‌رقمی است و در مقیاسِ خطی هیچ‌کدام دیده نمی‌شد. سرچشمه‌ها: getpagespeed.com · pulsetic.com.</p>';
+})();
+
+/* ── کارت‌هایِ P33–P42 ───────────────────────────────────────────── */
+(function(){
+  var host=document.getElementById("techgrid"); if(!host) return;
+  var tone={bad:"b-bad",warn:"b-warn",ok:"b-ok",info:"b-info"};
+  host.innerHTML=TECH.map(function(p){
+    return '<div class="panel" style="border-inline-start:2px solid var(--'+p.c+')">'
+      +'<div class="ptitle"><span class="n">'+p.id+'</span> '+esc(p.t)+' <span class="badge '+tone[p.c]+'">'+p.ph+'</span> <span class="badge">'+p.e+'</span></div>'
+      +'<p class="hint"><b style="color:var(--foreground)">چرا: </b>'+esc(p.why)+'</p>'
+      +'<p class="hint" style="margin-top:6px"><b style="color:var(--foreground)">تحویل: </b>'+esc(p.del)+'</p>'
+      +'<p class="hint" style="margin-top:6px"><b style="color:var(--success)">تأیید: </b>'+esc(p.v)+'</p>'
+      +'</div>';
+  }).join("");
+})();
+
+/* ── نمایشِ اسلایدی — همان رفتاری که در P15 تأیید شد ─────────────── */
+var slides=[].slice.call(document.querySelectorAll(".slide"));
+var AUTO=7000, idx=0, playing=true, hovered=false, timer=null, started=0, raf=null;
+var bar=document.getElementById("bar"), dots=document.getElementById("dots");
+var counter=document.getElementById("counter"), nameEl=document.getElementById("slidename");
+var toggle=document.getElementById("toggle");
+
+/* نقطه‌ها */
+dots.innerHTML=slides.map(function(s,i){
+  return '<button role="tab" aria-current="'+(i===0)+'" aria-label="اسلایدِ '+fa(i+1)+' — '+esc(s.dataset.name)+'" title="'+esc(s.dataset.name)+'"></button>';
+}).join("");
+var dotEls=[].slice.call(dots.children);
+dotEls.forEach(function(b,i){ b.addEventListener("click",function(){ go(i,true); }); });
+
+function render(){
+  slides.forEach(function(s,i){ s.classList.toggle("is-active", i===idx); });
+  dotEls.forEach(function(b,i){ b.setAttribute("aria-current", String(i===idx)); });
+  counter.textContent = fa(idx+1)+" / "+fa(slides.length);
+  nameEl.textContent = slides[idx].dataset.name || "";
+  document.getElementById("prev").setAttribute("aria-label","اسلایدِ قبلی — "+(idx>0?slides[idx-1].dataset.name:"—"));
+  document.getElementById("next").setAttribute("aria-label","اسلایدِ بعدی — "+(idx<slides.length-1?slides[idx+1].dataset.name:"—"));
+  started = Date.now();
+  tick();
+}
+function go(i,user){
+  idx = (i + slides.length) % slides.length;
+  render();
+  if(user && !playing){ started = Date.now(); }
+}
+function next(){ go(idx+1); }
+function prev(){ go(idx-1); }
+
+/* نوارِ پیشرفت */
+function tick(){
+  if(raf) cancelAnimationFrame(raf);
+  (function loop(){
+    var el = Date.now()-started;
+    var pct = playing && !hovered ? Math.min(100,(el/AUTO)*100) : Math.min(100,(el/AUTO)*100);
+    bar.style.width = pct.toFixed(2)+"%";
+    if(playing && !hovered && el>=AUTO){ next(); return; }
+    raf = requestAnimationFrame(loop);
+  })();
+}
+function setPlaying(v){
+  playing=v;
+  toggle.textContent = v ? "توقف" : "پخش";
+  toggle.setAttribute("aria-pressed", String(!v));
+  started=Date.now(); tick();
+}
+toggle.addEventListener("click",function(){ setPlaying(!playing); });
+
+/* دکمه‌هایِ لبه — در RTL: چپ = بعدی، راست = قبلی */
+document.getElementById("next").addEventListener("click",function(){ next(); started=Date.now(); });
+document.getElementById("prev").addEventListener("click",function(){ prev(); started=Date.now(); });
+
+/* کلیدها — در RTL: ← بعدی، → قبلی */
+document.addEventListener("keydown",function(e){
+  if(e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+  if(e.key==="ArrowLeft"){ e.preventDefault(); next(); started=Date.now(); }
+  else if(e.key==="ArrowRight"){ e.preventDefault(); prev(); started=Date.now(); }
+  else if(e.key==="Home"){ e.preventDefault(); go(0,true); }
+  else if(e.key==="End"){ e.preventDefault(); go(slides.length-1,true); }
+  else if(e.key===" "){ e.preventDefault(); setPlaying(!playing); }
+});
+
+/* توقف هنگامِ اشاره‌گرِ موس */
+var stage=document.getElementById("stage");
+stage.addEventListener("mouseenter",function(){ hovered=true; });
+stage.addEventListener("mouseleave",function(){ hovered=false; started=Date.now(); tick(); });
+stage.addEventListener("focusin",function(){ hovered=true; });
+stage.addEventListener("focusout",function(){ hovered=false; });
+
+/* کشیدن با انگشت — در RTL جهت وارونه است */
+var sx=0,sy=0,dragging=false;
+stage.addEventListener("touchstart",function(e){
+  if(e.touches.length!==1) return;
+  sx=e.touches[0].clientX; sy=e.touches[0].clientY; dragging=true; hovered=true;
+},{passive:true});
+stage.addEventListener("touchend",function(e){
+  if(!dragging) return; dragging=false; hovered=false; started=Date.now();
+  var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+  if(Math.abs(dx)>48 && Math.abs(dx)>Math.abs(dy)){ if(dx>0) prev(); else next(); }
+},{passive:true});
+var mx=0,mdown=false;
+stage.addEventListener("mousedown",function(e){ mx=e.clientX; mdown=true; });
+stage.addEventListener("mouseup",function(e){
+  if(!mdown) return; mdown=false;
+  var dx=e.clientX-mx;
+  if(Math.abs(dx)>60){ if(dx>0) prev(); else next(); started=Date.now(); }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
