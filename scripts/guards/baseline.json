@@ -1,0 +1,374 @@
+{
+  "lint": {
+    "generatedBy": "scripts/guards/check-lint-ratchet.mjs",
+    "note": "Frozen lint debt. Counts may only go down; see the guard header for the rule.",
+    "errors": 1264,
+    "warnings": 10,
+    "byRule": {
+      "prettier/prettier": 1264,
+      "react-refresh/only-export-components": 10
+    },
+    "files": {
+      "scripts/verify-prod.mjs": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/components/brand/Logo.tsx": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/components/domain/assessment.tsx": {
+        "errors": 24,
+        "warnings": 1
+      },
+      "src/components/domain/athlete.tsx": {
+        "errors": 7,
+        "warnings": 0
+      },
+      "src/components/domain/body-analysis-dialog.tsx": {
+        "errors": 7,
+        "warnings": 1
+      },
+      "src/components/domain/body-analysis.tsx": {
+        "errors": 50,
+        "warnings": 2
+      },
+      "src/components/domain/charts.tsx": {
+        "errors": 12,
+        "warnings": 0
+      },
+      "src/components/domain/coaching.tsx": {
+        "errors": 21,
+        "warnings": 0
+      },
+      "src/components/domain/health-data.tsx": {
+        "errors": 69,
+        "warnings": 0
+      },
+      "src/components/domain/primitives.tsx": {
+        "errors": 9,
+        "warnings": 0
+      },
+      "src/components/domain/sport.tsx": {
+        "errors": 2,
+        "warnings": 0
+      },
+      "src/components/layout/AppShell.tsx": {
+        "errors": 8,
+        "warnings": 0
+      },
+      "src/components/layout/MarketingShell.tsx": {
+        "errors": 21,
+        "warnings": 0
+      },
+      "src/components/ui/badge.tsx": {
+        "errors": 0,
+        "warnings": 1
+      },
+      "src/components/ui/button.tsx": {
+        "errors": 0,
+        "warnings": 1
+      },
+      "src/components/ui/form.tsx": {
+        "errors": 0,
+        "warnings": 1
+      },
+      "src/components/ui/navigation-menu.tsx": {
+        "errors": 0,
+        "warnings": 1
+      },
+      "src/components/ui/sidebar.tsx": {
+        "errors": 0,
+        "warnings": 1
+      },
+      "src/components/ui/toggle.tsx": {
+        "errors": 0,
+        "warnings": 1
+      },
+      "src/domain/assessment/bodybuilding.ts": {
+        "errors": 29,
+        "warnings": 0
+      },
+      "src/domain/assessment/common.ts": {
+        "errors": 20,
+        "warnings": 0
+      },
+      "src/domain/assessment/crossfit.ts": {
+        "errors": 40,
+        "warnings": 0
+      },
+      "src/domain/assessment/functional.ts": {
+        "errors": 20,
+        "warnings": 0
+      },
+      "src/domain/assessment/helpers.ts": {
+        "errors": 2,
+        "warnings": 0
+      },
+      "src/domain/assessment/hyrox.ts": {
+        "errors": 31,
+        "warnings": 0
+      },
+      "src/domain/assessment/registry.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/domain/assessment/running.ts": {
+        "errors": 23,
+        "warnings": 0
+      },
+      "src/domain/body-analysis.ts": {
+        "errors": 11,
+        "warnings": 0
+      },
+      "src/domain/platform.ts": {
+        "errors": 16,
+        "warnings": 0
+      },
+      "src/domain/sports.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/lib/auth.server.ts": {
+        "errors": 9,
+        "warnings": 0
+      },
+      "src/lib/db.server.ts": {
+        "errors": 2,
+        "warnings": 0
+      },
+      "src/mock/athlete.ts": {
+        "errors": 32,
+        "warnings": 0
+      },
+      "src/mock/body-analysis.ts": {
+        "errors": 4,
+        "warnings": 0
+      },
+      "src/mock/coach.ts": {
+        "errors": 13,
+        "warnings": 0
+      },
+      "src/mock/health-data.ts": {
+        "errors": 3,
+        "warnings": 0
+      },
+      "src/mock/plans.ts": {
+        "errors": 3,
+        "warnings": 0
+      },
+      "src/mock/sport-dashboard.ts": {
+        "errors": 37,
+        "warnings": 0
+      },
+      "src/routes/__root.tsx": {
+        "errors": 8,
+        "warnings": 0
+      },
+      "src/routes/api/assessment.ts": {
+        "errors": 5,
+        "warnings": 0
+      },
+      "src/routes/api/auth.login.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/routes/api/auth.logout.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/routes/api/auth.register.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/routes/api/db-test.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/routes/assessment.common.tsx": {
+        "errors": 5,
+        "warnings": 0
+      },
+      "src/routes/assessment.sport.tsx": {
+        "errors": 7,
+        "warnings": 0
+      },
+      "src/routes/athlete.dashboard.tsx": {
+        "errors": 69,
+        "warnings": 0
+      },
+      "src/routes/athlete.fitness-dna.tsx": {
+        "errors": 21,
+        "warnings": 0
+      },
+      "src/routes/athlete.goals.tsx": {
+        "errors": 15,
+        "warnings": 0
+      },
+      "src/routes/athlete.health.tsx": {
+        "errors": 12,
+        "warnings": 0
+      },
+      "src/routes/athlete.nutrition.tsx": {
+        "errors": 22,
+        "warnings": 0
+      },
+      "src/routes/athlete.passport.tsx": {
+        "errors": 18,
+        "warnings": 0
+      },
+      "src/routes/athlete.performance.tsx": {
+        "errors": 17,
+        "warnings": 0
+      },
+      "src/routes/athlete.recovery.tsx": {
+        "errors": 14,
+        "warnings": 0
+      },
+      "src/routes/checkout.tsx": {
+        "errors": 11,
+        "warnings": 0
+      },
+      "src/routes/coach.assistant.tsx": {
+        "errors": 39,
+        "warnings": 0
+      },
+      "src/routes/coach.athlete.$id.tsx": {
+        "errors": 56,
+        "warnings": 0
+      },
+      "src/routes/coach.athletes.tsx": {
+        "errors": 35,
+        "warnings": 0
+      },
+      "src/routes/coach.attention.tsx": {
+        "errors": 21,
+        "warnings": 0
+      },
+      "src/routes/coach.exercises.tsx": {
+        "errors": 9,
+        "warnings": 0
+      },
+      "src/routes/coach.index.tsx": {
+        "errors": 19,
+        "warnings": 0
+      },
+      "src/routes/coach.nutrition.tsx": {
+        "errors": 20,
+        "warnings": 0
+      },
+      "src/routes/coach.performance.tsx": {
+        "errors": 24,
+        "warnings": 0
+      },
+      "src/routes/coach.profile.tsx": {
+        "errors": 29,
+        "warnings": 0
+      },
+      "src/routes/coach.programs.tsx": {
+        "errors": 7,
+        "warnings": 0
+      },
+      "src/routes/index.tsx": {
+        "errors": 32,
+        "warnings": 0
+      },
+      "src/routes/login.tsx": {
+        "errors": 4,
+        "warnings": 0
+      },
+      "src/routes/onboarding.tsx": {
+        "errors": 5,
+        "warnings": 0
+      },
+      "src/routes/plans.tsx": {
+        "errors": 14,
+        "warnings": 0
+      },
+      "src/routes/register.tsx": {
+        "errors": 13,
+        "warnings": 0
+      },
+      "src/server/athlete.repository.ts": {
+        "errors": 19,
+        "warnings": 0
+      },
+      "src/services/ai-coaching/engine.ts": {
+        "errors": 4,
+        "warnings": 0
+      },
+      "src/services/ai-coaching/proposals.ts": {
+        "errors": 14,
+        "warnings": 0
+      },
+      "src/services/assessment/engine.ts": {
+        "errors": 25,
+        "warnings": 0
+      },
+      "src/services/athlete/athlete360.ts": {
+        "errors": 7,
+        "warnings": 0
+      },
+      "src/services/athlete/dashboard.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/services/body-analysis/service.ts": {
+        "errors": 10,
+        "warnings": 0
+      },
+      "src/services/coach/service.ts": {
+        "errors": 20,
+        "warnings": 0
+      },
+      "src/services/coaching/context.ts": {
+        "errors": 10,
+        "warnings": 0
+      },
+      "src/services/commerce/service.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/services/decision-engine/service.ts": {
+        "errors": 8,
+        "warnings": 0
+      },
+      "src/services/fitness-dna/inputs.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/services/goals/service.ts": {
+        "errors": 7,
+        "warnings": 0
+      },
+      "src/services/health-data/normalize.ts": {
+        "errors": 14,
+        "warnings": 0
+      },
+      "src/services/health-data/providers.ts": {
+        "errors": 3,
+        "warnings": 0
+      },
+      "src/services/health-data/service.ts": {
+        "errors": 12,
+        "warnings": 0
+      },
+      "src/services/notifications/service.ts": {
+        "errors": 5,
+        "warnings": 0
+      },
+      "src/services/nutrition/service.ts": {
+        "errors": 11,
+        "warnings": 0
+      },
+      "src/services/performance/engine.ts": {
+        "errors": 1,
+        "warnings": 0
+      },
+      "src/services/recovery/service.ts": {
+        "errors": 7,
+        "warnings": 0
+      }
+    }
+  }
+}

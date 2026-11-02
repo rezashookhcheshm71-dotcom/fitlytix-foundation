@@ -10,6 +10,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/verify.mjs --only=tests",
+    "verify": "node scripts/verify.mjs",
+    "verify:baseline": "node scripts/verify.mjs --update-baseline",
     "start": "node .output/server/index.mjs",
     "verify:prod": "node scripts/verify-prod.mjs"
   },
