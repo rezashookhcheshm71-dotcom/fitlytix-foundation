@@ -49,6 +49,13 @@ export async function signUpWithEmail(input: {
   firstName: string;
   lastName: string;
   phone: string;
+  /**
+   * P39: the role the person chose. Only these two are registerable; head_coach
+   * and admin are granted by an administrator and the API rejects them.
+   */
+  role?: "athlete" | "coach";
+  /** P39: null or absent means no sport was chosen, and nothing is stored. */
+  primarySport?: string | null;
 }): Promise<{ data: { user: SessionUserDto | null }; error: { message: string } | null }> {
   try {
     const res = await fetch("/api/auth/register", {

@@ -7,6 +7,8 @@ import {
   type BodyAnalysisRecord,
 } from "@/domain/body-analysis";
 import { SPORTS } from "@/domain/sports";
+import { isRegisterableRole } from "@/domain/roles";
+import type { UserRole } from "@/lib/auth.server";
 import {
   HEALTH_PROVIDERS,
   type AssessmentAnswers,
@@ -130,6 +132,70 @@ export const athleteRepository = {
   },
 
   /**
+   * Ensures a coach_profiles row exists for the given user (P39).
+   *
+   * Degrades without failing: if migration 004 has not been applied the table is
+   * absent, and registration must still succeed with the role recorded on users.
+   * A missing table is logged rather than thrown, because losing the coach row is
+   * recoverable while losing the account is not.
+   */
+  async ensureCoachProfile(
+    userId: string,
+    primarySport: SportId | null,
+  ): Promise<{ coachId: string | null; created: boolean }> {
+    const tbl = "coach_profiles";
+    if (!(await tableExists(tbl))) {
+      console.error(
+        `[coach] table ${tbl} does not exist; user ${userId} is registered as a coach but has no coach profile. Apply migration 004_coach_profiles.sql.`,
+      );
+      return { coachId: null, created: false };
+    }
+
+    const cols = await getTableColumns(tbl);
+    const userCol = cols.has("user_id") ? "user_id" : null;
+    if (!userCol) {
+      console.error(`[coach] table ${tbl} has no user_id column; cannot link user ${userId}`);
+      return { coachId: null, created: false };
+    }
+
+    const existing = await dbQuery<RowDataPacket[]>(
+      `SELECT * FROM ${tbl} WHERE ${userCol} = ? LIMIT 1`,
+      [userId],
+    );
+    if (existing[0]) {
+      return { coachId: String(existing[0]["id"] ?? userId), created: false };
+    }
+
+    const coachId = crypto.randomUUID();
+    const insertCols: string[] = [];
+    const insertVals: unknown[] = [];
+
+    if (cols.has("id")) {
+      insertCols.push("id");
+      insertVals.push(coachId);
+    }
+    insertCols.push(userCol);
+    insertVals.push(userId);
+    // Omitted rather than written as NULL, matching the athlete profile insert:
+    // a schema that still declares the column NOT NULL keeps working, and one
+    // that does not stores the absence.
+    if (primarySport !== null && cols.has("primary_sport_slug")) {
+      insertCols.push("primary_sport_slug");
+      insertVals.push(primarySport);
+    }
+    if (cols.has("data_origin")) {
+      insertCols.push("data_origin");
+      insertVals.push("live");
+    }
+
+    await dbExecute(
+      `INSERT INTO ${tbl} (${insertCols.join(", ")}) VALUES (${insertCols.map(() => "?").join(", ")})`,
+      insertVals,
+    );
+    return { coachId, created: true };
+  },
+
+  /**
    * Ensures an athlete profile record exists for the given authenticated user ID.
    */
   async ensureAthleteProfile(
@@ -244,6 +310,11 @@ export const athleteRepository = {
     phone: string;
     email: string;
     password: string;
+    /** P39: the role the person actually chose. Defaults to athlete, the only
+     *  behaviour that existed before, so existing callers are unaffected. */
+    role?: UserRole;
+    /** P39: the sport chosen at registration. Null or absent stores nothing. */
+    primarySport?: SportId | null;
   }): Promise<AuthenticatedUser> {
     const email = input.email.trim().toLowerCase();
     const firstName = input.firstName.trim();
@@ -307,9 +378,18 @@ export const athleteRepository = {
       insertVals.push(phone);
     }
 
+    // F4/P39: this line hardcoded "athlete", which is why ten coach screens and
+    // a four-role UserRole union existed with only one role reachable.
+    const role: UserRole = isRegisterableRole(input.role) ? input.role : "athlete";
+    if (!isRegisterableRole(input.role) && input.role !== undefined) {
+      throw new AuthHttpError(
+        400,
+        "نقشِ انتخاب‌شده برایِ ثبت‌نام معتبر نیست. تنها «ورزشکار» و «مربی» قابلِ ثبت‌اند.",
+      );
+    }
     if (cols.has("role")) {
       insertCols.push("role");
-      insertVals.push("athlete");
+      insertVals.push(role);
     }
     if (cols.has("status")) {
       insertCols.push("status");
@@ -322,9 +402,16 @@ export const athleteRepository = {
       insertVals,
     );
 
-    // F2: registration collects no sport and no experience level, so none is
-    // asserted. Passing nothing stores nothing; P39 adds the real selection step.
-    const profile = await this.ensureAthleteProfile(userId);
+    // F2 stopped fabricating a sport here; P39 supplies the real one when the
+    // person chose it. Absent or null still stores nothing.
+    const chosenSport = isValidSportSlug(input.primarySport) ? input.primarySport : null;
+    const profile = await this.ensureAthleteProfile(userId, {
+      primarySport: chosenSport,
+    });
+
+    if (role === "coach") {
+      await this.ensureCoachProfile(userId, chosenSport);
+    }
 
     return {
       id: userId,
@@ -333,7 +420,7 @@ export const athleteRepository = {
       firstName,
       lastName,
       phone,
-      role: "athlete",
+      role,
       primarySport: profile.primarySport,
     };
   },
