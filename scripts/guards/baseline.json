@@ -2,10 +2,10 @@
   "lint": {
     "generatedBy": "scripts/guards/check-lint-ratchet.mjs",
     "note": "Frozen lint debt. Counts may only go down; see the guard header for the rule.",
-    "errors": 1264,
+    "errors": 1245,
     "warnings": 10,
     "byRule": {
-      "prettier/prettier": 1264,
+      "prettier/prettier": 1245,
       "react-refresh/only-export-components": 10
     },
     "files": {
@@ -287,10 +287,6 @@
       },
       "src/routes/register.tsx": {
         "errors": 13,
-        "warnings": 0
-      },
-      "src/server/athlete.repository.ts": {
-        "errors": 19,
         "warnings": 0
       },
       "src/services/ai-coaching/engine.ts": {

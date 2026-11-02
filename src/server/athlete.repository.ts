@@ -1,7 +1,11 @@
 import crypto from "node:crypto";
 import type { RowDataPacket } from "mysql2/promise";
 import { COMMON_ASSESSMENT, SPORT_ASSESSMENTS } from "@/domain/assessment/templates";
-import { bodyAnalysisInputSchema, type BodyAnalysisInput, type BodyAnalysisRecord } from "@/domain/body-analysis";
+import {
+  bodyAnalysisInputSchema,
+  type BodyAnalysisInput,
+  type BodyAnalysisRecord,
+} from "@/domain/body-analysis";
 import { SPORTS } from "@/domain/sports";
 import {
   HEALTH_PROVIDERS,
@@ -12,7 +16,12 @@ import {
   type WearableIntent,
 } from "@/domain/types";
 import { assessmentEngine } from "@/services/assessment/engine";
-import { AuthHttpError, hashPassword, verifyPassword, type AuthenticatedUser } from "@/lib/auth.server";
+import {
+  AuthHttpError,
+  hashPassword,
+  verifyPassword,
+  type AuthenticatedUser,
+} from "@/lib/auth.server";
 import { dbExecute, dbQuery, getTableColumns, tableExists } from "@/lib/db.server";
 
 const CANONICAL_SPORT_UUIDS: Record<SportId, string> = {
@@ -28,7 +37,9 @@ export function isValidSportSlug(value: unknown): value is SportId {
 }
 
 export function isValidExperienceLevel(value: unknown): value is ExperienceLevel {
-  return value === "beginner" || value === "intermediate" || value === "advanced" || value === "elite";
+  return (
+    value === "beginner" || value === "intermediate" || value === "advanced" || value === "elite"
+  );
 }
 
 function nowSqlUtc(): string {
@@ -132,7 +143,11 @@ export const athleteRepository = {
     for (const tbl of ["athlete_profiles", "athletes"]) {
       if (!(await tableExists(tbl))) continue;
       const cols = await getTableColumns(tbl);
-      const userCol = cols.has("user_id") ? "user_id" : cols.has("athlete_user_id") ? "athlete_user_id" : null;
+      const userCol = cols.has("user_id")
+        ? "user_id"
+        : cols.has("athlete_user_id")
+          ? "athlete_user_id"
+          : null;
       if (!userCol) continue;
 
       const existing = await dbQuery<RowDataPacket[]>(
@@ -141,8 +156,12 @@ export const athleteRepository = {
       );
       if (existing[0]) {
         const row = existing[0];
-        const rowSportRaw = String(row["primary_sport_slug"] ?? row["primary_sport"] ?? sport).toLowerCase();
-        const rowExpRaw = String(row["experience_level"] ?? row["experience"] ?? experience).toLowerCase();
+        const rowSportRaw = String(
+          row["primary_sport_slug"] ?? row["primary_sport"] ?? sport,
+        ).toLowerCase();
+        const rowExpRaw = String(
+          row["experience_level"] ?? row["experience"] ?? experience,
+        ).toLowerCase();
         return {
           athleteId: String(row["id"] ?? userId),
           primarySport: isValidSportSlug(rowSportRaw) ? rowSportRaw : sport,
@@ -181,7 +200,10 @@ export const athleteRepository = {
       }
 
       const placeholders = insertCols.map(() => "?").join(", ");
-      await dbExecute(`INSERT INTO ${tbl} (${insertCols.join(", ")}) VALUES (${placeholders})`, insertVals);
+      await dbExecute(
+        `INSERT INTO ${tbl} (${insertCols.join(", ")}) VALUES (${placeholders})`,
+        insertVals,
+      );
 
       return { athleteId: newAthleteId, primarySport: sport, experience };
     }
@@ -271,7 +293,10 @@ export const athleteRepository = {
     }
 
     const placeholders = insertCols.map(() => "?").join(", ");
-    await dbExecute(`INSERT INTO users (${insertCols.join(", ")}) VALUES (${placeholders})`, insertVals);
+    await dbExecute(
+      `INSERT INTO users (${insertCols.join(", ")}) VALUES (${placeholders})`,
+      insertVals,
+    );
 
     const profile = await this.ensureAthleteProfile(userId, {
       primarySport: "crossfit",
@@ -293,13 +318,19 @@ export const athleteRepository = {
   /**
    * Authenticates an existing user by email & password against MySQL `users`.
    */
-  async authenticateByEmail(input: { email: string; password: string }): Promise<AuthenticatedUser> {
+  async authenticateByEmail(input: {
+    email: string;
+    password: string;
+  }): Promise<AuthenticatedUser> {
     const email = input.email.trim().toLowerCase();
     if (!email || !input.password) {
       throw new AuthHttpError(400, "ایمیل و رمز عبور الزامی است.");
     }
 
-    const rows = await dbQuery<RowDataPacket[]>(`SELECT * FROM users WHERE LOWER(email) = ? LIMIT 1`, [email]);
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT * FROM users WHERE LOWER(email) = ? LIMIT 1`,
+      [email],
+    );
     const row = rows[0];
     if (!row) {
       throw new AuthHttpError(401, "ایمیل یا رمز عبور صحیح نیست.");
@@ -349,7 +380,8 @@ export const athleteRepository = {
     experienceLevel?: ExperienceLevel | undefined;
     answers: AssessmentAnswers;
     bodyAnalysis?: Partial<BodyAnalysisInput> | undefined;
-    wearable?: { intent?: WearableIntent | undefined; providers?: HealthProvider[] | undefined } | undefined;
+    wearable?:
+      { intent?: WearableIntent | undefined; providers?: HealthProvider[] | undefined } | undefined;
   }): Promise<{
     assessmentId: string;
     athleteId: string;
@@ -375,7 +407,9 @@ export const athleteRepository = {
       const resolvedSport: SportId | undefined =
         params.sport && isValidSportSlug(params.sport)
           ? params.sport
-          : (Object.keys(SPORT_ASSESSMENTS) as SportId[]).find((s) => SPORT_ASSESSMENTS[s].id === templateId);
+          : (Object.keys(SPORT_ASSESSMENTS) as SportId[]).find(
+              (s) => SPORT_ASSESSMENTS[s].id === templateId,
+            );
 
       if (!resolvedSport) {
         throw new AuthHttpError(400, "قالب ارزیابی یا رشته ورزشی معتبر نیست.");
@@ -411,10 +445,14 @@ export const athleteRepository = {
     const visibleSections = isCommon
       ? template.sections
       : assessmentEngine.visibleFields(template, experienceLevel);
-    const completion = assessmentEngine.completion({ ...template, sections: visibleSections }, sanitizedAnswers);
+    const completion = assessmentEngine.completion(
+      { ...template, sections: visibleSections },
+      sanitizedAnswers,
+    );
 
     const profile = await this.ensureAthleteProfile(user.id, {
-      primarySport: sportSlug ?? (isValidSportSlug(user.primarySport) ? user.primarySport : "crossfit"),
+      primarySport:
+        sportSlug ?? (isValidSportSlug(user.primarySport) ? user.primarySport : "crossfit"),
       experience: experienceLevel,
     });
 
@@ -515,13 +553,21 @@ export const athleteRepository = {
     if (await tableExists("assessment_answers")) {
       const ansCols = await getTableColumns("assessment_answers");
       if (ansCols.has("assessment_id") && ansCols.has("field_id")) {
-        const valCol = ansCols.has("value_json")
-          ? "value_json"
-          : ansCols.has("answer_value")
-            ? "answer_value"
-            : ansCols.has("value")
-              ? "value"
-              : null;
+        // The live server stores answers in `answer_json`: see
+        // docs/project-prompts.md line 137 ("جدولِ assessment_answers با ستونِ
+        // answer_json") and the findings table at line 227 (70 rows, answer_json
+        // populated, answer_text/answer_number empty). Migration 002 declares
+        // `value_json` instead. Both are accepted, live column first, so neither
+        // schema loses answers and no column name is guessed.
+        const valCol = ansCols.has("answer_json")
+          ? "answer_json"
+          : ansCols.has("value_json")
+            ? "value_json"
+            : ansCols.has("answer_value")
+              ? "answer_value"
+              : ansCols.has("value")
+                ? "value"
+                : null;
         if (valCol) {
           for (const [fieldId, val] of Object.entries(sanitizedAnswers)) {
             const rowCols = ansCols.has("id")
@@ -536,8 +582,23 @@ export const athleteRepository = {
               rowVals,
             );
           }
+        } else {
+          // F1: this branch used to fall through in silence while the parent
+          // `assessments` row was already committed, so the call reported
+          // success and every answer vanished.
+          console.error(
+            `[assessment] DROPPED ${Object.keys(sanitizedAnswers).length} answer(s) for assessment ${assessmentId}: assessment_answers has none of answer_json/value_json/answer_value/value. Columns present: ${[...ansCols].join(", ") || "(none)"}`,
+          );
         }
+      } else {
+        console.error(
+          `[assessment] DROPPED ${Object.keys(sanitizedAnswers).length} answer(s) for assessment ${assessmentId}: assessment_answers lacks assessment_id/field_id. Columns present: ${[...ansCols].join(", ") || "(none)"}`,
+        );
       }
+    } else if (Object.keys(sanitizedAnswers).length > 0) {
+      console.error(
+        `[assessment] DROPPED ${Object.keys(sanitizedAnswers).length} answer(s) for assessment ${assessmentId}: table assessment_answers does not exist.`,
+      );
     }
 
     // 4. Update athlete profile baseline fields (age, height, weight, sport, wearable intent)
@@ -556,7 +617,10 @@ export const athleteRepository = {
     if (isCommon && params.bodyAnalysis && Object.keys(params.bodyAnalysis).length > 0) {
       const parsedBody = bodyAnalysisInputSchema.safeParse(params.bodyAnalysis);
       if (!parsedBody.success) {
-        throw new AuthHttpError(400, "اطلاعات آنالیز بدن معتبر نیست. لطفاً مقادیر واردشده را بررسی کنید.");
+        throw new AuthHttpError(
+          400,
+          "اطلاعات آنالیز بدن معتبر نیست. لطفاً مقادیر واردشده را بررسی کنید.",
+        );
       }
       const savedBody = await this.addBodyAnalysisRecord(user.id, parsedBody.data);
       bodyRecordId = savedBody.id;
@@ -600,7 +664,11 @@ export const athleteRepository = {
     for (const tbl of ["athlete_profiles", "athletes"]) {
       if (!(await tableExists(tbl))) continue;
       const cols = await getTableColumns(tbl);
-      const userCol = cols.has("user_id") ? "user_id" : cols.has("athlete_user_id") ? "athlete_user_id" : null;
+      const userCol = cols.has("user_id")
+        ? "user_id"
+        : cols.has("athlete_user_id")
+          ? "athlete_user_id"
+          : null;
       if (!userCol) continue;
 
       const updates: string[] = [];
@@ -664,7 +732,10 @@ export const athleteRepository = {
   /**
    * Append-only persistence for Body Analysis measurements (InBody / manual).
    */
-  async addBodyAnalysisRecord(userId: string, input: BodyAnalysisInput): Promise<BodyAnalysisRecord> {
+  async addBodyAnalysisRecord(
+    userId: string,
+    input: BodyAnalysisInput,
+  ): Promise<BodyAnalysisRecord> {
     const parsed = bodyAnalysisInputSchema.parse(input);
     const id = crypto.randomUUID();
     const createdAtIso = new Date().toISOString();
@@ -884,7 +955,9 @@ export const athleteRepository = {
 
         for (const r of rows) {
           const templateId = String(r["template_id"] ?? r["template_code"] ?? "");
-          const scopeRaw = String(r["scope"] ?? r["assessment_type"] ?? r["sport_slug"] ?? "").toLowerCase();
+          const scopeRaw = String(
+            r["scope"] ?? r["assessment_type"] ?? r["sport_slug"] ?? "",
+          ).toLowerCase();
           const answersRaw = r["answers_json"] ?? r["answers"] ?? r["payload"];
           const answers = safeJsonParse<AssessmentAnswers>(answersRaw, {});
           const completedAt = r["completed_at"]
@@ -956,7 +1029,9 @@ export const athleteRepository = {
               athleteId: user.id,
               version: 1,
               measuredAt: String(r["measured_at"] ?? parsedData.measuredAt ?? "").slice(0, 10),
-              source: (r["source"] ?? parsedData.source ?? "inbody") as BodyAnalysisRecord["source"],
+              source: (r["source"] ??
+                parsedData.source ??
+                "inbody") as BodyAnalysisRecord["source"],
               weightKg,
               ...(r["body_fat_pct"] != null ? { bodyFatPct: Number(r["body_fat_pct"]) } : {}),
               ...(r["skeletal_muscle_kg"] != null
