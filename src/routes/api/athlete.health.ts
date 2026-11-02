@@ -22,6 +22,16 @@ import { healthRepository } from "@/server/health.repository";
 
 const NO_STORE = { "cache-control": "no-store" } as const;
 
+/** Normalises a MySQL DATETIME (Date or string) to ISO-8601. */
+function toIso(value: string | Date | null): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string" && value.length > 0) {
+    const parsed = Date.parse(value.includes("T") ? value : `${value.replace(" ", "T")}Z`);
+    return Number.isNaN(parsed) ? value : new Date(parsed).toISOString();
+  }
+  return "";
+}
+
 function unauthorized() {
   return Response.json(
     { ok: false, error: "ابتدا وارد شوید." },
@@ -42,6 +52,35 @@ export const Route = createFileRoute("/api/athlete/health")({
           if (!user) return unauthorized();
 
           const trends = await healthRepository.trendsForUser(user.id);
+          // Raw recent recordings, newest first, for the "latest entries" table.
+          // Unlike the trends these keep excluded values, marked as such - the
+          // evidence stays visible even where it is not trusted.
+          const rawRows = await healthRepository.listMetrics(user.id, { limit: 50 });
+          const recent = rawRows
+            .slice()
+            .reverse()
+            .slice(0, 20)
+            .map((row) => {
+              const metricType = row.metric_type;
+              const points = trends[metricType]?.points ?? [];
+              const excluded = trends[metricType]?.excluded ?? [];
+              const asNumber = Number(row.value);
+              const atIso = toIso(row.start_time);
+              const wasExcluded =
+                excluded.some((e) => e.at === atIso && e.value === asNumber) ||
+                !points.some((pt) => pt.at === atIso && pt.value === asNumber);
+              return {
+                metricType,
+                label: METRIC_DEFS[metricType as keyof typeof METRIC_DEFS]?.label ?? metricType,
+                unit: row.unit ?? METRIC_DEFS[metricType as keyof typeof METRIC_DEFS]?.unit ?? "",
+                value: Number.isFinite(asNumber) ? asNumber : null,
+                at: atIso,
+                // Passed through verbatim: the source is part of the evidence, and
+                // a manual entry must not be displayed as if a watch recorded it.
+                source: row.source ?? null,
+                excluded: wasExcluded,
+              };
+            });
 
           // Every metric type is reported, including those with no rows at all, so
           // the client can distinguish "measured once" from "never measured".
@@ -83,6 +122,7 @@ export const Route = createFileRoute("/api/athlete/health")({
                 withoutTrend: metrics.length - established,
               },
               metrics,
+              recent,
               capturable: MANUAL_METRICS,
             },
             { status: 200, headers: NO_STORE },

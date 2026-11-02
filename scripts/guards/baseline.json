@@ -2,10 +2,10 @@
   "lint": {
     "generatedBy": "scripts/guards/check-lint-ratchet.mjs",
     "note": "Frozen lint debt. Counts may only go down; see the guard header for the rule.",
-    "errors": 1189,
+    "errors": 1108,
     "warnings": 10,
     "byRule": {
-      "prettier/prettier": 1189,
+      "prettier/prettier": 1108,
       "react-refresh/only-export-components": 10
     },
     "files": {
@@ -39,10 +39,6 @@
       },
       "src/components/domain/coaching.tsx": {
         "errors": 21,
-        "warnings": 0
-      },
-      "src/components/domain/health-data.tsx": {
-        "errors": 69,
         "warnings": 0
       },
       "src/components/domain/primitives.tsx": {
@@ -191,10 +187,6 @@
       },
       "src/routes/athlete.goals.tsx": {
         "errors": 15,
-        "warnings": 0
-      },
-      "src/routes/athlete.health.tsx": {
-        "errors": 12,
         "warnings": 0
       },
       "src/routes/athlete.nutrition.tsx": {

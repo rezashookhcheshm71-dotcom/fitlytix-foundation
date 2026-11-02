@@ -10,6 +10,15 @@ export default defineConfig({
   // Self-hosted Node.js (cPanel/Passenger): standalone Nitro server at .output/server/index.mjs.
   // Inside the Lovable build environment the wrapper still forces its own hosting preset.
   nitro: { preset: "node-server" },
+  vite: {
+    server: {
+      // Dev-server only; does not affect the production build. The preview runs
+      // behind a dynamic host of the form {port}-{sandbox}.e2b.app, and Vite's
+      // default allowlist rejects it with a 403 before the app is ever reached.
+      // Scoped to the suffix rather than `true`, so arbitrary hosts stay blocked.
+      allowedHosts: [".e2b.app"],
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

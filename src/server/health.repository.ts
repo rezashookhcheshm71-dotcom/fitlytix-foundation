@@ -35,6 +35,7 @@ export type HealthMetricRow = {
   value: number | string | null;
   start_time: string | Date | null;
   unit?: string | null;
+  source?: string | null;
 };
 
 export type TrendsByMetric = Record<string, Trend>;
@@ -79,7 +80,8 @@ export const healthRepository = {
     const limit = Math.min(Math.max(opts.limit ?? 500, 1), 5000);
     const rows = await dbQuery<RowDataPacket[]>(
       `SELECT ${typeCol} AS metric_type, value, ${timeCol} AS start_time,
-              ${cols.has("unit") ? "unit" : "NULL AS unit"}
+              ${cols.has("unit") ? "unit" : "NULL AS unit"},
+              ${cols.has("source") ? "source" : "NULL AS source"}
          FROM ${TABLE}
         WHERE ${where.join(" AND ")}
         ORDER BY ${timeCol} ASC
@@ -92,6 +94,9 @@ export const healthRepository = {
       value: row["value"] as number | string | null,
       start_time: row["start_time"] as string | Date | null,
       unit: (row["unit"] as string | null) ?? null,
+      // Read from the row, never defaulted: showing a manual entry as a wearable
+      // reading (or the reverse) would misreport how the number came to exist.
+      source: (row["source"] as string | null) ?? null,
     }));
   },
 
@@ -204,7 +209,15 @@ export const healthRepository = {
  * fabricated measurement timestamp.
  */
 function toSqlDatetime(value: string): string {
-  const parsed = Date.parse(value.includes("T") ? value : `${value}T00:00:00Z`);
+  const iso = value.includes("T") ? value : `${value}T00:00:00`;
+  // A timestamp with no offset is read as LOCAL time by Date.parse, so the stored
+  // value would shift with the server's timezone - and the host timezone is not
+  // something the product controls. Pinning an offsetless input to UTC makes the
+  // result identical on every machine, at the cost of treating the wall-clock the
+  // user typed as UTC. For a daily measurement that is the smaller error, and it is
+  // deterministic rather than silently varying.
+  const normalised = /[zZ]|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : `${iso}Z`;
+  const parsed = Date.parse(normalised);
   if (Number.isNaN(parsed)) {
     throw new AuthHttpError(400, "تاریخ نامعتبر است.");
   }
