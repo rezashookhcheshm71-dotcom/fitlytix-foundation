@@ -6,7 +6,8 @@ export interface SessionUserDto {
   lastName: string;
   phone: string;
   role: "athlete" | "coach" | "head_coach" | "admin";
-  primarySport: string;
+  /** Null when no sport is on record. Mirrors AuthenticatedUser in auth.server.ts. */
+  primarySport: string | null;
 }
 
 export async function signInWithEmail(

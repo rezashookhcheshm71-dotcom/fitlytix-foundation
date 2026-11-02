@@ -134,11 +134,19 @@ export const athleteRepository = {
    */
   async ensureAthleteProfile(
     userId: string,
-    defaults?: { primarySport?: SportId; experience?: ExperienceLevel },
-  ): Promise<{ athleteId: string; primarySport: SportId; experience: ExperienceLevel }> {
-    const sport: SportId = defaults?.primarySport ?? "crossfit";
-    const experience: ExperienceLevel = defaults?.experience ?? "beginner";
-    const sportId = await this.resolveSportId(sport);
+    defaults?: { primarySport?: SportId | null; experience?: ExperienceLevel | null },
+  ): Promise<{
+    athleteId: string;
+    primarySport: SportId | null;
+    experience: ExperienceLevel | null;
+  }> {
+    // F2: absence stays absence. These two lines used to invent a CrossFit
+    // beginner for every caller that supplied nothing, and because the value was
+    // then persisted, the invention became the athlete's recorded identity and
+    // the basis of every later score and proposal.
+    const sport: SportId | null = defaults?.primarySport ?? null;
+    const experience: ExperienceLevel | null = defaults?.experience ?? null;
+    const sportId = sport ? await this.resolveSportId(sport) : null;
 
     for (const tbl of ["athlete_profiles", "athletes"]) {
       if (!(await tableExists(tbl))) continue;
@@ -156,16 +164,22 @@ export const athleteRepository = {
       );
       if (existing[0]) {
         const row = existing[0];
-        const rowSportRaw = String(
-          row["primary_sport_slug"] ?? row["primary_sport"] ?? sport,
-        ).toLowerCase();
-        const rowExpRaw = String(
-          row["experience_level"] ?? row["experience"] ?? experience,
-        ).toLowerCase();
+        // Read only what the row actually holds. The previous `?? sport` and
+        // `?? experience` backfilled from the local default, so a profile with no
+        // sport came back as "crossfit" without anything being written - the
+        // fabrication survived even where the database was honest.
+        const rowSportRaw = row["primary_sport_slug"] ?? row["primary_sport"];
+        const rowExpRaw = row["experience_level"] ?? row["experience"];
+        const rowSportLower = typeof rowSportRaw === "string" ? rowSportRaw.toLowerCase() : null;
+        const rowSport: SportId | null =
+          rowSportLower !== null && isValidSportSlug(rowSportLower) ? rowSportLower : null;
+        const rowExpLower = typeof rowExpRaw === "string" ? rowExpRaw.toLowerCase() : null;
+        const rowExp: ExperienceLevel | null =
+          rowExpLower !== null && isValidExperienceLevel(rowExpLower) ? rowExpLower : null;
         return {
           athleteId: String(row["id"] ?? userId),
-          primarySport: isValidSportSlug(rowSportRaw) ? rowSportRaw : sport,
-          experience: isValidExperienceLevel(rowExpRaw) ? rowExpRaw : experience,
+          primarySport: rowSport ?? sport,
+          experience: rowExp ?? experience,
         };
       }
 
@@ -180,23 +194,33 @@ export const athleteRepository = {
       insertCols.push(userCol);
       insertVals.push(userId);
 
-      if (cols.has("primary_sport_id")) {
+      // When there is no value the column is left out of the INSERT rather than
+      // written as NULL. That is deliberately the safer shape: before migration
+      // 003 these columns are NOT NULL DEFAULT 'crossfit'/'beginner', so an
+      // explicit NULL would abort the insert and break registration, whereas an
+      // omitted column falls back to whatever the schema says. After 003 removes
+      // those defaults, the same code stores NULL, which is the intended state.
+      if (sportId !== null && cols.has("primary_sport_id")) {
         insertCols.push("primary_sport_id");
         insertVals.push(sportId);
       }
-      if (cols.has("primary_sport_slug")) {
-        insertCols.push("primary_sport_slug");
-        insertVals.push(sport);
-      } else if (cols.has("primary_sport")) {
-        insertCols.push("primary_sport");
-        insertVals.push(sport);
+      if (sport !== null) {
+        if (cols.has("primary_sport_slug")) {
+          insertCols.push("primary_sport_slug");
+          insertVals.push(sport);
+        } else if (cols.has("primary_sport")) {
+          insertCols.push("primary_sport");
+          insertVals.push(sport);
+        }
       }
-      if (cols.has("experience_level")) {
-        insertCols.push("experience_level");
-        insertVals.push(experience);
-      } else if (cols.has("experience")) {
-        insertCols.push("experience");
-        insertVals.push(experience);
+      if (experience !== null) {
+        if (cols.has("experience_level")) {
+          insertCols.push("experience_level");
+          insertVals.push(experience);
+        } else if (cols.has("experience")) {
+          insertCols.push("experience");
+          insertVals.push(experience);
+        }
       }
 
       const placeholders = insertCols.map(() => "?").join(", ");
@@ -298,10 +322,9 @@ export const athleteRepository = {
       insertVals,
     );
 
-    const profile = await this.ensureAthleteProfile(userId, {
-      primarySport: "crossfit",
-      experience: "beginner",
-    });
+    // F2: registration collects no sport and no experience level, so none is
+    // asserted. Passing nothing stores nothing; P39 adds the real selection step.
+    const profile = await this.ensureAthleteProfile(userId);
 
     return {
       id: userId,
@@ -438,22 +461,33 @@ export const athleteRepository = {
       }
     }
 
-    const experienceLevel: ExperienceLevel = isValidExperienceLevel(params.experienceLevel)
+    // Two different questions, previously conflated:
+    //   scoping  - which questions to show, which needs *a* level to work
+    //   record   - what to persist about this athlete, which must not be invented
+    // So the scoping fallback stays, and nothing fabricated is written below.
+    const scopingLevel: ExperienceLevel = isValidExperienceLevel(params.experienceLevel)
       ? params.experienceLevel
       : "beginner";
+    const recordedExperience: ExperienceLevel | null = isValidExperienceLevel(
+      params.experienceLevel,
+    )
+      ? params.experienceLevel
+      : null;
 
     const visibleSections = isCommon
       ? template.sections
-      : assessmentEngine.visibleFields(template, experienceLevel);
+      : assessmentEngine.visibleFields(template, scopingLevel);
     const completion = assessmentEngine.completion(
       { ...template, sections: visibleSections },
       sanitizedAnswers,
     );
 
     const profile = await this.ensureAthleteProfile(user.id, {
-      primarySport:
-        sportSlug ?? (isValidSportSlug(user.primarySport) ? user.primarySport : "crossfit"),
-      experience: experienceLevel,
+      // A null sport here means "no sport on record", which migration 003 makes
+      // storable. user.primarySport is string | null now that F2 is fixed in
+      // auth.server.ts, and isValidSportSlug already rejects null.
+      primarySport: sportSlug ?? (isValidSportSlug(user.primarySport) ? user.primarySport : null),
+      experience: recordedExperience,
     });
 
     const assessmentId = crypto.randomUUID();
@@ -514,7 +548,7 @@ export const athleteRepository = {
       }
       if (cols.has("experience_level")) {
         insertCols.push("experience_level");
-        insertVals.push(isCommon ? null : experienceLevel);
+        insertVals.push(isCommon ? null : recordedExperience);
       }
       if (cols.has("status")) {
         insertCols.push("status");
@@ -607,7 +641,7 @@ export const athleteRepository = {
       isCommon,
       sportSlug,
       sportId,
-      experienceLevel,
+      experienceLevel: recordedExperience,
       answers: sanitizedAnswers,
       wearableIntent: params.wearable?.intent,
     });
@@ -657,7 +691,8 @@ export const athleteRepository = {
     isCommon: boolean;
     sportSlug: SportId | null;
     sportId: string | null;
-    experienceLevel: ExperienceLevel;
+    /** Null means no level was supplied; nothing is written rather than invented. */
+    experienceLevel: ExperienceLevel | null;
     answers: AssessmentAnswers;
     wearableIntent?: WearableIntent | undefined;
   }): Promise<void> {
@@ -712,12 +747,17 @@ export const athleteRepository = {
           updates.push("primary_sport = ?");
           values.push(params.sportSlug);
         }
-        if (cols.has("experience_level")) {
-          updates.push("experience_level = ?");
-          values.push(params.experienceLevel);
-        } else if (cols.has("experience")) {
-          updates.push("experience = ?");
-          values.push(params.experienceLevel);
+        // Only write a level that actually exists. Writing NULL here would abort
+        // the UPDATE on a schema where the column is still NOT NULL (that is the
+        // state before migration 003), so absence leaves the column untouched.
+        if (params.experienceLevel !== null) {
+          if (cols.has("experience_level")) {
+            updates.push("experience_level = ?");
+            values.push(params.experienceLevel);
+          } else if (cols.has("experience")) {
+            updates.push("experience = ?");
+            values.push(params.experienceLevel);
+          }
         }
       }
 
@@ -884,8 +924,10 @@ export const athleteRepository = {
   async getAthleteAssessmentState(user: AuthenticatedUser): Promise<{
     athleteId: string;
     userId: string;
-    primarySport: SportId;
-    experienceLevel: ExperienceLevel;
+    /** Null when the athlete has no sport on record. See migration 003. */
+    primarySport: SportId | null;
+    /** Null when no experience level was ever supplied. */
+    experienceLevel: ExperienceLevel | null;
     commonAssessment: {
       id: string;
       templateId: string;
@@ -899,7 +941,7 @@ export const athleteRepository = {
         id: string;
         templateId: string;
         sport: SportId;
-        experienceLevel: ExperienceLevel;
+        experienceLevel: ExperienceLevel | null;
         answers: AssessmentAnswers;
         completedAt?: string | undefined;
         status: string;
@@ -925,7 +967,7 @@ export const athleteRepository = {
         id: string;
         templateId: string;
         sport: SportId;
-        experienceLevel: ExperienceLevel;
+        experienceLevel: ExperienceLevel | null;
         answers: AssessmentAnswers;
         completedAt?: string | undefined;
         status: string;

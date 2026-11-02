@@ -15,7 +15,13 @@ export interface AuthenticatedUser {
   lastName: string;
   phone: string;
   role: UserRole;
-  primarySport: string;
+  /**
+   * Null when the database holds no sport for this user. F2: this used to be
+   * `string` with "crossfit" invented at three sites below, so an athlete who
+   * never chose a sport was recorded and scored as a CrossFit athlete. Absence
+   * is now representable, which is what migration 003 made possible in schema.
+   */
+  primarySport: string | null;
 }
 
 export class AuthHttpError extends Error {
@@ -174,7 +180,23 @@ export function buildClearSessionCookie(request?: Request): string {
   return attributes.join("; ");
 }
 
-async function resolveAthleteIdentityForUser(userId: string): Promise<{ athleteId: string; primarySport: string }> {
+/**
+ * Normalise a stored sport column to a slug or null.
+ *
+ * Rejects empty strings and the literal "null"/"undefined" that a careless
+ * String(x) would have persisted earlier, so bad historical data surfaces as
+ * absent rather than as a sport name.
+ */
+function toSportOrNull(raw: unknown): string | null {
+  if (raw === null || raw === undefined) return null;
+  const value = String(raw).trim();
+  if (value === "" || value === "null" || value === "undefined") return null;
+  return value;
+}
+
+async function resolveAthleteIdentityForUser(
+  userId: string,
+): Promise<{ athleteId: string; primarySport: string | null }> {
   try {
     if (await tableExists("athlete_profiles")) {
       const cols = await getTableColumns("athlete_profiles");
@@ -186,7 +208,9 @@ async function resolveAthleteIdentityForUser(userId: string): Promise<{ athleteI
       if (rows[0]) {
         return {
           athleteId: String(rows[0]["id"] ?? userId),
-          primarySport: String(rows[0]["primary_sport_slug"] ?? rows[0]["primary_sport"] ?? "crossfit"),
+          // Null when neither column holds a value. String(null) would have
+          // produced the literal "null", which is its own kind of fabrication.
+          primarySport: toSportOrNull(rows[0]["primary_sport_slug"] ?? rows[0]["primary_sport"]),
         };
       }
     }
@@ -201,7 +225,7 @@ async function resolveAthleteIdentityForUser(userId: string): Promise<{ athleteI
       if (rows[0]) {
         return {
           athleteId: String(rows[0]["id"] ?? userId),
-          primarySport: String(rows[0]["primary_sport"] ?? "crossfit"),
+          primarySport: toSportOrNull(rows[0]["primary_sport"]),
         };
       }
     }
@@ -209,7 +233,8 @@ async function resolveAthleteIdentityForUser(userId: string): Promise<{ athleteI
     // Fallback to userId if profile table is not yet populated
   }
 
-  return { athleteId: userId, primarySport: "crossfit" };
+  // No profile row at all: there is no sport to report, so report none.
+  return { athleteId: userId, primarySport: null };
 }
 
 async function loadUserById(userId: string): Promise<AuthenticatedUser | null> {
