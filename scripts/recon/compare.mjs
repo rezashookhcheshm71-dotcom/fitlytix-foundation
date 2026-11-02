@@ -86,6 +86,77 @@ for (const [path, g] of gitFiles) {
   if (!srvFiles.has(path)) gitOnly.push({ path, bytes: g.bytes, md5: g.md5, lines: g.lines });
 }
 
+// --- known-artifact fingerprints --------------------------------------------
+// docs/project-prompts.md records md5 fingerprints for fourteen files that
+// exist only on the server. Matching them turns the recon from "a list of
+// files" into "positively identified files", and exposes any file that has
+// drifted since the spec was written.
+// Overridable so a fixture can exercise the matcher, and so a future spec can
+// ship a fresh fingerprint list without editing this file.
+const KNOWN_ARG = opt("known");
+const KNOWN_PATH = KNOWN_ARG
+  ? resolve(KNOWN_ARG)
+  : new URL("./known-artifacts.json", import.meta.url);
+
+function matchKnown() {
+  let known;
+  try {
+    known = JSON.parse(readFileSync(KNOWN_PATH, "utf8"));
+  } catch (err) {
+    return { available: false, rows: [], error: err.message };
+  }
+  const baseName = (p) => String(p).split("/").pop();
+  const byBase = new Map();
+  for (const [path, f] of srvFiles) {
+    const b = baseName(path);
+    if (!byBase.has(b)) byBase.set(b, []);
+    byBase.get(b).push({ path, ...f });
+  }
+
+  const rows = known.map((k) => {
+    const hits = byBase.get(k.file) ?? [];
+    if (hits.length === 0) {
+      return { file: k.file, state: "absent", detail: "not found on the server" };
+    }
+    // A basename may appear more than once (e.g. a backup copy); report each.
+    return hits.map((h) => {
+      let state;
+      let detail;
+      if (k.md5Complete && h.md5) {
+        if (h.md5 === k.md5) {
+          state = "confirmed";
+          detail = "md5 matches the spec exactly";
+        } else {
+          // This is the interesting failure: the file is not what the spec
+          // recorded, so it changed after the spec was written.
+          state = "drifted";
+          detail = `md5 ${h.md5} differs from spec ${k.md5}`;
+        }
+      } else if (h.md5 && h.md5.startsWith(k.md5Prefix)) {
+        state = "prefix-match";
+        detail = `md5 starts with ${k.md5Prefix}; the spec recorded only a prefix`;
+      } else if (h.md5) {
+        state = "unverified";
+        detail = `spec recorded only prefix ${k.md5Prefix}, actual ${h.md5} does not start with it`;
+      } else {
+        state = "unhashable";
+        detail = "server manifest has no md5 for this file";
+      }
+      const sizeNote =
+        k.sizeBytes != null && h.bytes != null && k.sizeBytes !== h.bytes
+          ? ` (spec size ${k.sizeBytes}, actual ${h.bytes})`
+          : "";
+      return { file: k.file, path: h.path, state, detail: detail + sizeNote, bytes: h.bytes };
+    });
+  });
+  return { available: true, rows: rows.flat() };
+}
+
+const known = matchKnown();
+const DRIFT_STATES = new Set(["drifted", "unverified"]);
+const knownDrift = known.rows.filter((r) => DRIFT_STATES.has(r.state));
+const knownAbsent = known.rows.filter((r) => r.state === "absent");
+
 serverOnly.sort((a, b) => a.path.localeCompare(b.path));
 gitOnly.sort((a, b) => a.path.localeCompare(b.path));
 differs.sort((a, b) => a.path.localeCompare(b.path));
@@ -105,6 +176,14 @@ const report = {
   gitOnly,
   differs,
   noise,
+  knownArtifacts: known.available
+    ? {
+        matched: known.rows.length,
+        drifted: knownDrift.length,
+        absent: knownAbsent.length,
+        rows: known.rows,
+      }
+    : { matched: 0, note: "known-artifacts.json unavailable" },
 };
 
 if (OUT_PATH) {
@@ -145,6 +224,17 @@ if (differs.length) {
 
 console.log(`  git-only:   ${gitOnly.length} (new from git, safe to deploy)`);
 console.log(`  identical:  ${identical.length}`);
+if (known.available && known.rows.length) {
+  console.log("");
+  console.log(
+    `  known artifacts: ${known.rows.length} matched, ${knownDrift.length} drifted, ` +
+      `${knownAbsent.length} absent from the server`,
+  );
+  for (const r of known.rows) {
+    const tag = r.state.toUpperCase().padEnd(12);
+    console.log(`     ${tag} ${dot(r.file)}${r.detail ? `  - ${r.detail}` : ""}`);
+  }
+}
 console.log(`  ignored:    ${noise.length} (lockfiles and generated files)`);
 if (gitMan.uncommitted?.length) {
   console.log(`  note:       ${gitMan.uncommitted.length} uncommitted path(s) in the git tree`);

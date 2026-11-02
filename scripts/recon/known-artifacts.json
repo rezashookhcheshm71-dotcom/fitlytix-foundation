@@ -1,0 +1,114 @@
+[
+  {
+    "file": "apply-dash.mjs.txt",
+    "sizeBytes": 19793,
+    "md5": "e0009bee6aa43247256d8fdcfd9ee3dd",
+    "md5Prefix": "e0009bee6aa43247256d8fdcfd9ee3dd",
+    "md5Complete": true,
+    "specStatus": "آماده، تأیید‌شده با کامپایلر"
+  },
+  {
+    "file": "metrics.tsx.txt",
+    "sizeBytes": 12059,
+    "md5": "1f12206fcd56d06a0404fdb31c612cd3",
+    "md5Prefix": "1f12206fcd56d06a0404fdb31c612cd3",
+    "md5Complete": true,
+    "specStatus": "آماده"
+  },
+  {
+    "file": "check-perf.mjs.txt",
+    "sizeBytes": 15886,
+    "md5": "b1f143884c34f14304cf214e72b17294",
+    "md5Prefix": "b1f143884c34f14304cf214e72b17294",
+    "md5Complete": true,
+    "specStatus": "تحویل، خروجی ندیدیم"
+  },
+  {
+    "file": "survey-dash.mjs.txt",
+    "sizeBytes": 9844,
+    "md5": "520dfc375329a7454bb658bba53fb47e",
+    "md5Prefix": "520dfc375329a7454bb658bba53fb47e",
+    "md5Complete": true,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "apply-perf.mjs.txt",
+    "sizeBytes": 32958,
+    "md5": "a218b16d2401d8bd63b308102440f79c",
+    "md5Prefix": "a218b16d2401d8bd63b308102440f79c",
+    "md5Complete": true,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "carousel.tsx.txt",
+    "sizeBytes": 7320,
+    "md5": "19632dcf5f162ac6f7621ea8b5f514b3",
+    "md5Prefix": "19632dcf5f162ac6f7621ea8b5f514b3",
+    "md5Complete": true,
+    "specStatus": "نشانده شده"
+  },
+  {
+    "file": "reference-ranges.ts.txt",
+    "sizeBytes": null,
+    "md5": "338f1f26d6f1695d58cb1cf0832ccbb2",
+    "md5Prefix": "338f1f26d6f1695d58cb1cf0832ccbb2",
+    "md5Complete": true,
+    "specStatus": "نشانده شده"
+  },
+  {
+    "file": "apply-unify.mjs.txt",
+    "sizeBytes": 6903,
+    "md5": null,
+    "md5Prefix": "60c7ef1b",
+    "md5Complete": false,
+    "specStatus": "زنده"
+  },
+  {
+    "file": "apply-realathlete.mjs.txt",
+    "sizeBytes": 5806,
+    "md5": null,
+    "md5Prefix": "934fc300",
+    "md5Complete": false,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "survey-perf2.mjs.txt",
+    "sizeBytes": null,
+    "md5": null,
+    "md5Prefix": "e29fb877",
+    "md5Complete": false,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "apply-role",
+    "sizeBytes": null,
+    "md5": null,
+    "md5Prefix": "8db8e979",
+    "md5Complete": false,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "apply-welcome",
+    "sizeBytes": null,
+    "md5": null,
+    "md5Prefix": "4738609c",
+    "md5Complete": false,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "apply-join",
+    "sizeBytes": null,
+    "md5": null,
+    "md5Prefix": "0e9fec3c",
+    "md5Complete": false,
+    "specStatus": "اجرا شد"
+  },
+  {
+    "file": "apply-identity",
+    "sizeBytes": null,
+    "md5": null,
+    "md5Prefix": "8c4be46b",
+    "md5Complete": false,
+    "specStatus": "اجرا شد"
+  }
+]
