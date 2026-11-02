@@ -58,14 +58,31 @@ export function AppShell({
   children,
   userName,
   userRole,
+  userId,
 }: {
   mode: "athlete" | "coach";
   children: ReactNode;
   userName: string;
   userRole: string;
+  /**
+   * P35: the signed-in user's real id. Optional because most callers still render
+   * from demo data and have no id to give.
+   *
+   * Until it is supplied, no notifications are shown at all. This component used to
+   * query "ath_001" unconditionally, which showed one demo athlete's reminders to
+   * every signed-in user - an identity leak, and a fabrication in the same shape as
+   * F2: data attributed to someone who never recorded it.
+   */
+  userId?: string | null | undefined;
 }) {
   const nav = mode === "athlete" ? athleteNav : coachNav;
-  const switchTo = mode === "athlete" ? { to: "/coach" as const, label: "نمای مربی" } : { to: "/athlete/dashboard" as const, label: "نمای ورزشکار" };
+  // Resolved once, and only for a real user. An absent id yields an empty list
+  // rather than another athlete's data.
+  const reminders = userId ? notificationService.upcoming(userId) : [];
+  const switchTo =
+    mode === "athlete"
+      ? { to: "/coach" as const, label: "نمای مربی" }
+      : { to: "/athlete/dashboard" as const, label: "نمای ورزشکار" };
 
   return (
     <div className="flex min-h-screen">
@@ -84,7 +101,10 @@ export function AppShell({
               to={n.to}
               activeOptions={{ exact: n.to === "/coach" }}
               className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              activeProps={{ className: "bg-sidebar-accent text-sidebar-foreground shadow-[inset_3px_0_0_var(--primary)]" }}
+              activeProps={{
+                className:
+                  "bg-sidebar-accent text-sidebar-foreground shadow-[inset_3px_0_0_var(--primary)]",
+              }}
             >
               <n.icon className="size-4.5 transition-colors group-[.active]:text-primary" />
               {n.label}
@@ -114,24 +134,56 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl md:h-16 md:px-8">
           <div className="flex items-center gap-3 lg:hidden">
-            <Link to="/"><LogoMark className="size-8" /></Link>
+            <Link to="/">
+              <LogoMark className="size-8" />
+            </Link>
             <span className="text-sm font-bold">{mode === "athlete" ? "ورزشکار" : "مربی"}</span>
           </div>
           <div className="hidden items-center gap-2 lg:flex">
             <MockBadge label="نسخه نمایشی · داده‌های شبیه‌سازی‌شده" />
           </div>
           <div className="flex items-center gap-2">
-<Popover>
+            <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="relative rounded-full text-muted-foreground" aria-label="اعلان‌ها">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="relative rounded-full text-muted-foreground"
+                  aria-label="اعلان‌ها"
+                >
                   <Bell className="size-4" />
                   <span className="absolute end-2 top-2 size-1.5 rounded-full bg-primary" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80" dir="rtl">
                 <div className="mb-2 text-sm font-bold">یادآوری‌ها</div>
-                <ul className="space-y-2">{notificationService.upcoming("ath_001").map((n) => <li key={n.id} className="rounded-lg bg-muted/40 p-2"><div className="flex justify-between text-xs font-semibold"><span>{n.title}</span><span className="text-muted-foreground">{n.scheduledFor}</span></div><p className="text-[11px] text-muted-foreground">{n.body}</p></li>)}</ul>
-                <p className="mt-2 text-[10px] text-muted-foreground">نمونه نمایشی؛ ارسال اعلان، پیامک یا ایمیل هنوز وصل نیست.</p>
+                {userId ? (
+                  <ul className="space-y-2">
+                    {reminders.length === 0 ? (
+                      <li className="rounded-lg bg-muted/40 p-2 text-[11px] text-muted-foreground">
+                        یادآوریِ ثبت‌شده‌ای ندارید.
+                      </li>
+                    ) : (
+                      reminders.map((n) => (
+                        <li key={n.id} className="rounded-lg bg-muted/40 p-2">
+                          <div className="flex justify-between text-xs font-semibold">
+                            <span>{n.title}</span>
+                            <span className="text-muted-foreground">{n.scheduledFor}</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">{n.body}</p>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                ) : (
+                  <p className="rounded-lg bg-muted/40 p-2 text-[11px] text-muted-foreground">
+                    یادآوری‌ها به حسابِ شما وصل نیست؛ برایِ دیدنشان باید شناسه‌یِ کاربریِ واقعی در
+                    دسترس باشد.
+                  </p>
+                )}
+                <p className="mt-2 text-[10px] text-muted-foreground">
+                  نمونه نمایشی؛ ارسال اعلان، پیامک یا ایمیل هنوز وصل نیست.
+                </p>
               </PopoverContent>
             </Popover>
             <Link to={switchTo.to} className="lg:hidden">
@@ -152,7 +204,9 @@ export function AppShell({
                 key={n.to}
                 to={n.to}
                 activeOptions={{ exact: n.to === "/coach" }}
-                className={cn("flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[10px] font-medium whitespace-nowrap text-muted-foreground transition-colors")}
+                className={cn(
+                  "flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[10px] font-medium whitespace-nowrap text-muted-foreground transition-colors",
+                )}
                 activeProps={{ className: "text-primary" }}
               >
                 <n.icon className="size-5" />

@@ -2,10 +2,10 @@
   "lint": {
     "generatedBy": "scripts/guards/check-lint-ratchet.mjs",
     "note": "Frozen lint debt. Counts may only go down; see the guard header for the rule.",
-    "errors": 1197,
+    "errors": 1189,
     "warnings": 10,
     "byRule": {
-      "prettier/prettier": 1197,
+      "prettier/prettier": 1189,
       "react-refresh/only-export-components": 10
     },
     "files": {
@@ -51,10 +51,6 @@
       },
       "src/components/domain/sport.tsx": {
         "errors": 2,
-        "warnings": 0
-      },
-      "src/components/layout/AppShell.tsx": {
-        "errors": 8,
         "warnings": 0
       },
       "src/components/layout/MarketingShell.tsx": {

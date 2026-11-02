@@ -38,6 +38,7 @@ import { Route as CoachNutritionRouteImport } from './routes/coach.nutrition'
 import { Route as CoachPerformanceRouteImport } from './routes/coach.performance'
 import { Route as CoachProfileRouteImport } from './routes/coach.profile'
 import { Route as CoachProgramsRouteImport } from './routes/coach.programs'
+import { Route as ApiAthleteHealthRouteImport } from './routes/api/athlete.health'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth.login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth.logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth.me'
@@ -189,6 +190,11 @@ const CoachProgramsRoute = CoachProgramsRouteImport.update({
   path: '/coach/programs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAthleteHealthRoute = ApiAthleteHealthRouteImport.update({
+  id: '/api/athlete/health',
+  path: '/api/athlete/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
   id: '/api/auth/login',
   path: '/api/auth/login',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/coach/profile': typeof CoachProfileRoute
   '/coach/programs': typeof CoachProgramsRoute
   '/coach/': typeof CoachIndexRoute
+  '/api/athlete/health': typeof ApiAthleteHealthRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
@@ -281,6 +288,7 @@ export interface FileRoutesByTo {
   '/coach/profile': typeof CoachProfileRoute
   '/coach/programs': typeof CoachProgramsRoute
   '/coach': typeof CoachIndexRoute
+  '/api/athlete/health': typeof ApiAthleteHealthRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/coach/profile': typeof CoachProfileRoute
   '/coach/programs': typeof CoachProgramsRoute
   '/coach/': typeof CoachIndexRoute
+  '/api/athlete/health': typeof ApiAthleteHealthRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/coach/profile'
     | '/coach/programs'
     | '/coach/'
+    | '/api/athlete/health'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/coach/profile'
     | '/coach/programs'
     | '/coach'
+    | '/api/athlete/health'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/coach/profile'
     | '/coach/programs'
     | '/coach/'
+    | '/api/athlete/health'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -465,6 +477,7 @@ export interface RootRouteChildren {
   CoachProfileRoute: typeof CoachProfileRoute
   CoachProgramsRoute: typeof CoachProgramsRoute
   CoachIndexRoute: typeof CoachIndexRoute
+  ApiAthleteHealthRoute: typeof ApiAthleteHealthRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
@@ -677,6 +690,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoachProgramsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/athlete/health': {
+      id: '/api/athlete/health'
+      path: '/api/athlete/health'
+      fullPath: '/api/athlete/health'
+      preLoaderRoute: typeof ApiAthleteHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/login': {
       id: '/api/auth/login'
       path: '/api/auth/login'
@@ -745,6 +765,7 @@ const rootRouteChildren: RootRouteChildren = {
   CoachProfileRoute: CoachProfileRoute,
   CoachProgramsRoute: CoachProgramsRoute,
   CoachIndexRoute: CoachIndexRoute,
+  ApiAthleteHealthRoute: ApiAthleteHealthRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
