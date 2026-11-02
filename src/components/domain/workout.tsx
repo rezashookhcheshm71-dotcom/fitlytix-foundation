@@ -13,16 +13,19 @@ export function WorkoutBlockCard({
   block,
   compact,
   number,
-  experience = "advanced",
-  sport = "crossfit",
+  experience = null,
+  sport = null,
   status,
   onStatusChange,
 }: {
   block: WorkoutBlock;
   compact?: boolean;
   number?: number;
-  experience?: ExperienceLevel;
-  sport?: SportId;
+  /** Null, not a fabricated level: F2. `beginner` only ever shows the intent
+   *  prefix, so an unknown level simply does not claim to be one. */
+  experience?: ExperienceLevel | null;
+  /** Null when the athlete has no sport on record. */
+  sport?: SportId | null;
   status?: "idle" | "active" | "done";
   onStatusChange?: () => void;
 }) {

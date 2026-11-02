@@ -4,7 +4,11 @@ import { ArrowLeft, CheckCircle2, Dna, LogIn, UserPlus } from "lucide-react";
 import { z } from "zod";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
-import { ASSESSMENT_STEPS, AssessmentSectionCard, StepIndicator } from "@/components/domain/assessment";
+import {
+  ASSESSMENT_STEPS,
+  AssessmentSectionCard,
+  StepIndicator,
+} from "@/components/domain/assessment";
 import { Panel, Pill, ProgressRing } from "@/components/domain/primitives";
 import { SportCard } from "@/components/domain/sport";
 import { assessmentEngine } from "@/services/assessment/engine";
@@ -20,7 +24,10 @@ export const Route = createFileRoute("/assessment/sport")({
   head: () => ({
     meta: [
       { title: "ارزیابی اختصاصی رشته — FitLytix" },
-      { name: "description", content: "ارزیابی کوتاه و رشته‌محور برای شناخت سطح، هدف، محدودیت و داده‌های تمرینی." },
+      {
+        name: "description",
+        content: "ارزیابی کوتاه و رشته‌محور برای شناخت سطح، هدف، محدودیت و داده‌های تمرینی.",
+      },
       { property: "og:title", content: "ارزیابی اختصاصی رشته — FitLytix" },
       { property: "og:description", content: "بخش‌های اختصاصی هر رشته ورزشی." },
       { property: "og:type", content: "website" },
@@ -36,7 +43,11 @@ function SportAssessment() {
   const { sport: sportParam } = Route.useSearch();
   const navigate = useNavigate();
   const [sport, setSport] = useState<SportId | undefined>(sportParam);
-  const [level, setLevel] = useState<ExperienceLevel>("beginner");
+  // F2: this used to be seeded with "beginner", and because handleSubmit sends
+  // `level` straight through as `experienceLevel`, an athlete who never touched
+  // the selector was permanently recorded as a beginner. The sport state directly
+  // above already stayed undefined until chosen; the level now behaves the same.
+  const [level, setLevel] = useState<ExperienceLevel | undefined>(undefined);
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
   const [savedBySport, setSavedBySport] = useState<
     Record<string, { experienceLevel: ExperienceLevel; answers: AssessmentAnswers }>
@@ -48,7 +59,10 @@ function SportAssessment() {
 
   const template = sport ? assessmentEngine.getSportTemplate(sport) : null;
   const sections = useMemo(
-    () => (template ? assessmentEngine.visibleFields(template, level) : []),
+    // Scoping, not recording: choosing which questions to show genuinely needs
+    // some level to work, and this value is never persisted. The same split is
+    // documented in athlete.repository.ts as scopingLevel vs recordedExperience.
+    () => (template ? assessmentEngine.visibleFields(template, level ?? "beginner") : []),
     [template, level],
   );
   const completion = template ? assessmentEngine.completion({ ...template, sections }, answers) : 0;
@@ -70,7 +84,10 @@ function SportAssessment() {
       if (!active) return;
       setAuthenticated(state.authenticated);
       if (state.authenticated && state.sportAssessments) {
-        const map: Record<string, { experienceLevel: ExperienceLevel; answers: AssessmentAnswers }> = {};
+        const map: Record<
+          string,
+          { experienceLevel: ExperienceLevel; answers: AssessmentAnswers }
+        > = {};
         for (const [k, v] of Object.entries(state.sportAssessments)) {
           map[k] = { experienceLevel: v.experienceLevel, answers: v.answers };
         }
@@ -80,7 +97,11 @@ function SportAssessment() {
         if (activeSport && !sportParam && !draft?.sport) {
           setSport(activeSport);
         }
-        if (activeSport && map[activeSport] && (!draft?.answers || Object.keys(draft.answers).length === 0)) {
+        if (
+          activeSport &&
+          map[activeSport] &&
+          (!draft?.answers || Object.keys(draft.answers).length === 0)
+        ) {
           setLevel(map[activeSport].experienceLevel);
           setAnswers(map[activeSport].answers);
         }
@@ -95,6 +116,13 @@ function SportAssessment() {
   async function handleSubmit() {
     if (!template || !sport) return;
     setSubmitError(null);
+
+    // An unchosen level blocks the submit rather than being filled in. Silently
+    // returning would leave the athlete with no feedback, so say what is missing.
+    if (!level) {
+      setSubmitError("سطحِ تجربه را انتخاب کنید؛ بدونِ آن چیزی ثبت نمی‌شود.");
+      return;
+    }
     setRequiresAuthPrompt(false);
 
     assessmentEngine.saveSportDraft({ sport, level, answers });
@@ -110,7 +138,9 @@ function SportAssessment() {
 
     if (result.status === "unauthenticated") {
       setRequiresAuthPrompt(true);
-      setSubmitError(result.error ?? "برای ذخیره دائمی ارزیابی تخصصی لازم است وارد حساب کاربری خود شوید.");
+      setSubmitError(
+        result.error ?? "برای ذخیره دائمی ارزیابی تخصصی لازم است وارد حساب کاربری خود شوید.",
+      );
       return;
     }
 
@@ -161,7 +191,10 @@ function SportAssessment() {
             <div className="space-y-4">
               <Panel className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-bold" style={{ color: `var(${SPORTS[sport].colorToken})` }}>
+                  <div
+                    className="text-sm font-bold"
+                    style={{ color: `var(${SPORTS[sport].colorToken})` }}
+                  >
                     ارزیابی {SPORTS[sport].nameFa}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -233,7 +266,10 @@ function SportAssessment() {
                         </Link>
                       </Button>
                       <Button asChild size="sm" variant="outline" className="w-full">
-                        <Link to="/register" search={{ redirect: `/assessment/sport?sport=${sport}` }}>
+                        <Link
+                          to="/register"
+                          search={{ redirect: `/assessment/sport?sport=${sport}` }}
+                        >
                           <UserPlus className="size-3.5" /> ثبت‌نام
                         </Link>
                       </Button>

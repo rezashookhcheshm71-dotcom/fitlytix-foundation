@@ -23,30 +23,37 @@ export interface PersistedAssessmentState {
   userId?: string | undefined;
   primarySport?: SportId | undefined;
   experienceLevel?: ExperienceLevel | undefined;
-  commonAssessment?: {
-    id: string;
-    templateId: string;
-    answers: AssessmentAnswers;
-    completedAt?: string | undefined;
-    status: string;
-  } | null | undefined;
-  sportAssessments?: Record<
-    string,
-    {
-      id: string;
-      templateId: string;
-      sport: SportId;
-      experienceLevel: ExperienceLevel;
-      answers: AssessmentAnswers;
-      completedAt?: string | undefined;
-      status: string;
-    }
-  > | undefined;
+  commonAssessment?:
+    | {
+        id: string;
+        templateId: string;
+        answers: AssessmentAnswers;
+        completedAt?: string | undefined;
+        status: string;
+      }
+    | null
+    | undefined;
+  sportAssessments?:
+    | Record<
+        string,
+        {
+          id: string;
+          templateId: string;
+          sport: SportId;
+          experienceLevel: ExperienceLevel;
+          answers: AssessmentAnswers;
+          completedAt?: string | undefined;
+          status: string;
+        }
+      >
+    | undefined;
   bodyRecords?: BodyAnalysisRecord[] | undefined;
-  wearable?: {
-    intent?: WearableIntent | undefined;
-    providers: HealthProvider[];
-  } | undefined;
+  wearable?:
+    | {
+        intent?: WearableIntent | undefined;
+        providers: HealthProvider[];
+      }
+    | undefined;
 }
 
 export interface SubmitAssessmentResult {
@@ -131,7 +138,12 @@ export const assessmentEngine = {
 
   saveSportDraft(draft: {
     sport: SportId;
-    level: ExperienceLevel;
+    /**
+     * Optional: a draft is work in progress, and F2 removed the fabricated
+     * "beginner" seed, so a half-filled draft legitimately has no level yet.
+     * Only the submit path requires one, and it says so to the user.
+     */
+    level: ExperienceLevel | undefined;
     answers: AssessmentAnswers;
   }) {
     if (typeof window === "undefined") return;
@@ -199,7 +211,8 @@ export const assessmentEngine = {
     templateId: string;
     answers: AssessmentAnswers;
     bodyAnalysis?: Partial<BodyAnalysisInput> | undefined;
-    wearable?: { intent?: WearableIntent | undefined; providers?: HealthProvider[] | undefined } | undefined;
+    wearable?:
+      { intent?: WearableIntent | undefined; providers?: HealthProvider[] | undefined } | undefined;
   }): Promise<SubmitAssessmentResult> {
     try {
       const res = await fetch("/api/assessment", {

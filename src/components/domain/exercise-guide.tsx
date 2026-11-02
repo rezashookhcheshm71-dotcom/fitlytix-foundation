@@ -1,4 +1,6 @@
 import { BookOpen, VideoOff } from "lucide-react";
+import { missingSlot } from "@/domain/evidence";
+import { EmptySlot } from "./evidence";
 import type { ExerciseEducation } from "@/domain/exercise-education";
 import { exerciseContextLabel } from "@/domain/exercise-education";
 import type { SportId } from "@/domain/types";
@@ -17,7 +19,8 @@ function GuideBody({
   close,
 }: {
   exercise: ExerciseEducation;
-  sport: SportId;
+  /** Null when the athlete has no sport on record (see migration 003 / F2). */
+  sport: SportId | null;
   close: () => void;
 }) {
   return (
@@ -50,7 +53,20 @@ function GuideBody({
           ))}
         </ul>
       </section>
-      <p className="text-muted-foreground">{exerciseContextLabel[sport]}</p>
+      {/* F2: no sport means no context sentence. Rendering the label with an
+          invented sport would state a fact about this athlete that nobody ever
+          supplied, so the gap is stated instead. */}
+      {sport ? (
+        <p className="text-muted-foreground">{exerciseContextLabel[sport]}</p>
+      ) : (
+        <div className="text-muted-foreground">
+          <EmptySlot
+            slot={missingSlot("ورزشِ این ورزشکار ثبت نشده، پس زمینه‌یِ حرکت قابلِ تعیین نیست")}
+            label="زمینه‌یِ حرکت"
+            compact
+          />
+        </div>
+      )}
       {exercise.primaryMuscles?.length ? (
         <p>عضله‌های درگیر: {exercise.primaryMuscles.join("، ")}</p>
       ) : null}
@@ -87,7 +103,7 @@ export function ExerciseGuide({
   onOpenChange,
 }: {
   exercise?: ExerciseEducation;
-  sport: SportId;
+  sport: SportId | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
