@@ -4,6 +4,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { MockBadge, PageHeader, Panel, SectionHeading } from "@/components/domain/primitives";
 import { ReadinessCard, WhyNote } from "@/components/domain/coaching";
 import { RecoveryBars } from "@/components/domain/charts";
+import { RecoverySlideshow } from "@/components/domain/recovery-slides";
 import { METRIC_DEFS } from "@/domain/types";
 import { demoAthlete, demoRecoveryHistory } from "@/mock/athlete";
 import { healthDataService } from "@/services/health-data/service";
@@ -57,6 +58,9 @@ function RecoveryPage() {
         description="نتیجه از خواب، HRV، بار تمرین و وضعیت ثبت‌شده می‌آید؛ تشخیص پزشکی نیست."
         actions={<MockBadge label="محاسبه نمایشی" />}
       />
+      {/* P27: the tab's own slideshow. It is placed above the existing panels rather
+          than replacing them, so nothing that already worked is lost by adding it. */}
+      <RecoverySlideshow assessment={r} series={series} className="mb-4" />
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <ReadinessCard r={r} />
         <Panel>
