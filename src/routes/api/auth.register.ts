@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthHttpError, buildSessionCookie, createServerSession } from "@/lib/auth.server";
 import { isRegisterableRole } from "@/domain/roles";
 import { athleteRepository, isValidSportSlug } from "@/server/athlete.repository";
+import { databaseUnavailableMessage, isDatabaseNotConfigured } from "@/lib/db.server";
 
 export const Route = createFileRoute("/api/auth/register")({
   server: {
@@ -62,6 +63,21 @@ export const Route = createFileRoute("/api/auth/register")({
             return Response.json(
               { ok: false, error: err.message },
               { status: err.statusCode, headers: { "cache-control": "no-store" } },
+            );
+          }
+          // Not a transient failure: no database is configured, so the generic
+          // response below would promise a retry that cannot possibly work.
+          if (isDatabaseNotConfigured(err)) {
+            console.error(
+              "[api/auth/register] database not configured - this cannot succeed here:",
+              err instanceof Error ? err.message : err,
+            );
+            return Response.json(
+              {
+                ok: false,
+                error: databaseUnavailableMessage("ورود و ثبت‌نام", "خدمتِ حساب کاربری"),
+              },
+              { status: 503, headers: { "cache-control": "no-store" } },
             );
           }
           console.error(

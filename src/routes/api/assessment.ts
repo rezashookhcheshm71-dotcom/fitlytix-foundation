@@ -9,6 +9,7 @@ import type {
 } from "@/domain/types";
 import { AuthHttpError, requireAuthenticatedUser } from "@/lib/auth.server";
 import { athleteRepository } from "@/server/athlete.repository";
+import { databaseUnavailableMessage, isDatabaseNotConfigured } from "@/lib/db.server";
 
 export const Route = createFileRoute("/api/assessment")({
   server: {
@@ -117,6 +118,21 @@ export const Route = createFileRoute("/api/assessment")({
             return Response.json(
               { ok: false, error: err.message },
               { status: err.statusCode, headers: { "cache-control": "no-store" } },
+            );
+          }
+          // Not a transient failure: no database is configured, so the response
+          // below would ask for a retry that cannot possibly work.
+          if (isDatabaseNotConfigured(err)) {
+            console.error(
+              "[api/assessment POST] database not configured - this cannot succeed here:",
+              err instanceof Error ? err.message : err,
+            );
+            return Response.json(
+              {
+                ok: false,
+                error: databaseUnavailableMessage("ذخیره‌یِ ارزیابی", "خدمتِ ارزیابی"),
+              },
+              { status: 503, headers: { "cache-control": "no-store" } },
             );
           }
           console.error(

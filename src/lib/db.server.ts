@@ -151,3 +151,33 @@ export async function testDatabaseConnection(): Promise<{ db: string; table_coun
     table_count: Number(first?.["table_count"] ?? 0),
   };
 }
+
+/**
+ * True when the failure is "no database is configured here", as opposed to a query
+ * that went wrong against one that is.
+ *
+ * The distinction decides what a visitor is told. A misconfigured database cannot
+ * be fixed by retrying, so copy that says "please try again" is false; a query
+ * that failed against a working database may well succeed next time.
+ */
+export function isDatabaseNotConfigured(err: unknown): boolean {
+  const text = err instanceof Error ? err.message : String(err);
+  return text.includes("DB_NOT_CONFIGURED");
+}
+
+/**
+ * What to tell somebody whose request could not be served because no database is
+ * configured.
+ *
+ * In development the situation is spelled out, because the alternative is a
+ * confusing dead end - this is exactly what a reviewer hits when they try to sign
+ * in against a preview that has no database behind it. In production it is
+ * withheld: which environment variables a deployment is missing is not something
+ * to advertise to a visitor, and the server log already carries the detail.
+ * Neither version invites a retry, because a retry cannot help.
+ */
+export function databaseUnavailableMessage(action: string, service: string): string {
+  return import.meta.env.DEV
+    ? `پایگاه‌داده در این محیط پیکربندی نشده است، پس ${action} کار نمی‌کند. تلاشِ دوباره نتیجه‌ای ندارد.`
+    : `${service} در حال حاضر در دسترس نیست.`;
+}
