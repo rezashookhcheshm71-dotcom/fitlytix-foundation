@@ -371,7 +371,7 @@ function AthleteDashboard() {
 
       {/* P35: real trends from health_metrics. The fabricated series this sits
           beside is the reason the panel exists. */}
-      <HealthTrendsPanel version={healthVersion} demo={demoSlides} className="mb-4" />
+      <HealthTrendsPanel health={athleteHealth} className="mb-4" />
       <HealthDataPanel
         athleteId={activeAthleteId}
         empty={health === "empty"}

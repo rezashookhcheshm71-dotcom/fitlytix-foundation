@@ -5,6 +5,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { MockBadge, PageHeader, Panel, SectionHeading } from "@/components/domain/primitives";
 import { HealthDataPanel } from "@/components/domain/health-data";
 import { HealthTrendsPanel } from "@/components/domain/health-trends";
+import { HealthSlideshow } from "@/components/domain/health-slides";
+import { useAthleteHealth, type LoadState, type RecentRow } from "@/lib/athlete-health";
 import { PROVIDER_LABEL } from "@/domain/types";
 
 export const Route = createFileRoute("/athlete/health")({
@@ -36,16 +38,6 @@ export const Route = createFileRoute("/athlete/health")({
 });
 
 type SessionUser = { id: string; firstName: string; lastName: string };
-type RecentRow = {
-  metricType: string;
-  label: string;
-  unit: string;
-  value: number | null;
-  at: string;
-  source: string | null;
-  excluded: boolean;
-};
-type RecentState = "loading" | "ready" | "unauthenticated" | "error";
 
 const nf = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 });
 
@@ -72,8 +64,10 @@ function HealthPage() {
   // it; now it asks the server, which resolves the user from the cookie.
   const [me, setMe] = useState<SessionUser | null>(null);
   const [recent, setRecent] = useState<RecentRow[]>([]);
-  const [recentState, setRecentState] = useState<RecentState>("loading");
+  const [recentState, setRecentState] = useState<LoadState>("loading");
   const [version, setVersion] = useState(0);
+  // One fetch, shared by the slideshow and the trends panel below it.
+  const health = useAthleteHealth(version, demoDesign);
 
   useEffect(() => {
     let alive = true;
@@ -138,7 +132,10 @@ function HealthPage() {
         actions={<MockBadge label="اتصالِ ساعت هنوز واقعی نیست؛ ثبتِ دستی واقعی است" />}
       />
       {/* P35: real trends from health_metrics, with an honest state per metric. */}
-      <HealthTrendsPanel version={version} demo={demoDesign} className="mb-4" />
+      {/* P27: the health tab's own slideshow - evidence sufficiency, not a copy of
+          the performance tab's range positioning or recovery's provenance ledger. */}
+      <HealthSlideshow health={health} recent={recent} recentState={recentState} className="mb-4" />
+      <HealthTrendsPanel health={health} className="mb-4" />
       {/* Provider connections are still in-memory and no OAuth exists, so this
           panel is keyed to the real user id and starts empty rather than showing
           the demo athlete's devices. */}

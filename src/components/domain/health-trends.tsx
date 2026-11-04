@@ -25,31 +25,26 @@ import { Panel, SectionHeading } from "@/components/domain/primitives";
 import {
   DIRECTION_VIEW,
   nf,
-  useAthleteHealth,
   valueSlotFor,
+  type AthleteHealth,
   type MetricRow,
 } from "@/lib/athlete-health";
 
 export function HealthTrendsPanel({
-  version,
+  health,
   className,
-  demo = false,
 }: {
-  /** Bump to refetch, e.g. after a manual entry is saved. */
-  version: number;
+  /**
+   * Loaded by the calling screen and passed in, rather than fetched here. The
+   * dashboard was already calling useAthleteHealth at route level AND inside this
+   * panel, so it hit /api/athlete/health twice per load; the health page would have
+   * made it three once it also showed the slideshow. Bumping the caller's `version`
+   * still refetches, so the refresh control below works exactly as before.
+   */
+  health: AthleteHealth;
   className?: string | undefined;
-  /** Dev-only: ask for sample rows so the panel can be reviewed without a session.
-   *  Ignored in a production build. */
-  demo?: boolean | undefined;
 }) {
-  const {
-    state,
-    metrics,
-    summary,
-    failure,
-    reload,
-    demo: showingDemo,
-  } = useAthleteHealth(version, demo);
+  const { state, metrics, summary, failure, reload, demo: showingDemo } = health;
 
   return (
     <Panel className={className}>

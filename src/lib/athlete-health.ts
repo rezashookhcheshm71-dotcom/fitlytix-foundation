@@ -45,6 +45,22 @@ export type HealthPayload = {
 
 export type LoadState = "loading" | "ready" | "unauthenticated" | "error";
 
+/**
+ * One row of the recent-registrations list. Lives here rather than inside the route
+ * because the health slideshow renders the same records; a screen-local type would
+ * force the two to drift. `recentState` reuses LoadState - the route had its own
+ * RecentState union that was word-for-word identical.
+ */
+export type RecentRow = {
+  metricType: string;
+  label: string;
+  unit: string;
+  value: number | null;
+  at: string;
+  source: string | null;
+  excluded: boolean;
+};
+
 /** Shared Persian numeral formatting so every health view agrees on one style. */
 export const nf = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 });
 
