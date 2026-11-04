@@ -8,10 +8,28 @@ export function Panel({
   className,
   children,
   glass,
+  variant = "base",
   ...rest
-}: React.HTMLAttributes<HTMLDivElement> & { glass?: boolean }) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  glass?: boolean;
+  /**
+   * Surface weight. A screen where every panel carries the same weight has no
+   * hierarchy, which is most of why the product looked plain: 105 panels, all
+   * outlined, all equal. `raised` is for the one panel carrying the headline
+   * number, `quiet` for supporting detail that should recede. Padding is not part
+   * of the variant, so callers still control density.
+   */
+  variant?: "base" | "raised" | "quiet";
+}) {
+  const surface = glass
+    ? "glass"
+    : variant === "raised"
+      ? "surface-raised"
+      : variant === "quiet"
+        ? "surface-sunken"
+        : "card-surface";
   return (
-    <div className={cn("rounded-2xl p-5", glass ? "glass" : "card-surface", className)} {...rest}>
+    <div className={cn("rounded-2xl p-5", surface, className)} {...rest}>
       {children}
     </div>
   );
@@ -76,6 +94,7 @@ export function Stat({
   unit,
   delta,
   tone = "default",
+  size = "default",
   className,
 }: {
   label: string;
@@ -83,6 +102,17 @@ export function Stat({
   unit?: string;
   delta?: number;
   tone?: "default" | "primary" | "success" | "info" | "warning";
+  /**
+   * `hero` is the headline number of a screen. The previous ceiling was text-3xl
+   * (30px) against a text-lg section heading, so the most important figure on a
+   * page was barely larger than a label and nothing read as a focal point. Hero
+   * goes to 60px: about 5:1 against the 11px label, which is how the category
+   * leaders get their calm - one very large number, very little else around it.
+   *
+   * The label keeps normal tracking on purpose. Letter-spacing breaks the joins in
+   * Persian script, so hierarchy here comes from size and colour alone.
+   */
+  size?: "default" | "hero";
   className?: string | undefined;
 }) {
   const toneClass = {
@@ -93,10 +123,25 @@ export function Stat({
     warning: "text-warning",
   }[tone];
   return (
-    <div className={cn("flex flex-col gap-1", className)}>
-      <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
+    <div className={cn("flex flex-col", size === "hero" ? "gap-2" : "gap-1", className)}>
+      <span
+        className={cn(
+          "font-medium text-muted-foreground",
+          size === "hero" ? "text-xs" : "text-[11px]",
+        )}
+      >
+        {label}
+      </span>
       <div className="flex items-baseline gap-1.5">
-        <span className={cn("num text-2xl font-bold leading-none md:text-3xl", toneClass)}>
+        <span
+          className={cn(
+            "num font-bold",
+            size === "hero"
+              ? "text-5xl leading-[0.85] tracking-tight md:text-6xl"
+              : "text-2xl leading-none md:text-3xl",
+            toneClass,
+          )}
+        >
           {value}
         </span>
         {unit && <span className="text-xs text-muted-foreground">{unit}</span>}

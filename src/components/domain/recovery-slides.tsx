@@ -1,4 +1,5 @@
 import { CarouselSlide, type CarouselSlideItem } from "@/components/domain/carousel";
+import { Panel, Stat } from "@/components/domain/primitives";
 import {
   METRIC_DEFS,
   READINESS_LABEL,
@@ -104,7 +105,7 @@ export function RecoverySlideshow({
                 <li
                   key={t}
                   data-input-status={rows.length ? "recorded" : "unrecorded"}
-                  className="rounded-2xl border border-border bg-card/40 p-4"
+                  className={`${rows.length ? "card-surface" : "surface-sunken"} rounded-2xl p-4`}
                 >
                   <p className="text-xs text-muted-foreground">{METRIC_DEFS[t].label}</p>
                   {last ? (
@@ -151,7 +152,7 @@ export function RecoverySlideshow({
                   key={`${f.key}-${f.source}`}
                   data-factor-source={f.source}
                   data-factor-effect={f.effect}
-                  className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2.5 ${
+                  className={`flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2.5 ${
                     source.assumed ? "border-warning/40 bg-warning/5" : "border-border bg-card/40"
                   }`}
                 >
@@ -183,18 +184,20 @@ export function RecoverySlideshow({
           note="نمره نمایش داده می‌شود چون صفحه این را از قبل نشان می‌داد؛ اینجا مبنایش هم کنارش آمده."
         >
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-border bg-card/40 p-5">
-              <p className="num text-5xl font-bold leading-none" data-recovery-score>
-                {assessment.score}
-              </p>
-              <div>
+            <Panel
+              variant="raised"
+              data-recovery-score
+              className="flex flex-wrap items-end justify-between gap-4 p-5"
+            >
+              <Stat label="نمره‌یِ آمادگی" value={assessment.score} size="hero" tone="primary" />
+              <div className="text-end">
                 <p className="text-sm font-semibold">{READINESS_LABEL[assessment.level]}</p>
                 <p className="num mt-1 text-[11px] text-muted-foreground">
                   آستانه‌ها: ≥{THRESHOLDS.ready} آماده · ≥{THRESHOLDS.moderate} متوسط · وگرنه نیاز
                   به ریکاوری
                 </p>
               </div>
-            </div>
+            </Panel>
             <ul className="flex flex-col gap-2 text-xs leading-6 text-muted-foreground">
               <li data-recovery-basis="mock-source">
                 نوعِ <code className="num">ReadinessAssessment</code> فیلدِ{" "}
@@ -227,7 +230,10 @@ export function RecoverySlideshow({
             {series.map(({ t, rows }) => {
               const max = rows.length ? Math.max(...rows.map((r) => r.value)) : 0;
               return (
-                <div key={t} className="rounded-2xl border border-border bg-card/40 p-4">
+                <div
+                  key={t}
+                  className={`${rows.length ? "card-surface" : "surface-sunken"} rounded-2xl p-4`}
+                >
                   <p className="text-xs font-semibold">{METRIC_DEFS[t].label}</p>
                   {rows.length ? (
                     <div

@@ -100,10 +100,16 @@ export function AppShell({
               key={n.to}
               to={n.to}
               activeOptions={{ exact: n.to === "/coach" }}
-              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              // The transparent border-s on every link stops the active accent from shifting
+              // the label by 2px when the route changes.
+              className="group flex items-center gap-3 rounded-xl border-s-2 border-transparent px-3 py-2.5 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
               activeProps={{
                 className:
-                  "bg-sidebar-accent text-sidebar-foreground shadow-[inset_3px_0_0_var(--primary)]",
+                  // Was shadow-[inset_3px_0_0_...], which is physical: under RTL it painted the
+                  // accent on the inline-end edge, and it would have flipped to the wrong
+                  // side if the app ever ran LTR. border-s is logical, so the accent
+                  // always marks inline-start.
+                  "border-s-primary bg-sidebar-accent text-sidebar-foreground",
               }}
             >
               <n.icon className="size-4.5 transition-colors group-[.active]:text-primary" />

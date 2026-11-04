@@ -1,4 +1,5 @@
 import { CarouselSlide, type CarouselSlideItem } from "@/components/domain/carousel";
+import { Panel, Stat } from "@/components/domain/primitives";
 import {
   nf,
   type AthleteHealth,
@@ -177,14 +178,17 @@ export function HealthSlideshow({
             <ul className="grid gap-3 sm:grid-cols-3">
               {(
                 [
-                  ["روندِ برقرار", withTrend.length, "text-success"],
-                  ["سنجیده، ناکافی", short.length, "text-warning"],
-                  ["هرگز سنجیده نشده", none.length, "text-muted-foreground"],
+                  ["روندِ برقرار", withTrend.length, "success"],
+                  ["سنجیده، ناکافی", short.length, "warning"],
+                  ["هرگز سنجیده نشده", none.length, "default"],
                 ] as const
               ).map(([label, count, tone]) => (
-                <li key={label} className="rounded-2xl border border-border bg-card/40 p-4">
-                  <p className={`num text-3xl font-bold ${tone}`}>{nf.format(count)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+                <li key={label}>
+                  {/* A count of zero gets the recessed surface on purpose, so absence is
+                      unmistakable instead of blending into the tiles beside it. */}
+                  <Panel variant={count === 0 ? "quiet" : "base"} className="p-4">
+                    <Stat label={label} value={nf.format(count)} size="hero" tone={tone} />
+                  </Panel>
                 </li>
               ))}
             </ul>
