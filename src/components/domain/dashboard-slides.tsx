@@ -44,15 +44,31 @@ function SlideShell({
   eyebrow,
   title,
   note,
+  demo = false,
   children,
 }: {
   eyebrow: string;
   title: string;
   note?: string | undefined;
+  /** Dev-only design preview. Marks every slide so a screenshot cannot be
+      mistaken for somebody's real measurements. */
+  demo?: boolean | undefined;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex h-full flex-col gap-4 p-5 md:p-7">
+      {demo && (
+        <div
+          className="flex items-center gap-2 rounded-lg border border-warning/40 bg-warning/5 px-3 py-2 text-[11px] text-warning"
+          data-demo-slides="design-preview"
+        >
+          <AlertTriangle className="size-3.5 shrink-0" />
+          <span>
+            حالتِ نمونه — فقط برایِ دیدنِ طراحی. عددها ساختگی‌اند و این حالت در ساختِ پروداکشن
+            غیرفعال است.
+          </span>
+        </div>
+      )}
       <div>
         <div className="mb-1 text-xs font-semibold text-primary">{eyebrow}</div>
         <h2 className="text-lg font-bold text-foreground md:text-xl">{title}</h2>
@@ -121,25 +137,129 @@ function MeasuredCard({ row }: { row: MetricRow }) {
   );
 }
 
+/**
+ * Sample rows for the dev-only design preview.
+ *
+ * These exist so the multi-slide layout can actually be looked at: the real four
+ * slides need a ready payload, which needs a session, which needs the host
+ * database. Structurally they are ordinary MetricRow values - one rising, one
+ * falling, one flat, one measured-but-too-sparse-to-trend, one carrying an
+ * excluded reading, and two never measured - so every branch the real slides can
+ * take is on screen at once. The numbers are invented and labelled as such.
+ */
+const DEMO_METRICS: MetricRow[] = [
+  {
+    metricType: "steps",
+    label: "گام‌ها",
+    unit: "گام",
+    status: "ESTABLISHED",
+    pointCount: 4,
+    pointsNeeded: 2,
+    trend: {
+      direction: "rising",
+      change: 1240,
+      changePct: 15.2,
+      spanDays: 21,
+      last: { value: 9420, at: "2026-10-28T06:00:00Z" },
+      excluded: [],
+    },
+  },
+  {
+    metricType: "resting_hr",
+    label: "ضربانِ استراحت",
+    unit: "bpm",
+    status: "ESTABLISHED",
+    pointCount: 3,
+    pointsNeeded: 2,
+    trend: {
+      direction: "falling",
+      change: -4,
+      changePct: -6.9,
+      spanDays: 14,
+      last: { value: 54, at: "2026-10-27T05:30:00Z" },
+      excluded: [],
+    },
+  },
+  {
+    metricType: "sleep_duration",
+    label: "خواب",
+    unit: "ساعت",
+    status: "ESTABLISHED",
+    pointCount: 3,
+    pointsNeeded: 2,
+    trend: {
+      direction: "flat",
+      change: 0,
+      changePct: 0,
+      spanDays: 10,
+      last: { value: 7.2, at: "2026-10-29T06:10:00Z" },
+      excluded: [{ value: 21, at: "2026-10-25T06:00:00Z", reason: "خارج از بازه‌یِ باورپذیر" }],
+    },
+  },
+  {
+    metricType: "vo2max",
+    label: "بیشینه‌یِ اکسیژن",
+    unit: "ml/kg/min",
+    status: "INSUFFICIENT_POINTS",
+    pointCount: 1,
+    pointsNeeded: 2,
+    trend: {
+      direction: null,
+      change: null,
+      changePct: null,
+      spanDays: null,
+      last: { value: 47.5, at: "2026-10-20T08:00:00Z" },
+      excluded: [],
+    },
+  },
+  {
+    metricType: "hrv",
+    label: "تغییرپذیریِ ضربانِ قلب",
+    unit: "ms",
+    status: "NO_DATA",
+    pointCount: 0,
+    pointsNeeded: 2,
+    trend: null,
+  },
+  {
+    metricType: "body_fat",
+    label: "درصدِ چربیِ بدن",
+    unit: "٪",
+    status: "NO_DATA",
+    pointCount: 0,
+    pointsNeeded: 2,
+    trend: null,
+  },
+];
+
+const DEMO_SUMMARY = { totalMetricTypes: 6, withTrend: 3, withoutTrend: 3 };
+
 export function DashboardSlideshow({
   health,
+  demo = false,
   className,
 }: {
   health: AthleteHealth;
+  /** Dev-only: render the four slides from sample rows so the design can be seen
+      without a session. Never enable this from data the visitor controls. */
+  demo?: boolean | undefined;
   className?: string | undefined;
 }) {
-  const { state, metrics, summary, failure } = health;
+  const { state, failure } = health;
+  const metrics = demo ? DEMO_METRICS : health.metrics;
+  const summary = demo ? DEMO_SUMMARY : health.summary;
 
   /* Until there is a real payload there is nothing to summarise, and inventing
      four slides of placeholders would be exactly the fabrication the rest of this
      codebase has been stripped of. One slide that says what is happening is the
      honest version of the same space. */
-  if (state !== "ready") {
+  if (!demo && state !== "ready") {
     const waiting: CarouselSlideItem[] = [
       {
         id: "waiting",
         content: (
           <SlideShell
+            demo={demo}
             eyebrow="داشبورد"
             title={
               state === "loading"
@@ -192,6 +312,7 @@ export function DashboardSlideshow({
       id: "summary",
       content: (
         <SlideShell
+          demo={demo}
           eyebrow="خلاصه"
           title="چه اندازه از داده‌یِ سلامتِ تو واقعاً وجود دارد"
           note="هر حلقه یک شمارشِ واقعی است، از health_metrics. هیچ‌کدام امتیاز یا رتبه نیست."
@@ -218,6 +339,7 @@ export function DashboardSlideshow({
       id: "measured",
       content: (
         <SlideShell
+          demo={demo}
           eyebrow="سنجیده‌ها"
           title="آخرین مقدارِ ثبت‌شده، با روندش"
           note={
@@ -270,6 +392,7 @@ export function DashboardSlideshow({
       id: "position",
       content: (
         <SlideShell
+          demo={demo}
           eyebrow="جایگاه"
           title="جایگاهِ سنجه‌ها در بازه‌یِ مرجع"
           note="برایِ محاسبه‌یِ جایگاه، جنسیت لازم است و این برنامه هنوز آن را نمی‌خواند. حدس هم نمی‌زند."
@@ -320,6 +443,7 @@ export function DashboardSlideshow({
       id: "attention",
       content: (
         <SlideShell
+          demo={demo}
           eyebrow="آنچه نیاز به توجه دارد"
           title="جاهایی که داده کم است، نه جاهایی که داده بد است"
           note="ناسازگاریِ میانِ سنجه‌ها هم به همان جنسیتِ نایاب نیاز دارد، پس اینجا فهرست نمی‌شود."
@@ -395,7 +519,7 @@ export function DashboardSlideshow({
     <CarouselSlide
       slides={slides}
       minHeight={500}
-      label="نمایشِ اسلایدیِ داشبورد"
+      label={demo ? "نمایشِ اسلایدیِ داشبورد — حالتِ نمونه" : "نمایشِ اسلایدیِ داشبورد"}
       className={cn("mb-6", className)}
     />
   );

@@ -32,6 +32,10 @@ const searchSchema = z.object({
   body: z.enum(["empty", "single"]).optional(),
   pkg: z.enum(["training", "nutrition", "combined"]).optional(),
   health: z.enum(["empty"]).optional(),
+  // Design preview for the slideshow. Unlike body=empty, which only removes real
+  // data, this one invents content, so it is gated on the dev build below and is
+  // inert in production.
+  slides: z.enum(["demo"]).optional(),
 });
 
 export const Route = createFileRoute("/athlete/dashboard")({
@@ -56,7 +60,7 @@ export const Route = createFileRoute("/athlete/dashboard")({
 });
 
 function AthleteDashboard() {
-  const { sport: selectedSport, body, pkg, health } = Route.useSearch();
+  const { sport: selectedSport, body, pkg, health, slides } = Route.useSearch();
   const [healthVersion, setHealthVersion] = useState(0);
   const [sessionUser, setSessionUser] = useState<SessionUserDto | null>(null);
   const [persistedSport, setPersistedSport] = useState<SportId | null>(null);
@@ -181,7 +185,7 @@ function AthleteDashboard() {
       {/* P21: the dashboard slideshow sits above the coach cards. Its slides
           are built from the real health payload, and the one slide that cannot
           be - position within the reference range - says why instead of guessing. */}
-      <DashboardSlideshow health={athleteHealth} />
+      <DashboardSlideshow health={athleteHealth} demo={slides === "demo" && import.meta.env.DEV} />
 
       <CoachCards recs={recs} />
 
