@@ -143,10 +143,17 @@ function RegisterPage() {
                     type="button"
                     onClick={() => setRole(opt.value)}
                     aria-pressed={role === opt.value}
+                    // Uses the semantic tokens the rest of the product uses for a
+                    // selected control (border-primary + bg-primary-soft). An
+                    // earlier revision here said "border-ember bg-ember/15", and
+                    // there is no ember colour token - only bg-gradient-ember and
+                    // text-gradient-ember utilities - so both classes generated no
+                    // CSS at all and the selected button differed from the
+                    // unselected one by text opacity alone.
                     className={`rounded-xl border px-4 py-2.5 text-start text-sm transition ${
                       role === opt.value
-                        ? "border-ember bg-ember/15 text-white"
-                        : "border-white/10 bg-white/5 text-white/70 hover:border-white/25"
+                        ? "border-primary bg-primary-soft text-primary"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40"
                     }`}
                   >
                     {opt.label}
