@@ -16,7 +16,10 @@ import { EXPERIENCE_LABEL, SPORTS, SPORT_LIST } from "@/domain/sports";
 import type { AssessmentAnswers, ExperienceLevel, SportId } from "@/domain/types";
 
 const searchSchema = z.object({
-  sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional(),
+  sport: z
+    .enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"])
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/assessment/sport")({

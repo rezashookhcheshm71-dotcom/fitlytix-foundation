@@ -8,7 +8,7 @@ import { demoPlans, formatIRR } from "@/mock/plans";
 
 export const Route = createFileRoute("/plans")({
   validateSearch: (s) =>
-    z.object({ coaching: z.enum(["ai", "human", "hybrid"]).optional() }).parse(s),
+    z.object({ coaching: z.enum(["ai", "human", "hybrid"]).optional().catch(undefined) }).parse(s),
   head: () => ({
     meta: [
       { title: "پلن‌ها — FitLytix" },

@@ -17,7 +17,10 @@ import { SPORTS } from "@/domain/sports";
 import { athleteDashboardService } from "@/services/athlete/dashboard";
 
 const searchSchema = z.object({
-  sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional(),
+  sport: z
+    .enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"])
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/athlete/fitness-dna")({

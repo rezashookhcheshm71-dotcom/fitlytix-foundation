@@ -20,7 +20,9 @@ import { subscriptionService } from "@/services/subscriptions/service";
 
 export const Route = createFileRoute("/athlete/nutrition")({
   validateSearch: (s) =>
-    z.object({ pkg: z.enum(["training", "nutrition", "combined"]).optional() }).parse(s),
+    z
+      .object({ pkg: z.enum(["training", "nutrition", "combined"]).optional().catch(undefined) })
+      .parse(s),
   head: () => ({
     meta: [
       { title: "تغذیه — FitLytix" },

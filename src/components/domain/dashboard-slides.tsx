@@ -137,123 +137,26 @@ function MeasuredCard({ row }: { row: MetricRow }) {
   );
 }
 
-/**
- * Sample rows for the dev-only design preview.
- *
- * These exist so the multi-slide layout can actually be looked at: the real four
- * slides need a ready payload, which needs a session, which needs the host
- * database. Structurally they are ordinary MetricRow values - one rising, one
- * falling, one flat, one measured-but-too-sparse-to-trend, one carrying an
- * excluded reading, and two never measured - so every branch the real slides can
- * take is on screen at once. The numbers are invented and labelled as such.
- */
-const DEMO_METRICS: MetricRow[] = [
-  {
-    metricType: "steps",
-    label: "گام‌ها",
-    unit: "گام",
-    status: "ESTABLISHED",
-    pointCount: 4,
-    pointsNeeded: 2,
-    trend: {
-      direction: "rising",
-      change: 1240,
-      changePct: 15.2,
-      spanDays: 21,
-      last: { value: 9420, at: "2026-10-28T06:00:00Z" },
-      excluded: [],
-    },
-  },
-  {
-    metricType: "resting_hr",
-    label: "ضربانِ استراحت",
-    unit: "bpm",
-    status: "ESTABLISHED",
-    pointCount: 3,
-    pointsNeeded: 2,
-    trend: {
-      direction: "falling",
-      change: -4,
-      changePct: -6.9,
-      spanDays: 14,
-      last: { value: 54, at: "2026-10-27T05:30:00Z" },
-      excluded: [],
-    },
-  },
-  {
-    metricType: "sleep_duration",
-    label: "خواب",
-    unit: "ساعت",
-    status: "ESTABLISHED",
-    pointCount: 3,
-    pointsNeeded: 2,
-    trend: {
-      direction: "flat",
-      change: 0,
-      changePct: 0,
-      spanDays: 10,
-      last: { value: 7.2, at: "2026-10-29T06:10:00Z" },
-      excluded: [{ value: 21, at: "2026-10-25T06:00:00Z", reason: "خارج از بازه‌یِ باورپذیر" }],
-    },
-  },
-  {
-    metricType: "vo2max",
-    label: "بیشینه‌یِ اکسیژن",
-    unit: "ml/kg/min",
-    status: "INSUFFICIENT_POINTS",
-    pointCount: 1,
-    pointsNeeded: 2,
-    trend: {
-      direction: null,
-      change: null,
-      changePct: null,
-      spanDays: null,
-      last: { value: 47.5, at: "2026-10-20T08:00:00Z" },
-      excluded: [],
-    },
-  },
-  {
-    metricType: "hrv",
-    label: "تغییرپذیریِ ضربانِ قلب",
-    unit: "ms",
-    status: "NO_DATA",
-    pointCount: 0,
-    pointsNeeded: 2,
-    trend: null,
-  },
-  {
-    metricType: "body_fat",
-    label: "درصدِ چربیِ بدن",
-    unit: "٪",
-    status: "NO_DATA",
-    pointCount: 0,
-    pointsNeeded: 2,
-    trend: null,
-  },
-];
-
-const DEMO_SUMMARY = { totalMetricTypes: 6, withTrend: 3, withoutTrend: 3 };
-
 export function DashboardSlideshow({
   health,
-  demo = false,
   className,
 }: {
   health: AthleteHealth;
-  /** Dev-only: render the four slides from sample rows so the design can be seen
-      without a session. Never enable this from data the visitor controls. */
-  demo?: boolean | undefined;
   className?: string | undefined;
 }) {
-  const { state, failure } = health;
-  const metrics = demo ? DEMO_METRICS : health.metrics;
-  const summary = demo ? DEMO_SUMMARY : health.summary;
+  // The sample rows arrive through useAthleteHealth, so this component has no
+  // second copy of them and no branch of its own to keep in step. `demo` now only
+  // decides whether to draw the warning banner.
+  const { state, metrics, summary, failure } = health;
+  // The warning follows the data the hook actually returned, so a production build
+  // cannot show sample rows and a dev build cannot show them unlabelled.
+  const demo = health.demo;
 
   /* Until there is a real payload there is nothing to summarise, and inventing
      four slides of placeholders would be exactly the fabrication the rest of this
      codebase has been stripped of. One slide that says what is happening is the
      honest version of the same space. */
-  if (!demo && state !== "ready") {
+  if (state !== "ready") {
     const waiting: CarouselSlideItem[] = [
       {
         id: "waiting",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { AppShell } from "@/components/layout/AppShell";
 import { MockBadge, PageHeader, Panel, SectionHeading } from "@/components/domain/primitives";
 import { HealthDataPanel } from "@/components/domain/health-data";
@@ -24,6 +25,14 @@ export const Route = createFileRoute("/athlete/health")({
     ],
   }),
   component: HealthPage,
+  validateSearch: z.object({
+    // Dev-only design preview for the trends panel, which otherwise renders nothing
+    // at all without a session - and a session needs the host database.
+    // The token is a word, not "1": TanStack Router pre-parses search params as
+    // JSON, so ?demo=1 arrives as the NUMBER 1 and could never match a z.enum of
+    // strings. Same reason ?body=empty and ?slides=demo use words.
+    demo: z.enum(["on"]).optional().catch(undefined),
+  }),
 });
 
 type SessionUser = { id: string; firstName: string; lastName: string };
@@ -56,6 +65,8 @@ function formatAt(iso: string): string {
 }
 
 function HealthPage() {
+  const { demo } = Route.useSearch();
+  const demoDesign = demo === "on" && import.meta.env.DEV;
   // P35: identity comes from the session, not from demoAthlete. The page used to
   // read the mock service keyed to "ath_001" and show his rows to whoever opened
   // it; now it asks the server, which resolves the user from the cookie.
@@ -127,7 +138,7 @@ function HealthPage() {
         actions={<MockBadge label="اتصالِ ساعت هنوز واقعی نیست؛ ثبتِ دستی واقعی است" />}
       />
       {/* P35: real trends from health_metrics, with an honest state per metric. */}
-      <HealthTrendsPanel version={version} className="mb-4" />
+      <HealthTrendsPanel version={version} demo={demoDesign} className="mb-4" />
       {/* Provider connections are still in-memory and no OAuth exists, so this
           panel is keyed to the real user id and starts empty rather than showing
           the demo athlete's devices. */}

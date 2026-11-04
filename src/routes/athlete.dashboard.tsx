@@ -27,15 +27,24 @@ import { goalsService } from "@/services/goals/service";
 import { nutritionService } from "@/services/nutrition/service";
 import { subscriptionService } from "@/services/subscriptions/service";
 
+// Every enum search param in this app ends in .catch(undefined). TanStack Router
+// pre-parses the query string as JSON and then validates it, so a value outside the
+// enum used to throw and return HTTP 500 for the whole page - a mistyped link, a
+// stale bookmark or a crawler probe took the screen down. .catch drops just that one
+// field and leaves the rest of the object validated, so an unrecognised filter means
+// "no filter" rather than "no page".
 const searchSchema = z.object({
-  sport: z.enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"]).optional(),
-  body: z.enum(["empty", "single"]).optional(),
-  pkg: z.enum(["training", "nutrition", "combined"]).optional(),
-  health: z.enum(["empty"]).optional(),
+  sport: z
+    .enum(["crossfit", "hyrox", "functional", "bodybuilding", "running"])
+    .optional()
+    .catch(undefined),
+  body: z.enum(["empty", "single"]).optional().catch(undefined),
+  pkg: z.enum(["training", "nutrition", "combined"]).optional().catch(undefined),
+  health: z.enum(["empty"]).optional().catch(undefined),
   // Design preview for the slideshow. Unlike body=empty, which only removes real
   // data, this one invents content, so it is gated on the dev build below and is
   // inert in production.
-  slides: z.enum(["demo"]).optional(),
+  slides: z.enum(["demo"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/athlete/dashboard")({
@@ -61,6 +70,9 @@ export const Route = createFileRoute("/athlete/dashboard")({
 
 function AthleteDashboard() {
   const { sport: selectedSport, body, pkg, health, slides } = Route.useSearch();
+  // Dev-only design preview. Feeding the flag to the hook rather than to each
+  // component means every health-driven panel here lights up from one dataset.
+  const demoSlides = slides === "demo" && import.meta.env.DEV;
   const [healthVersion, setHealthVersion] = useState(0);
   const [sessionUser, setSessionUser] = useState<SessionUserDto | null>(null);
   const [persistedSport, setPersistedSport] = useState<SportId | null>(null);
@@ -103,7 +115,7 @@ function AthleteDashboard() {
     : "وارد نشده";
   // Real health evidence for the recovery panel and the trends list. One fetch,
   // shared, so the two views cannot disagree.
-  const athleteHealth = useAthleteHealth(healthVersion);
+  const athleteHealth = useAthleteHealth(healthVersion, demoSlides);
   const [addOpen, setAddOpen] = useState(false);
   const [bodyVersion, setBodyVersion] = useState(0);
   const bodyRecords = useMemo(() => {
@@ -185,7 +197,7 @@ function AthleteDashboard() {
       {/* P21: the dashboard slideshow sits above the coach cards. Its slides
           are built from the real health payload, and the one slide that cannot
           be - position within the reference range - says why instead of guessing. */}
-      <DashboardSlideshow health={athleteHealth} demo={slides === "demo" && import.meta.env.DEV} />
+      <DashboardSlideshow health={athleteHealth} />
 
       <CoachCards recs={recs} />
 
@@ -359,7 +371,7 @@ function AthleteDashboard() {
 
       {/* P35: real trends from health_metrics. The fabricated series this sits
           beside is the reason the panel exists. */}
-      <HealthTrendsPanel version={healthVersion} className="mb-4" />
+      <HealthTrendsPanel version={healthVersion} demo={demoSlides} className="mb-4" />
       <HealthDataPanel
         athleteId={activeAthleteId}
         empty={health === "empty"}

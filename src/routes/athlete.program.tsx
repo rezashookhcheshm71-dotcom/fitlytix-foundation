@@ -16,8 +16,14 @@ export const Route = createFileRoute("/athlete/program")({
   validateSearch: (search) =>
     z
       .object({
-        sport: z.enum(["crossfit", "bodybuilding", "hyrox", "functional", "running"]).optional(),
-        level: z.enum(["beginner", "intermediate", "advanced", "elite"]).optional(),
+        sport: z
+          .enum(["crossfit", "bodybuilding", "hyrox", "functional", "running"])
+          .optional()
+          .catch(undefined),
+        level: z
+          .enum(["beginner", "intermediate", "advanced", "elite"])
+          .optional()
+          .catch(undefined),
       })
       .parse(search),
   head: () => ({

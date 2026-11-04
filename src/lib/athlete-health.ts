@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { missingSlot, okSlot, type Slot } from "@/domain/evidence";
 import type { Trend, TrendPoint } from "@/domain/trend";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
+import { DEMO_METRICS, DEMO_SUMMARY } from "@/lib/demo-health";
 
 export type MetricStatus = "ESTABLISHED" | "INSUFFICIENT_POINTS" | "NO_DATA";
 
@@ -97,6 +98,9 @@ export type AthleteHealth = {
   summary: HealthPayload["summary"];
   failure: string;
   reload: () => Promise<void>;
+  /** True only while serving dev-only sample rows, so any screen showing them can
+   *  say so. Derived from what the hook actually returned, never from the request. */
+  demo: boolean;
 };
 
 /**
@@ -105,13 +109,21 @@ export type AthleteHealth = {
  * `version` is a refetch trigger: bump it after saving a measurement so the views
  * sharing this hook all update together.
  */
-export function useAthleteHealth(version: number): AthleteHealth {
-  const [state, setState] = useState<LoadState>("loading");
+export function useAthleteHealth(version: number, demo = false): AthleteHealth {
+  /**
+   * Dev-only preview mode. Gated HERE rather than only at the call sites so that
+   * no screen can serve invented measurements in a production build even if a
+   * caller passes the flag by mistake - import.meta.env.DEV is false in the
+   * built output, so the whole branch folds away.
+   */
+  const demoMode = demo && import.meta.env.DEV;
+  const [state, setState] = useState<LoadState>(demoMode ? "ready" : "loading");
   const [metrics, setMetrics] = useState<MetricRow[]>([]);
   const [summary, setSummary] = useState<HealthPayload["summary"]>(undefined);
   const [failure, setFailure] = useState("");
 
   const load = useCallback(async () => {
+    if (demoMode) return; // nothing to fetch; the sample rows are already below
     setState("loading");
     try {
       const res = await fetch("/api/athlete/health", { credentials: "include" });
@@ -139,11 +151,20 @@ export function useAthleteHealth(version: number): AthleteHealth {
       setFailure("اتصال به سرور برقرار نشد.");
       setState("error");
     }
-  }, []);
+  }, [demoMode]);
 
   useEffect(() => {
     void load();
   }, [load, version]);
 
-  return { state, metrics, summary, failure, reload: load };
+  return demoMode
+    ? {
+        state: "ready",
+        metrics: DEMO_METRICS,
+        summary: DEMO_SUMMARY,
+        failure: "",
+        reload: load,
+        demo: true,
+      }
+    : { state, metrics, summary, failure, reload: load, demo: false };
 }

@@ -33,22 +33,47 @@ import {
 export function HealthTrendsPanel({
   version,
   className,
+  demo = false,
 }: {
   /** Bump to refetch, e.g. after a manual entry is saved. */
   version: number;
   className?: string | undefined;
+  /** Dev-only: ask for sample rows so the panel can be reviewed without a session.
+   *  Ignored in a production build. */
+  demo?: boolean | undefined;
 }) {
-  const { state, metrics, summary, failure, reload } = useAthleteHealth(version);
+  const {
+    state,
+    metrics,
+    summary,
+    failure,
+    reload,
+    demo: showingDemo,
+  } = useAthleteHealth(version, demo);
 
   return (
     <Panel className={className}>
+      {showingDemo && (
+        <p
+          data-demo-health="design-preview"
+          className="mb-3 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-[11px] font-medium leading-5 text-warning"
+        >
+          حالتِ نمونه — این عددها واقعی نیستند و برای دیدنِ طراحی نشان داده می‌شوند.
+        </p>
+      )}
       {/* SectionHeading's `action` prop renders a Link, so the refresh control
           lives beside it rather than inside it - widening that shared prop would
           ripple into every other screen that uses it. */}
       <div className="flex items-start justify-between gap-4">
         <SectionHeading
           title="روندها"
-          subtitle="از ثبت‌هایِ واقعیِ خودت، نه داده‌یِ نمونه"
+          // The subtitle promises the numbers are real, which stops being true in
+          // preview mode, so it has to change with the data rather than stay fixed.
+          subtitle={
+            showingDemo
+              ? "داده‌یِ نمونه برای دیدنِ طراحی — عددِ واقعی نیست"
+              : "از ثبت‌هایِ واقعیِ خودت، نه داده‌یِ نمونه"
+          }
           className="mb-0"
         />
         <button
