@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { missingSlot, okSlot, type Slot } from "@/domain/evidence";
 import type { Trend, TrendPoint } from "@/domain/trend";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 
 export type MetricStatus = "ESTABLISHED" | "INSUFFICIENT_POINTS" | "NO_DATA";
 
@@ -57,6 +58,21 @@ export function formatValue(value: number, unit: string): string {
  * A single measurement yields an ok slot even though it supports no trend: the
  * reading is real, and only the trend claim is withheld.
  */
+/**
+ * One Persian label, icon and tone per trend direction.
+ *
+ * This lives here rather than in a component file so that every view showing a
+ * trend - the trends panel and the dashboard slideshow - reads the same words for
+ * the same direction. Two files each defining "rising" is how a product ends up
+ * saying two different things about one fact. It also keeps the component files
+ * exporting only components, which is what react-refresh wants.
+ */
+export const DIRECTION_VIEW = {
+  rising: { label: "رو به بالا", Icon: TrendingUp, tone: "text-success" },
+  falling: { label: "رو به پایین", Icon: TrendingDown, tone: "text-info" },
+  flat: { label: "بدونِ تغییر", Icon: Minus, tone: "text-muted-foreground" },
+} as const;
+
 export function valueSlotFor(row: MetricRow): Slot<string> {
   const last = row.trend?.last;
   if (row.status === "NO_DATA" || last === null || last === undefined) {

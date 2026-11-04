@@ -17,6 +17,7 @@ import { athleteDashboardService } from "@/services/athlete/dashboard";
 import { bodyAnalysisService } from "@/services/body-analysis/service";
 import { demoAthlete } from "@/mock/athlete";
 import { CoachCards, JourneyBar, PackageNotice, ReadinessCard } from "@/components/domain/coaching";
+import { DashboardSlideshow } from "@/components/domain/dashboard-slides";
 import { HealthDataPanel } from "@/components/domain/health-data";
 import { HealthTrendsPanel } from "@/components/domain/health-trends";
 import { useAthleteHealth } from "@/lib/athlete-health";
@@ -176,6 +177,11 @@ function AthleteDashboard() {
           </Button>
         ))}
       </div>
+
+      {/* P21: the dashboard slideshow sits above the coach cards. Its slides
+          are built from the real health payload, and the one slide that cannot
+          be - position within the reference range - says why instead of guessing. */}
+      <DashboardSlideshow health={athleteHealth} />
 
       <CoachCards recs={recs} />
 

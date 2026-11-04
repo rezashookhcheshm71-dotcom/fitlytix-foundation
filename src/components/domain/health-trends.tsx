@@ -19,17 +19,16 @@
  * Styling follows src/lib/locale.ts: logical properties only, never physical
  * left/right, because the whole product is RTL.
  */
-import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 
 import { EmptySlot } from "@/components/domain/evidence";
 import { Panel, SectionHeading } from "@/components/domain/primitives";
-import { nf, useAthleteHealth, valueSlotFor, type MetricRow } from "@/lib/athlete-health";
-
-const DIRECTION_VIEW = {
-  rising: { label: "رو به بالا", Icon: TrendingUp, tone: "text-success" },
-  falling: { label: "رو به پایین", Icon: TrendingDown, tone: "text-info" },
-  flat: { label: "بدونِ تغییر", Icon: Minus, tone: "text-muted-foreground" },
-} as const;
+import {
+  DIRECTION_VIEW,
+  nf,
+  useAthleteHealth,
+  valueSlotFor,
+  type MetricRow,
+} from "@/lib/athlete-health";
 
 export function HealthTrendsPanel({
   version,
