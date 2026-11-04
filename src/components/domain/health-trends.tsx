@@ -19,74 +19,17 @@
  * Styling follows src/lib/locale.ts: logical properties only, never physical
  * left/right, because the whole product is RTL.
  */
-import { useCallback, useEffect, useState } from "react";
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 
 import { EmptySlot } from "@/components/domain/evidence";
 import { Panel, SectionHeading } from "@/components/domain/primitives";
-import { missingSlot, okSlot, type Slot } from "@/domain/evidence";
-import type { Trend, TrendPoint } from "@/domain/trend";
-
-type MetricStatus = "ESTABLISHED" | "INSUFFICIENT_POINTS" | "NO_DATA";
-
-type MetricRow = {
-  metricType: string;
-  label: string;
-  unit: string;
-  status: MetricStatus;
-  pointCount: number;
-  pointsNeeded: number;
-  trend: {
-    direction: Trend["direction"];
-    change: number | null;
-    changePct: number | null;
-    spanDays: number | null;
-    last: TrendPoint | null;
-    excluded: { value: number; at: string; reason: string }[];
-  } | null;
-};
-
-type HealthPayload = {
-  ok: boolean;
-  summary?: { totalMetricTypes: number; withTrend: number; withoutTrend: number };
-  metrics?: MetricRow[];
-};
-
-type LoadState = "loading" | "ready" | "unauthenticated" | "error";
-
-const nf = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 });
-
-function formatValue(value: number, unit: string): string {
-  return `${nf.format(value)} ${unit}`;
-}
-
-/**
- * Builds the value slot for a metric. An ok slot means a real reading exists; a
- * missing slot means nothing was ever recorded.
- */
-function valueSlotFor(row: MetricRow): Slot<string> {
-  const last = row.trend?.last;
-  if (row.status === "NO_DATA" || last === null || last === undefined) {
-    return missingSlot<string>(
-      `${row.label} هرگز ثبت نشده است.`,
-      "یک اندازه‌گیری ثبت کن تا از همان لحظه داده‌یِ واقعی داشته باشی.",
-    );
-  }
-  return okSlot<string>(formatValue(last.value, row.unit), "health_metrics");
-}
+import { nf, useAthleteHealth, valueSlotFor, type MetricRow } from "@/lib/athlete-health";
 
 const DIRECTION_VIEW = {
   rising: { label: "رو به بالا", Icon: TrendingUp, tone: "text-success" },
   falling: { label: "رو به پایین", Icon: TrendingDown, tone: "text-info" },
   flat: { label: "بدونِ تغییر", Icon: Minus, tone: "text-muted-foreground" },
 } as const;
-
-/** Metrics with real evidence come first; never-measured ones sink to the bottom. */
-const STATUS_RANK: Record<MetricStatus, number> = {
-  ESTABLISHED: 0,
-  INSUFFICIENT_POINTS: 1,
-  NO_DATA: 2,
-};
 
 export function HealthTrendsPanel({
   version,
@@ -96,44 +39,7 @@ export function HealthTrendsPanel({
   version: number;
   className?: string | undefined;
 }) {
-  const [state, setState] = useState<LoadState>("loading");
-  const [metrics, setMetrics] = useState<MetricRow[]>([]);
-  const [summary, setSummary] = useState<HealthPayload["summary"]>(undefined);
-  const [failure, setFailure] = useState("");
-
-  const load = useCallback(async () => {
-    setState("loading");
-    try {
-      const res = await fetch("/api/athlete/health", { credentials: "include" });
-      if (res.status === 401) {
-        setState("unauthenticated");
-        return;
-      }
-      const json = (await res.json().catch(() => ({}))) as HealthPayload;
-      if (!res.ok || !json.ok || !Array.isArray(json.metrics)) {
-        setFailure("خواندنِ داده‌یِ سلامت ممکن نشد.");
-        setState("error");
-        return;
-      }
-      setMetrics(
-        [...json.metrics].sort(
-          (a, b) =>
-            STATUS_RANK[a.status] - STATUS_RANK[b.status] ||
-            a.metricType.localeCompare(b.metricType),
-        ),
-      );
-      setSummary(json.summary);
-      setFailure("");
-      setState("ready");
-    } catch {
-      setFailure("اتصال به سرور برقرار نشد.");
-      setState("error");
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load, version]);
+  const { state, metrics, summary, failure, reload } = useAthleteHealth(version);
 
   return (
     <Panel className={className}>
@@ -148,7 +54,7 @@ export function HealthTrendsPanel({
         />
         <button
           type="button"
-          onClick={() => void load()}
+          onClick={() => void reload()}
           className="shrink-0 text-xs font-semibold text-primary underline-offset-4 hover:underline"
         >
           نوسازی
