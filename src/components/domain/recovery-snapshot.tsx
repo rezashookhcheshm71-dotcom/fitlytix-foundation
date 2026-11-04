@@ -70,7 +70,7 @@ export function RecoverySnapshot({ health }: { health: AthleteHealth }) {
           const row: MetricRow | undefined = byType.get(type);
           const slot = row ? valueSlotFor(row) : undefined;
           return (
-            <div key={type} className="rounded-xl border border-border bg-card/40 p-2.5">
+            <div key={type} className="surface-sunken rounded-xl p-2.5">
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Icon className="size-3.5" aria-hidden />
                 {label}

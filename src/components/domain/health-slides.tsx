@@ -215,7 +215,7 @@ export function HealthSlideshow({
               <li
                 key={row.metricType}
                 data-metric-status={row.status}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-3 py-2.5"
+                className="flex flex-wrap items-center justify-between gap-3 surface-sunken rounded-xl px-3 py-2.5"
               >
                 <span className="text-xs font-semibold">{row.label}</span>
                 <EvidenceMeter row={row} />

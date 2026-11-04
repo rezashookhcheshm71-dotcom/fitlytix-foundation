@@ -45,12 +45,16 @@ function PerformancePage() {
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Panel>
+        {/* One headline per screen: the first card is raised and its number is the
+            hero size, so the four-up grid has a clear entry point instead of four
+            equally loud boxes. */}
+        <Panel variant="raised">
           <Stat
             label="Performance Index"
             value={last.performanceIndex}
             delta={performanceEngine.performanceDelta(demoPerformance)}
             tone="primary"
+            size="hero"
           />
         </Panel>
         <Panel>

@@ -125,7 +125,7 @@ export function HealthTrendsPanel({
               return (
                 <li
                   key={row.metricType}
-                  className="rounded-xl border border-border bg-card/40 p-3"
+                  className="surface-sunken rounded-xl p-3"
                   data-metric-status={row.status}
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">

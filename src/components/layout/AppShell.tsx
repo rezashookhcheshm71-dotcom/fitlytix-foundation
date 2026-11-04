@@ -85,7 +85,17 @@ export function AppShell({
       : { to: "/athlete/dashboard" as const, label: "نمای ورزشکار" };
 
   return (
-    <div className="flex min-h-screen">
+    // `isolate` gives the root its own stacking context so the ambient layer below
+    // can sit at -z-10 without falling behind the body background.
+    <div className="relative isolate flex min-h-screen">
+      {/* Ambient depth: one ember wash anchored over the content side and a very
+          faint grid, so the app has atmosphere without decoration. A plain `fixed`
+          element paints above static content, hence the negative z-index. Hidden from
+          assistive tech and unable to intercept a pointer. */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-52 start-[8%] h-[34rem] w-[44rem] rounded-full bg-primary/10 blur-[130px]" />
+        <div className="grid-noise absolute inset-0 opacity-40" />
+      </div>
       {/* Sidebar (desktop) */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-e border-sidebar-border bg-sidebar/80 backdrop-blur-xl lg:flex">
         <div className="flex h-16 items-center px-5">
@@ -198,7 +208,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 pb-28 pt-5 md:px-8 md:pt-8 lg:pb-12">
+        <main className="stagger-rise flex-1 px-4 pb-28 pt-5 md:px-8 md:pt-8 lg:pb-12">
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
 

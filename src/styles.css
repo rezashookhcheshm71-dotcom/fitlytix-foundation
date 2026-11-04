@@ -90,30 +90,47 @@
   --animate-rise: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
   --animate-ring: ring-fill 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
-  @keyframes rise {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+/*
+ * Keyframes live at the top level rather than inside @theme.
+ *
+ * Tailwind emits an @theme @keyframes block only while some generated utility still
+ * consumes the matching --animate-* entry. `rise` happens to be emitted today because
+ * animate-rise is used in eight files, but stagger-rise below refers to the animation
+ * by name, so tying its correctness to that incidental usage would mean deleting any
+ * one of those call sites silently breaks the page entrance. `@theme inline` also
+ * substitutes values instead of emitting custom properties, so a hand-written utility
+ * cannot reach for var(--animate-rise) either. Declaring the keyframes here makes
+ * every reference resolve on its own terms.
+ *
+ * Consequence, recorded rather than hidden: this also emits @keyframes pulse-soft,
+ * which currently has no consumer (animate-pulse-soft is used nowhere). It is a few
+ * bytes of unused CSS, kept because the entry is still part of the declared motion
+ * language and removing it is a separate decision.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-  @keyframes pulse-soft {
-    0%,
-    100% {
-      opacity: 0.55;
-    }
-    50% {
-      opacity: 1;
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  @keyframes ring-fill {
-    from {
-      stroke-dashoffset: var(--ring-circumference);
-    }
+}
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-circumference);
   }
 }
 
@@ -213,6 +230,33 @@
     font-variant-numeric: tabular-nums;
     direction: ltr;
     unicode-bidi: isolate;
+  }
+}
+
+/*
+ * Staggered entrance for a page's main column. Children arrive in sequence rather
+ * than all at once, which is most of what makes a dashboard feel composed instead of
+ * dumped. Capped at six: past that the delay is imperceptible and the markup only
+ * gets longer. The global prefers-reduced-motion rule collapses this to 0.01ms.
+ */
+@utility stagger-rise {
+  & > * {
+    animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  & > *:nth-child(2) {
+    animation-delay: 50ms;
+  }
+  & > *:nth-child(3) {
+    animation-delay: 100ms;
+  }
+  & > *:nth-child(4) {
+    animation-delay: 150ms;
+  }
+  & > *:nth-child(5) {
+    animation-delay: 200ms;
+  }
+  & > *:nth-child(6) {
+    animation-delay: 250ms;
   }
 }
 

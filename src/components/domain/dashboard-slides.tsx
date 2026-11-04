@@ -109,7 +109,7 @@ function MeasuredCard({ row }: { row: MetricRow }) {
   const change = row.trend?.change ?? null;
 
   return (
-    <div className="rounded-xl border border-border bg-card/40 p-3">
+    <div className="surface-sunken rounded-xl p-3">
       <div className="text-[11px] font-medium text-muted-foreground">{row.label}</div>
       <div className="num mt-1 text-xl font-bold text-foreground">
         {last ? formatValue(last.value, row.unit) : "—"}
@@ -306,7 +306,7 @@ export function DashboardSlideshow({
               const range = entry.range;
               const needsSex = range === null;
               return (
-                <div key={key} className="rounded-xl border border-border bg-card/40 p-3">
+                <div key={key} className="surface-sunken rounded-xl p-3">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="text-xs font-semibold text-foreground">{entry.label}</span>
                     <span className="num text-[11px] text-muted-foreground">
@@ -360,7 +360,7 @@ export function DashboardSlideshow({
             )}
 
             {neverMeasured.length > 0 && (
-              <div className="rounded-xl border border-border bg-card/40 p-3">
+              <div className="surface-sunken rounded-xl p-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <Ruler className="size-3.5 text-warning" />
                   <span className="num">{nf.format(neverMeasured.length)}</span> سنجه هرگز ثبت نشده
@@ -376,7 +376,7 @@ export function DashboardSlideshow({
             )}
 
             {onePoint.length > 0 && (
-              <div className="rounded-xl border border-border bg-card/40 p-3">
+              <div className="surface-sunken rounded-xl p-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <AlertTriangle className="size-3.5 text-info" />
                   <span className="num">{nf.format(onePoint.length)}</span> سنجه فقط یک نقطه دارد
@@ -388,7 +388,7 @@ export function DashboardSlideshow({
             )}
 
             {excluded.length > 0 && (
-              <div className="rounded-xl border border-border bg-card/40 p-3">
+              <div className="surface-sunken rounded-xl p-3">
                 <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
                   <AlertTriangle className="size-3.5 text-destructive" />
                   <span className="num">{nf.format(excluded.length)}</span> ثبت از میانگین بیرون
