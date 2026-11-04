@@ -2,10 +2,10 @@
   "lint": {
     "generatedBy": "scripts/guards/check-lint-ratchet.mjs",
     "note": "Frozen lint debt. Counts may only go down; see the guard header for the rule.",
-    "errors": 1039,
+    "errors": 1015,
     "warnings": 10,
     "byRule": {
-      "prettier/prettier": 1039,
+      "prettier/prettier": 1015,
       "react-refresh/only-export-components": 10
     },
     "files": {
@@ -125,10 +125,6 @@
         "errors": 7,
         "warnings": 0
       },
-      "src/lib/db.server.ts": {
-        "errors": 2,
-        "warnings": 0
-      },
       "src/mock/athlete.ts": {
         "errors": 32,
         "warnings": 0
@@ -179,10 +175,6 @@
       },
       "src/routes/athlete.fitness-dna.tsx": {
         "errors": 21,
-        "warnings": 0
-      },
-      "src/routes/athlete.goals.tsx": {
-        "errors": 15,
         "warnings": 0
       },
       "src/routes/athlete.nutrition.tsx": {
@@ -299,10 +291,6 @@
       },
       "src/services/fitness-dna/inputs.ts": {
         "errors": 1,
-        "warnings": 0
-      },
-      "src/services/goals/service.ts": {
-        "errors": 7,
         "warnings": 0
       },
       "src/services/health-data/normalize.ts": {

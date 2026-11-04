@@ -1,4 +1,9 @@
-import mysql, { type Pool, type PoolConnection, type ResultSetHeader, type RowDataPacket } from "mysql2/promise";
+import mysql, {
+  type Pool,
+  type PoolConnection,
+  type ResultSetHeader,
+  type RowDataPacket,
+} from "mysql2/promise";
 
 let pool: Pool | null = null;
 const columnCache = new Map<string, Set<string>>();
@@ -7,7 +12,12 @@ let existingTablesCache: Set<string> | null = null;
 function resolveDbConfig() {
   const host = process.env["DB_HOST"] ?? process.env["MYSQL_HOST"] ?? "127.0.0.1";
   const port = Number(process.env["DB_PORT"] ?? process.env["MYSQL_PORT"] ?? "3306");
-  const database = process.env["DB_NAME"] ?? process.env["MYSQL_DATABASE"] ?? "eugtezmj_fitlytix";
+  // No fallback database name. This line used to default to the production
+  // database, which meant a missing DB_NAME silently connected the app to
+  // production instead of failing - the worst possible failure mode, because it
+  // looks like success. The real name belongs in .env (see .env.example:10), not
+  // baked into source where every checkout inherits it.
+  const database = process.env["DB_NAME"] ?? process.env["MYSQL_DATABASE"] ?? "";
   const user = process.env["DB_USER"] ?? process.env["MYSQL_USER"] ?? "";
   const password = process.env["DB_PASSWORD"] ?? process.env["MYSQL_PASSWORD"] ?? "";
 
@@ -29,8 +39,12 @@ export function getDbPool(): Pool {
   if (pool) return pool;
 
   const cfg = resolveDbConfig();
-  if (!cfg.user) {
-    throw new Error("DB_NOT_CONFIGURED");
+  // Names the missing variables without echoing any value, so a misconfigured
+  // deployment says what to fix instead of failing inside the driver with an
+  // opaque auth error.
+  const missing = [...(cfg.database ? [] : ["DB_NAME"]), ...(cfg.user ? [] : ["DB_USER"])];
+  if (missing.length > 0) {
+    throw new Error(`DB_NOT_CONFIGURED: missing ${missing.join(", ")}`);
   }
 
   pool = mysql.createPool({
@@ -104,7 +118,10 @@ export async function tableExists(tableName: string, conn?: PoolConnection): Pro
   return false;
 }
 
-export async function getTableColumns(tableName: string, conn?: PoolConnection): Promise<Set<string>> {
+export async function getTableColumns(
+  tableName: string,
+  conn?: PoolConnection,
+): Promise<Set<string>> {
   const normalized = tableName.toLowerCase();
   const cached = columnCache.get(normalized);
   if (cached) return cached;
