@@ -136,7 +136,10 @@ export function lintReport() {
       files[rel] = { errors: fileErrors, warnings: fileWarnings };
     }
   }
-  return { ok: true, code, errors, warnings, files, byRule };
+  // `scanned` is how many files eslint produced an entry for, including the ones
+  // with no problems. It exists so a caller can tell "this repository is clean"
+  // apart from "the scan matched nothing" - both report 0 errors.
+  return { ok: true, code, errors, warnings, files, byRule, scanned: parsed.length };
 }
 
 /** Every `check-*.mjs` guard, sorted, as repo-relative paths. */
