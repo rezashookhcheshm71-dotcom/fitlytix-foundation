@@ -29,7 +29,9 @@ export function SportCard({
           ? "border-transparent bg-card-elevated shadow-glow"
           : "border-border bg-card hover:-translate-y-0.5 hover:border-primary/30",
       )}
-      style={selected ? { boxShadow: `0 0 0 1.5px ${color}, 0 16px 40px -16px ${color}` } : undefined}
+      style={
+        selected ? { boxShadow: `0 0 0 1.5px ${color}, 0 16px 40px -16px ${color}` } : undefined
+      }
     >
       <div
         className="pointer-events-none absolute -end-8 -top-8 size-32 rounded-full opacity-25 blur-2xl transition-opacity group-hover:opacity-40"
@@ -55,7 +57,10 @@ export function SportBadge({ sport, className }: { sport: Sport; className?: str
   const color = `var(${sport.colorToken})`;
   return (
     <span
-      className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-display text-[11px] font-bold", className)}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-display text-[11px] font-bold",
+        className,
+      )}
       style={{ color, background: `color-mix(in oklch, ${color} 14%, transparent)` }}
     >
       <SportIcon sport={sport} className="size-3" />

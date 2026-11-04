@@ -8,7 +8,10 @@ export const Route = createFileRoute("/api/auth/logout")({
         try {
           await destroySession(request);
         } catch (err) {
-          console.error("[api/auth/logout] Session cleanup error:", err instanceof Error ? err.message : err);
+          console.error(
+            "[api/auth/logout] Session cleanup error:",
+            err instanceof Error ? err.message : err,
+          );
         }
         return Response.json(
           { ok: true },

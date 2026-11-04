@@ -3,7 +3,15 @@
  * and emits RawHealthSample[] that normalize.ts maps into canonical health_metrics rows.
  * Placeholders only: no credentials, SDKs or network calls. Real adapters run server-side (or in the mobile bridge → API).
  */
-import { PROVIDER_SCOPES, PROVIDER_TRANSPORT, type HealthProvider, type HealthProviderConnection, type HealthScope, type HealthSource, type ProviderTransport } from "@/domain/types";
+import {
+  PROVIDER_SCOPES,
+  PROVIDER_TRANSPORT,
+  type HealthProvider,
+  type HealthProviderConnection,
+  type HealthScope,
+  type HealthSource,
+  type ProviderTransport,
+} from "@/domain/types";
 import type { RawHealthSample } from "./normalize";
 
 export interface HealthDataProvider {
@@ -20,12 +28,23 @@ export interface HealthDataProvider {
 }
 
 class NotAvailableError extends Error {
-  constructor(id: string) { super(`Health provider "${id}" is not integrated yet`); }
+  constructor(id: string) {
+    super(`Health provider "${id}" is not integrated yet`);
+  }
 }
 
 function placeholder(id: HealthProvider): HealthDataProvider {
   const fail = () => Promise.reject(new NotAvailableError(id));
-  return { id, transport: PROVIDER_TRANSPORT[id], available: false, scopes: PROVIDER_SCOPES[id], beginConnect: fail, completeConnect: fail, fetchSamples: fail, revoke: fail };
+  return {
+    id,
+    transport: PROVIDER_TRANSPORT[id],
+    available: false,
+    scopes: PROVIDER_SCOPES[id],
+    beginConnect: fail,
+    completeConnect: fail,
+    fetchSamples: fail,
+    revoke: fail,
+  };
 }
 
 /** Manual source: data arrives through the manual entry form, never via sync. */

@@ -47,9 +47,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          این صفحه باز نشد
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">این صفحه باز نشد</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           یک مشکل موقت پیش آمده؛ دوباره امتحان کن یا به صفحه اصلی برگرد.
         </p>
@@ -63,12 +61,12 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             دوباره امتحان کن
           </Button>
           <Button asChild variant="outline">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            صفحه اصلی
-          </Link>
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              صفحه اصلی
+            </Link>
           </Button>
         </div>
       </div>
@@ -82,7 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "FitLytix — پلتفرم هوشمند مربی‌گری ورزشی" },
-      { name: "description", content: "FitLytix ورزشکار، مربی انسانی و موتور هوش مصنوعی را روی یک لایه داده عملکردی به هم متصل می‌کند." },
+      {
+        name: "description",
+        content:
+          "FitLytix ورزشکار، مربی انسانی و موتور هوش مصنوعی را روی یک لایه داده عملکردی به هم متصل می‌کند.",
+      },
       { name: "author", content: "FitLytix" },
       { name: "theme-color", content: "#1a1a1d" },
       { property: "og:type", content: "website" },

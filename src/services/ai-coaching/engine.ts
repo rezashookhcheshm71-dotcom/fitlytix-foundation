@@ -10,7 +10,13 @@
  * TODO(backend): replace with a server function (createServerFn) that calls the
  * real inference service and persists programs to Postgres.
  */
-import type { AthleteProfile, FitnessDNA, PerformancePoint, Program, RecoverySnapshot } from "@/domain/types";
+import type {
+  AthleteProfile,
+  FitnessDNA,
+  PerformancePoint,
+  Program,
+  RecoverySnapshot,
+} from "@/domain/types";
 import { demoProgram } from "@/mock/program";
 import { demoDNA } from "@/mock/athlete";
 
@@ -40,13 +46,28 @@ export const aiCoachingEngine = {
   async suggestAdjustments(ctx: CoachingContext): Promise<ProgramAdjustment[]> {
     const items: ProgramAdjustment[] = [];
     if (ctx.recovery.readiness < 60) {
-      items.push({ reason: "آمادگی پایین", change: "کاهش ۲۰٪ حجم وزنه‌برداری", impact: "volume", source: "mock" });
+      items.push({
+        reason: "آمادگی پایین",
+        change: "کاهش ۲۰٪ حجم وزنه‌برداری",
+        impact: "volume",
+        source: "mock",
+      });
     } else {
-      items.push({ reason: "آمادگی ۷۸٪ و روند مثبت موتور", change: "حفظ شدت اسکوات، +۱ راند در بلوک موتور", impact: "intensity", source: "mock" });
+      items.push({
+        reason: "آمادگی ۷۸٪ و روند مثبت موتور",
+        change: "حفظ شدت اسکوات، +۱ راند در بلوک موتور",
+        impact: "intensity",
+        source: "mock",
+      });
     }
     const gym = ctx.dna.dimensions.find((d) => d.id === "gymnastics");
     if (gym && gym.score < 60) {
-      items.push({ reason: "ژیمناستیک محدودکننده اصلی", change: "افزودن EMOM مهارت حلقه ۲×هفته", impact: "skill", source: "mock" });
+      items.push({
+        reason: "ژیمناستیک محدودکننده اصلی",
+        change: "افزودن EMOM مهارت حلقه ۲×هفته",
+        impact: "skill",
+        source: "mock",
+      });
     }
     return items;
   },

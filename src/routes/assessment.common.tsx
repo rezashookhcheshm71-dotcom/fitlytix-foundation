@@ -3,7 +3,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, LogIn, UserPlus } from "lucide-react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
-import { ASSESSMENT_STEPS, AssessmentSectionCard, StepIndicator } from "@/components/domain/assessment";
+import {
+  ASSESSMENT_STEPS,
+  AssessmentSectionCard,
+  StepIndicator,
+} from "@/components/domain/assessment";
 import { Panel, Pill, ProgressRing } from "@/components/domain/primitives";
 import { assessmentEngine } from "@/services/assessment/engine";
 import type { AssessmentAnswers } from "@/domain/types";
@@ -24,7 +28,10 @@ export const Route = createFileRoute("/assessment/common")({
       { title: "ارزیابی عمومی — FitLytix" },
       { name: "description", content: "پروفایل پایه، هدف‌ها و سلامت؛ ورودی مشترک Fitness DNA." },
       { property: "og:title", content: "ارزیابی عمومی — FitLytix" },
-      { property: "og:description", content: "پروفایل پایه، هدف‌ها و سلامت؛ ورودی مشترک Fitness DNA." },
+      {
+        property: "og:description",
+        content: "پروفایل پایه، هدف‌ها و سلامت؛ ورودی مشترک Fitness DNA.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -118,7 +125,9 @@ function CommonAssessment() {
 
     if (result.status === "unauthenticated") {
       setRequiresAuthPrompt(true);
-      setSubmitError(result.error ?? "برای ذخیره دائمی ارزیابی لازم است وارد حساب کاربری خود شوید.");
+      setSubmitError(
+        result.error ?? "برای ذخیره دائمی ارزیابی لازم است وارد حساب کاربری خود شوید.",
+      );
       return;
     }
 
@@ -205,7 +214,8 @@ function CommonAssessment() {
               {requiresAuthPrompt && (
                 <div className="w-full space-y-2 rounded-xl border border-primary/30 bg-primary-soft p-3 text-xs">
                   <p className="text-foreground">
-                    پاسخ‌های شما موقتاً نگه داشته شد. برای ثبت دائمی در پروفایل خود وارد شوید یا حساب بسازید:
+                    پاسخ‌های شما موقتاً نگه داشته شد. برای ثبت دائمی در پروفایل خود وارد شوید یا
+                    حساب بسازید:
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     <Button asChild size="sm" variant="default" className="w-full">
@@ -231,7 +241,10 @@ function CommonAssessment() {
                 {submitting ? "در حال ذخیره..." : "ادامه: انتخاب رشته"} <ArrowLeft />
               </Button>
 
-              <Link to="/onboarding" className="text-xs text-muted-foreground hover:text-foreground">
+              <Link
+                to="/onboarding"
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
                 بازگشت
               </Link>
 

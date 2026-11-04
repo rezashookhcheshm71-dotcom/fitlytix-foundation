@@ -61,11 +61,29 @@ function LoginPage() {
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1.5">
               <Label htmlFor="id">ایمیل</Label>
-              <Input id="id" value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="you@example.com" dir="ltr" className="h-11 font-display" required />
+              <Input
+                id="id"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="you@example.com"
+                dir="ltr"
+                className="h-11 font-display"
+                required
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pw">رمز عبور</Label>
-              <Input id="pw" value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" dir="ltr" className="h-11" required />
+              <Input
+                id="pw"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="••••••••"
+                dir="ltr"
+                className="h-11"
+                required
+              />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
@@ -73,10 +91,16 @@ function LoginPage() {
             </Button>
           </form>
           <div className="mt-6 flex items-center justify-between text-xs text-muted-foreground">
-            <Link to="/register" search={redirect ? { redirect } : {}} className="text-primary hover:underline">
+            <Link
+              to="/register"
+              search={redirect ? { redirect } : {}}
+              className="text-primary hover:underline"
+            >
               حساب ندارید؟ ثبت‌نام
             </Link>
-            <Link to="/coach" className="hover:text-foreground">ورود مربی</Link>
+            <Link to="/coach" className="hover:text-foreground">
+              ورود مربی
+            </Link>
           </div>
         </Panel>
       </div>

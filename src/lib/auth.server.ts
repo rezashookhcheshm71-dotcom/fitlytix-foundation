@@ -108,7 +108,10 @@ function verifySignedTokenPayload(token: string): { userId: string; expiresAtMs:
 
   try {
     const payload = Buffer.from(encodedPayload, "base64url").toString("utf8");
-    const expectedSig = crypto.createHmac("sha256", getSessionSecret()).update(payload).digest("base64url");
+    const expectedSig = crypto
+      .createHmac("sha256", getSessionSecret())
+      .update(payload)
+      .digest("base64url");
     const a = Buffer.from(sig);
     const b = Buffer.from(expectedSig);
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
@@ -151,7 +154,11 @@ function isSecureRequest(request?: Request): boolean {
   return request.url.startsWith("https://");
 }
 
-export function buildSessionCookie(token: string, request?: Request, maxAgeSeconds = SESSION_TTL_SECONDS): string {
+export function buildSessionCookie(
+  token: string,
+  request?: Request,
+  maxAgeSeconds = SESSION_TTL_SECONDS,
+): string {
   const attributes = [
     `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
     "Path=/",
@@ -200,7 +207,11 @@ async function resolveAthleteIdentityForUser(
   try {
     if (await tableExists("athlete_profiles")) {
       const cols = await getTableColumns("athlete_profiles");
-      const userCol = cols.has("user_id") ? "user_id" : cols.has("athlete_user_id") ? "athlete_user_id" : "id";
+      const userCol = cols.has("user_id")
+        ? "user_id"
+        : cols.has("athlete_user_id")
+          ? "athlete_user_id"
+          : "id";
       const rows = await dbQuery<RowDataPacket[]>(
         `SELECT * FROM athlete_profiles WHERE ${userCol} = ? LIMIT 1`,
         [userId],
@@ -253,7 +264,9 @@ async function loadUserById(userId: string): Promise<AuthenticatedUser | null> {
   const phone = String(row["phone"] ?? row["mobile"] ?? "");
   const roleRaw = String(row["role"] ?? "athlete").toLowerCase();
   const role: UserRole =
-    roleRaw === "coach" || roleRaw === "head_coach" || roleRaw === "admin" ? (roleRaw as UserRole) : "athlete";
+    roleRaw === "coach" || roleRaw === "head_coach" || roleRaw === "admin"
+      ? (roleRaw as UserRole)
+      : "athlete";
 
   const { athleteId, primarySport } = await resolveAthleteIdentityForUser(String(row["id"]));
 
@@ -320,7 +333,10 @@ export async function createServerSession(userId: string, request?: Request): Pr
 
       if (insertCols.length >= 2) {
         const placeholders = insertCols.map(() => "?").join(", ");
-        await dbExecute(`INSERT INTO ${tbl} (${insertCols.join(", ")}) VALUES (${placeholders})`, insertVals);
+        await dbExecute(
+          `INSERT INTO ${tbl} (${insertCols.join(", ")}) VALUES (${placeholders})`,
+          insertVals,
+        );
       }
       break;
     }
@@ -401,7 +417,10 @@ export async function destroySession(request: Request): Promise<void> {
           [tokenHash, rawToken],
         );
       } else {
-        await dbExecute(`DELETE FROM ${tbl} WHERE ${tokenCol} = ? OR ${tokenCol} = ?`, [tokenHash, rawToken]);
+        await dbExecute(`DELETE FROM ${tbl} WHERE ${tokenCol} = ? OR ${tokenCol} = ?`, [
+          tokenHash,
+          rawToken,
+        ]);
       }
       break;
     }
@@ -416,7 +435,10 @@ export async function requireAuthenticatedUser(request: Request): Promise<Authen
   return user;
 }
 
-export async function requireRole(request: Request, allowedRoles: UserRole[]): Promise<AuthenticatedUser> {
+export async function requireRole(
+  request: Request,
+  allowedRoles: UserRole[],
+): Promise<AuthenticatedUser> {
   const user = await requireAuthenticatedUser(request);
   if (!allowedRoles.includes(user.role)) {
     throw new AuthHttpError(403, "شما مجوز دسترسی به این بخش را ندارید.");

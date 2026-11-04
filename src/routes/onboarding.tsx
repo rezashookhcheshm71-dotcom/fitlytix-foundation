@@ -21,8 +21,18 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const steps = [
-  { icon: ClipboardList, title: "ارزیابی عمومی", desc: "پروفایل، هدف، سلامت", to: "/assessment/common" as const },
-  { icon: Trophy, title: "ارزیابی رشته", desc: "بخش‌های اختصاصی ورزش شما", to: "/assessment/sport" as const },
+  {
+    icon: ClipboardList,
+    title: "ارزیابی عمومی",
+    desc: "پروفایل، هدف، سلامت",
+    to: "/assessment/common" as const,
+  },
+  {
+    icon: Trophy,
+    title: "ارزیابی رشته",
+    desc: "بخش‌های اختصاصی ورزش شما",
+    to: "/assessment/sport" as const,
+  },
   { icon: Dna, title: "Fitness DNA", desc: "پروفایل چندبعدی", to: "/athlete/fitness-dna" as const },
   { icon: Brain, title: "پیشنهاد پلن", desc: "AI یا مربی انسانی", to: "/plans" as const },
   { icon: CreditCard, title: "عضویت", desc: "پرداخت و شروع", to: "/checkout" as const },
@@ -38,7 +48,9 @@ function Onboarding() {
           description="پنج قدم. هر قدم داده‌ای می‌سازد که موتور مربی‌گری برای طراحی برنامه از آن استفاده می‌کند."
           actions={
             <Button asChild variant="hero" size="lg">
-              <Link to="/assessment/common">شروع ارزیابی عمومی <ArrowLeft /></Link>
+              <Link to="/assessment/common">
+                شروع ارزیابی عمومی <ArrowLeft />
+              </Link>
             </Button>
           }
         />
@@ -47,9 +59,14 @@ function Onboarding() {
           {steps.map((s, i) => (
             <li key={s.title}>
               <Link to={s.to} className="block h-full">
-                <Panel className="h-full transition-all hover:-translate-y-0.5 hover:border-primary/30" style={{ animationDelay: `${i * 70}ms` }}>
+                <Panel
+                  className="h-full transition-all hover:-translate-y-0.5 hover:border-primary/30"
+                  style={{ animationDelay: `${i * 70}ms` }}
+                >
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary-soft text-primary"><s.icon className="size-4" /></span>
+                    <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                      <s.icon className="size-4" />
+                    </span>
                     <span className="num text-xs font-bold text-muted-foreground">0{i + 1}</span>
                   </div>
                   <div className="text-sm font-bold">{s.title}</div>

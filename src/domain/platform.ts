@@ -9,12 +9,29 @@ import type { ExperienceLevel, SportId } from "./types";
 
 /* Health / wearables ------------------------------------------------------ */
 
-export const HEALTH_PROVIDERS = ["garmin", "apple_health", "health_connect", "whoop", "oura", "polar", "fitbit", "samsung_health", "other"] as const;
+export const HEALTH_PROVIDERS = [
+  "garmin",
+  "apple_health",
+  "health_connect",
+  "whoop",
+  "oura",
+  "polar",
+  "fitbit",
+  "samsung_health",
+  "other",
+] as const;
 export type HealthProvider = (typeof HEALTH_PROVIDERS)[number];
 export type HealthSource = HealthProvider | "manual";
 export type WearableProvider = HealthProvider;
 /** Standard lifecycle for every provider connection. `connected`/`syncing` require a real server-side token. */
-export const CONNECTION_STATUSES = ["not_connected", "pending", "connected", "syncing", "error", "revoked"] as const;
+export const CONNECTION_STATUSES = [
+  "not_connected",
+  "pending",
+  "connected",
+  "syncing",
+  "error",
+  "revoked",
+] as const;
 export type ConnectionStatus = (typeof CONNECTION_STATUSES)[number];
 /** yes = owns a device; manual = will enter data by hand; no = not using one; later = undecided. */
 export type WearableIntent = "yes" | "no" | "later" | "manual";
@@ -38,7 +55,8 @@ export const TRANSPORT_NOTE: Record<ProviderTransport, string> = {
   none: "فعلاً فقط ورود دستی",
 };
 
-export type HealthScope = "workouts" | "heart_rate" | "hrv" | "sleep" | "activity" | "body" | "recovery";
+export type HealthScope =
+  "workouts" | "heart_rate" | "hrv" | "sleep" | "activity" | "body" | "recovery";
 export const HEALTH_SCOPE_LABEL: Record<HealthScope, string> = {
   workouts: "جلسه‌های تمرین",
   heart_rate: "ضربان قلب",
@@ -101,8 +119,22 @@ export interface HealthProviderConnection {
 
 /** Canonical metric types every provider normalizes into (see services/health-data/normalize.ts). */
 export type HealthMetricType =
-  | "heart_rate" | "resting_hr" | "hrv" | "sleep_duration" | "sleep_score" | "steps" | "active_calories"
-  | "workout" | "training_load" | "vo2max" | "weight" | "body_fat" | "respiratory_rate" | "recovery" | "readiness" | "stress";
+  | "heart_rate"
+  | "resting_hr"
+  | "hrv"
+  | "sleep_duration"
+  | "sleep_score"
+  | "steps"
+  | "active_calories"
+  | "workout"
+  | "training_load"
+  | "vo2max"
+  | "weight"
+  | "body_fat"
+  | "respiratory_rate"
+  | "recovery"
+  | "readiness"
+  | "stress";
 
 export interface HealthMetric {
   id: string;
@@ -121,7 +153,10 @@ export interface HealthMetric {
   createdAt: string;
 }
 
-export const METRIC_DEFS: Record<HealthMetricType, { label: string; unit: string; min: number; max: number; step?: number; manual?: boolean }> = {
+export const METRIC_DEFS: Record<
+  HealthMetricType,
+  { label: string; unit: string; min: number; max: number; step?: number; manual?: boolean }
+> = {
   resting_hr: { label: "ضربان استراحت", unit: "bpm", min: 25, max: 130, manual: true },
   hrv: { label: "HRV", unit: "ms", min: 5, max: 300, manual: true },
   sleep_duration: { label: "خواب", unit: "ساعت", min: 0, max: 16, step: 0.1, manual: true },
@@ -139,7 +174,9 @@ export const METRIC_DEFS: Record<HealthMetricType, { label: string; unit: string
   readiness: { label: "آمادگی", unit: "/100", min: 0, max: 100 },
   stress: { label: "استرس", unit: "/100", min: 0, max: 100 },
 };
-export const MANUAL_METRICS = (Object.keys(METRIC_DEFS) as HealthMetricType[]).filter((k) => METRIC_DEFS[k].manual);
+export const MANUAL_METRICS = (Object.keys(METRIC_DEFS) as HealthMetricType[]).filter(
+  (k) => METRIC_DEFS[k].manual,
+);
 
 export const manualHealthInputSchema = z
   .object({
@@ -149,11 +186,20 @@ export const manualHealthInputSchema = z
   })
   .superRefine((v, ctx) => {
     const entries = Object.entries(v.values) as [HealthMetricType, number][];
-    if (entries.length === 0) ctx.addIssue({ code: "custom", path: ["values"], message: "حداقل یک عدد وارد کن" });
+    if (entries.length === 0)
+      ctx.addIssue({ code: "custom", path: ["values"], message: "حداقل یک عدد وارد کن" });
     for (const [k, n] of entries) {
       const d = METRIC_DEFS[k];
-      if (!d) { ctx.addIssue({ code: "custom", path: ["values", k], message: "نوع داده ناشناخته" }); continue; }
-      if (Number.isNaN(n) || n < d.min || n > d.max) ctx.addIssue({ code: "custom", path: ["values", k], message: `بین ${d.min} تا ${d.max} ${d.unit}` });
+      if (!d) {
+        ctx.addIssue({ code: "custom", path: ["values", k], message: "نوع داده ناشناخته" });
+        continue;
+      }
+      if (Number.isNaN(n) || n < d.min || n > d.max)
+        ctx.addIssue({
+          code: "custom",
+          path: ["values", k],
+          message: `بین ${d.min} تا ${d.max} ${d.unit}`,
+        });
     }
   });
 export type ManualHealthInput = z.infer<typeof manualHealthInputSchema>;
@@ -182,7 +228,11 @@ export interface UserWearablePreference {
 /* Readiness / recovery ---------------------------------------------------- */
 
 export type ReadinessLevel = "ready" | "moderate" | "recovery_needed";
-export const READINESS_LABEL: Record<ReadinessLevel, string> = { ready: "آماده", moderate: "متوسط", recovery_needed: "نیاز به ریکاوری" };
+export const READINESS_LABEL: Record<ReadinessLevel, string> = {
+  ready: "آماده",
+  moderate: "متوسط",
+  recovery_needed: "نیاز به ریکاوری",
+};
 
 export interface ReadinessFactor {
   key: "sleep" | "hrv" | "resting_hr" | "training_load" | "soreness" | "fatigue" | "performance";
@@ -247,7 +297,8 @@ export interface NutritionFeedback {
 
 /* Goals / journey --------------------------------------------------------- */
 
-export type JourneyStage = "assessment" | "foundation" | "build" | "benchmark" | "performance" | "goal";
+export type JourneyStage =
+  "assessment" | "foundation" | "build" | "benchmark" | "performance" | "goal";
 export const JOURNEY_STAGES: { id: JourneyStage; label: string }[] = [
   { id: "assessment", label: "ارزیابی" },
   { id: "foundation", label: "پایه" },
@@ -280,11 +331,18 @@ export interface GoalPlan {
 
 /* Decision engine / why --------------------------------------------------- */
 
-export type DecisionInputKey = "athlete" | "dna" | "goal" | "training" | "nutrition" | "recovery" | "health" | "feedback";
+export type DecisionInputKey =
+  "athlete" | "dna" | "goal" | "training" | "nutrition" | "recovery" | "health" | "feedback";
 
 export interface DecisionRecommendation {
   id: string;
-  kind: "today_focus" | "training_adjustment" | "nutrition_context" | "recovery_focus" | "attention" | "next_week";
+  kind:
+    | "today_focus"
+    | "training_adjustment"
+    | "nutrition_context"
+    | "recovery_focus"
+    | "attention"
+    | "next_week";
   title: string;
   text: string;
   why: string;
@@ -324,7 +382,8 @@ export interface CoachAttentionItem {
   id: string;
   athleteId: string;
   athleteName: string;
-  reason: "low_readiness" | "adherence_drop" | "missed_feedback" | "nutrition_flag" | "performance_drop";
+  reason:
+    "low_readiness" | "adherence_drop" | "missed_feedback" | "nutrition_flag" | "performance_drop";
   detail: string;
   severity: "watch" | "act";
   suggestedAction: string;
@@ -378,7 +437,14 @@ export interface AIProposal {
 export interface AppNotification {
   id: string;
   athleteId: string;
-  kind: "pre_workout" | "post_workout_feedback" | "nutrition" | "recovery" | "milestone" | "streak" | "coach_message";
+  kind:
+    | "pre_workout"
+    | "post_workout_feedback"
+    | "nutrition"
+    | "recovery"
+    | "milestone"
+    | "streak"
+    | "coach_message";
   title: string;
   body: string;
   scheduledFor: string;

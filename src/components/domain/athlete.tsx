@@ -6,7 +6,15 @@ import { cn } from "@/lib/utils";
 import { Bar, ProgressRing } from "./primitives";
 import { SportBadge } from "./sport";
 
-export function Avatar({ name, className, color }: { name: string; className?: string; color?: string }) {
+export function Avatar({
+  name,
+  className,
+  color,
+}: {
+  name: string;
+  className?: string;
+  color?: string;
+}) {
   const initials = name.trim().slice(0, 1);
   return (
     <span
@@ -14,7 +22,9 @@ export function Avatar({ name, className, color }: { name: string; className?: s
         "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-bold text-foreground ring-1 ring-border",
         className,
       )}
-      style={color ? { background: `color-mix(in oklch, ${color} 22%, var(--secondary))` } : undefined}
+      style={
+        color ? { background: `color-mix(in oklch, ${color} 22%, var(--secondary))` } : undefined
+      }
     >
       {initials}
     </span>
@@ -47,11 +57,24 @@ export function AthleteCard({ item }: { item: CoachAthleteSummary }) {
             <div className="font-bold text-foreground">{name}</div>
             <div className="mt-1 flex items-center gap-2">
               <SportBadge sport={sport} />
-              <span className="text-[11px] text-muted-foreground">{EXPERIENCE_LABEL[athlete.experience]}</span>
+              <span className="text-[11px] text-muted-foreground">
+                {EXPERIENCE_LABEL[athlete.experience]}
+              </span>
             </div>
           </div>
         </div>
-        <ProgressRing value={item.readiness} size={52} stroke={5} color={item.readiness > 70 ? "var(--success)" : item.readiness > 55 ? "var(--warning)" : "var(--destructive)"}>
+        <ProgressRing
+          value={item.readiness}
+          size={52}
+          stroke={5}
+          color={
+            item.readiness > 70
+              ? "var(--success)"
+              : item.readiness > 55
+                ? "var(--warning)"
+                : "var(--destructive)"
+          }
+        >
           <span className="num text-xs font-bold">{item.readiness}</span>
         </ProgressRing>
       </div>
@@ -68,7 +91,10 @@ export function AthleteCard({ item }: { item: CoachAthleteSummary }) {
           بعدی: <span className="font-display text-foreground">{item.nextWorkout}</span>
         </span>
         {flag ? (
-          <span className="inline-flex shrink-0 items-center gap-1 font-semibold" style={{ color: flag.color }}>
+          <span
+            className="inline-flex shrink-0 items-center gap-1 font-semibold"
+            style={{ color: flag.color }}
+          >
             <flag.icon className="size-3.5" /> {flag.label}
           </span>
         ) : (
@@ -79,14 +105,26 @@ export function AthleteCard({ item }: { item: CoachAthleteSummary }) {
   );
 }
 
-function Metric({ label, value, delta, small }: { label: string; value: React.ReactNode; delta?: number; small?: boolean }) {
+function Metric({
+  label,
+  value,
+  delta,
+  small,
+}: {
+  label: string;
+  value: React.ReactNode;
+  delta?: number;
+  small?: boolean;
+}) {
   return (
     <div className="rounded-xl bg-muted/50 px-2 py-2">
       <div className="text-[10px] text-muted-foreground">{label}</div>
       <div className={cn("num mt-0.5 font-bold text-foreground", small ? "text-xs" : "text-base")}>
         {value}
         {delta !== undefined && (
-          <span className={cn("ms-1 text-[10px]", delta >= 0 ? "text-success" : "text-destructive")}>
+          <span
+            className={cn("ms-1 text-[10px]", delta >= 0 ? "text-success" : "text-destructive")}
+          >
             {delta >= 0 ? "▲" : "▼"}
             {Math.abs(delta)}
           </span>

@@ -113,7 +113,13 @@ export const BLOCK_META: Record<
     bg: "bg-block-engine",
     cssVar: "var(--block-engine)",
   },
-  wod: { fa: "WOD", en: "WOD", text: "text-block-wod", bg: "bg-block-wod", cssVar: "var(--block-wod)" },
+  wod: {
+    fa: "WOD",
+    en: "WOD",
+    text: "text-block-wod",
+    bg: "bg-block-wod",
+    cssVar: "var(--block-wod)",
+  },
   skill: {
     fa: "مهارت",
     en: "Skill",

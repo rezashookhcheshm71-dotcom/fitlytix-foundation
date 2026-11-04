@@ -2,7 +2,12 @@
  * Body Analysis service — append-only repository + trend math.
  * TODO(backend): replace the in-memory store with inserts/selects on body_analysis_records. Never UPDATE a measurement; add a new row.
  */
-import { bodyAnalysisInputSchema, type BodyAnalysisInput, type BodyAnalysisRecord, type BodyMetricKey } from "@/domain/body-analysis";
+import {
+  bodyAnalysisInputSchema,
+  type BodyAnalysisInput,
+  type BodyAnalysisRecord,
+  type BodyMetricKey,
+} from "@/domain/body-analysis";
 import type { SportId } from "@/domain/types";
 import { DEMO_BODY_RECORDS } from "@/mock/body-analysis";
 
@@ -17,11 +22,14 @@ export interface MetricDelta {
   vsFirst?: number | undefined;
 }
 
-const byDate = (a: BodyAnalysisRecord, b: BodyAnalysisRecord) => a.measuredAt.localeCompare(b.measuredAt) || a.createdAt.localeCompare(b.createdAt);
+const byDate = (a: BodyAnalysisRecord, b: BodyAnalysisRecord) =>
+  a.measuredAt.localeCompare(b.measuredAt) || a.createdAt.localeCompare(b.createdAt);
 const round = (n: number) => Math.round(n * 10) / 10;
 
 function clean<T extends object>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== "")) as T;
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined && v !== ""),
+  ) as T;
 }
 
 export const bodyAnalysisService = {
@@ -63,7 +71,10 @@ export const bodyAnalysisService = {
         key,
         latest,
         vsPrevious: latest !== undefined && prev !== undefined ? round(latest - prev) : undefined,
-        vsFirst: latest !== undefined && first !== undefined && withValue.length > 1 ? round(latest - first) : undefined,
+        vsFirst:
+          latest !== undefined && first !== undefined && withValue.length > 1
+            ? round(latest - first)
+            : undefined,
       };
     });
   },
@@ -72,25 +83,45 @@ export const bodyAnalysisService = {
     if (records.length < 2) return undefined;
     const first = records[0]!;
     const last = records.at(-1)!;
-    const weeks = Math.max(1, Math.round((new Date(last.measuredAt).getTime() - new Date(first.measuredAt).getTime()) / (7 * 86_400_000)));
+    const weeks = Math.max(
+      1,
+      Math.round(
+        (new Date(last.measuredAt).getTime() - new Date(first.measuredAt).getTime()) /
+          (7 * 86_400_000),
+      ),
+    );
     const dw = last.weightKg - first.weightKg;
-    const weight = Math.abs(dw) < 1 ? "وزن تقریباً ثابت بوده" : dw > 0 ? `وزن حدود ${round(dw)} کیلو بالا رفته` : `وزن حدود ${round(-dw)} کیلو پایین آمده`;
+    const weight =
+      Math.abs(dw) < 1
+        ? "وزن تقریباً ثابت بوده"
+        : dw > 0
+          ? `وزن حدود ${round(dw)} کیلو بالا رفته`
+          : `وزن حدود ${round(-dw)} کیلو پایین آمده`;
     const parts = [weight];
     if (first.bodyFatPct !== undefined && last.bodyFatPct !== undefined) {
       const df = last.bodyFatPct - first.bodyFatPct;
-      parts.push(Math.abs(df) < 0.5 ? "درصد چربی تغییر خاصی نکرده" : df < 0 ? "درصد چربی پایین‌تر آمده" : "درصد چربی کمی بالاتر رفته");
+      parts.push(
+        Math.abs(df) < 0.5
+          ? "درصد چربی تغییر خاصی نکرده"
+          : df < 0
+            ? "درصد چربی پایین‌تر آمده"
+            : "درصد چربی کمی بالاتر رفته",
+      );
     }
     if (first.skeletalMuscleKg !== undefined && last.skeletalMuscleKg !== undefined) {
       const dm = last.skeletalMuscleKg - first.skeletalMuscleKg;
-      if (Math.abs(dm) >= 0.3) parts.push(dm > 0 ? "توده عضلانی کمی بیشتر شده" : "توده عضلانی کمی کمتر شده");
+      if (Math.abs(dm) >= 0.3)
+        parts.push(dm > 0 ? "توده عضلانی کمی بیشتر شده" : "توده عضلانی کمی کمتر شده");
     }
-    const joined = parts.length > 1 ? `${parts.slice(0, -1).join("، ")} و ${parts.at(-1)}` : parts[0];
+    const joined =
+      parts.length > 1 ? `${parts.slice(0, -1).join("، ")} و ${parts.at(-1)}` : parts[0];
     return `در ${weeks} هفته گذشته ${joined}. ${SPORT_BODY_NOTE[sport]}`;
   },
 };
 
 const SPORT_BODY_NOTE: Record<SportId, string> = {
-  crossfit: "برای کراس‌فیت، ثابت ماندن وزن با عضله بیشتر یعنی حرکات بدن‌وزن و لیفت‌ها هم‌زمان جلو می‌روند.",
+  crossfit:
+    "برای کراس‌فیت، ثابت ماندن وزن با عضله بیشتر یعنی حرکات بدن‌وزن و لیفت‌ها هم‌زمان جلو می‌روند.",
   bodybuilding: "برای بدنسازی، روند توده عضلانی مهم‌تر از عدد ترازوست؛ با همین سرعت ادامه بده.",
   hyrox: "در HYROX نسبت قدرت به وزن روی سورتمه و دویدن هر دو اثر دارد؛ این روند به نفعت است.",
   functional: "برای تمرین فانکشنال، ترکیب بدن متعادل کمک می‌کند کنترل و تحرک راحت‌تر بهتر شود.",

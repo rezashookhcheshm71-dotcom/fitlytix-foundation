@@ -6,3 +6,9 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+
+# Reference material that must not be reflowed.
+# docs/project-prompts.md is the uploaded specification and carries an md5 manifest
+# of the files it describes; its own md5 is load-bearing (b9cbd2eeabfe0f9b440ecd8e22774b19).
+# Running prettier over it silently invalidates that fingerprint, so it is excluded.
+docs/project-prompts.md

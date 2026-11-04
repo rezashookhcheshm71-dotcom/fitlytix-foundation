@@ -32,7 +32,10 @@ export const Route = createFileRoute("/api/auth/login")({
               { status: err.statusCode, headers: { "cache-control": "no-store" } },
             );
           }
-          console.error("[api/auth/login] Unexpected error:", err instanceof Error ? err.message : err);
+          console.error(
+            "[api/auth/login] Unexpected error:",
+            err instanceof Error ? err.message : err,
+          );
           return Response.json(
             { ok: false, error: "خطا در ورود به حساب کاربری. لطفاً دوباره تلاش کنید." },
             { status: 500, headers: { "cache-control": "no-store" } },

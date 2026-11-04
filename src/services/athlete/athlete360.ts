@@ -25,9 +25,18 @@ export const athlete360Service = {
       goals: goalsService.list(athleteId, sport),
       body: bodyAnalysisService.list(athleteId),
       readiness: recoveryService.assess(athleteId, sport),
-      health: { connections: healthDataService.listConnections(athleteId), latest: healthDataService.latestByType(athleteId) },
-      nutrition: { profile: nutritionService.getProfile(athleteId), adherence: nutritionService.adherence(athleteId) },
-      performance: athleteId === demoAthlete.id ? { prs: demoPRs, benchmarks: demoBenchmarks, skills: demoSkills } : { prs: [], benchmarks: [], skills: [] },
+      health: {
+        connections: healthDataService.listConnections(athleteId),
+        latest: healthDataService.latestByType(athleteId),
+      },
+      nutrition: {
+        profile: nutritionService.getProfile(athleteId),
+        adherence: nutritionService.adherence(athleteId),
+      },
+      performance:
+        athleteId === demoAthlete.id
+          ? { prs: demoPRs, benchmarks: demoBenchmarks, skills: demoSkills }
+          : { prs: [], benchmarks: [], skills: [] },
     };
   },
   passport(athleteId: string, sport: SportId): AthletePassport {
@@ -39,10 +48,24 @@ export const athlete360Service = {
       sport,
       level: a.profile.experience,
       archetype: a.snapshot.dna.archetype,
-      topDimensions: [...a.snapshot.dna.dimensions].sort((x, y) => y.score - x.score).slice(0, 3).map((d) => ({ label: d.label, score: d.score })),
-      prs: sportSpecific ? a.performance.prs.slice(0, 4).map((p) => ({ name: p.exerciseName, value: `${p.value} ${p.unit}` })) : a.snapshot.metrics.map((m) => ({ name: m.label, value: m.value })),
-      benchmarks: sportSpecific ? a.performance.benchmarks.slice(0, 3).map((b) => ({ name: b.name, result: b.result })) : [],
-      skills: sportSpecific ? a.performance.skills.filter((s) => s.status !== "locked").slice(0, 5).map((s) => s.name) : [],
+      topDimensions: [...a.snapshot.dna.dimensions]
+        .sort((x, y) => y.score - x.score)
+        .slice(0, 3)
+        .map((d) => ({ label: d.label, score: d.score })),
+      prs: sportSpecific
+        ? a.performance.prs
+            .slice(0, 4)
+            .map((p) => ({ name: p.exerciseName, value: `${p.value} ${p.unit}` }))
+        : a.snapshot.metrics.map((m) => ({ name: m.label, value: m.value })),
+      benchmarks: sportSpecific
+        ? a.performance.benchmarks.slice(0, 3).map((b) => ({ name: b.name, result: b.result }))
+        : [],
+      skills: sportSpecific
+        ? a.performance.skills
+            .filter((s) => s.status !== "locked")
+            .slice(0, 5)
+            .map((s) => s.name)
+        : [],
       goals: a.goals.map((g) => g.title),
       consistency: a.snapshot.program.adherence,
       progressNote: a.snapshot.dna.insights[0]?.text ?? "",

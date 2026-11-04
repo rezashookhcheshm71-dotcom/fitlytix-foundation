@@ -11,10 +11,7 @@ export function Panel({
   ...rest
 }: React.HTMLAttributes<HTMLDivElement> & { glass?: boolean }) {
   return (
-    <div
-      className={cn("rounded-2xl p-5", glass ? "glass" : "card-surface", className)}
-      {...rest}
-    >
+    <div className={cn("rounded-2xl p-5", glass ? "glass" : "card-surface", className)} {...rest}>
       {children}
     </div>
   );
@@ -52,7 +49,13 @@ export function SectionHeading({
 }
 
 /* Mock / engine label ------------------------------------------------------- */
-export function MockBadge({ label = "داده نمایشی", className }: { label?: string; className?: string }) {
+export function MockBadge({
+  label = "داده نمایشی",
+  className,
+}: {
+  label?: string;
+  className?: string;
+}) {
   return (
     <span
       className={cn(
@@ -93,7 +96,9 @@ export function Stat({
     <div className={cn("flex flex-col gap-1", className)}>
       <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
       <div className="flex items-baseline gap-1.5">
-        <span className={cn("num text-2xl font-bold leading-none md:text-3xl", toneClass)}>{value}</span>
+        <span className={cn("num text-2xl font-bold leading-none md:text-3xl", toneClass)}>
+          {value}
+        </span>
         {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
         {delta !== undefined && (
           <span
@@ -133,7 +138,10 @@ export function ProgressRing({
   const c = 2 * Math.PI * r;
   const off = c - (Math.min(100, Math.max(0, value)) / 100) * c;
   return (
-    <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
+    <div
+      className={cn("relative inline-flex items-center justify-center", className)}
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90">
         <circle cx={size / 2} cy={size / 2} r={r} stroke={track} strokeWidth={stroke} fill="none" />
         <circle
@@ -168,10 +176,17 @@ export function Bar({
   height?: number;
 }) {
   return (
-    <div className={cn("w-full overflow-hidden rounded-full bg-muted", className)} style={{ height }}>
+    <div
+      className={cn("w-full overflow-hidden rounded-full bg-muted", className)}
+      style={{ height }}
+    >
       <div
         className="h-full rounded-full transition-[width] duration-700 ease-out"
-        style={{ width: `${Math.round(value * 100)}%`, background: color, boxShadow: `0 0 10px ${color}` }}
+        style={{
+          width: `${Math.round(value * 100)}%`,
+          background: color,
+          boxShadow: `0 0 10px ${color}`,
+        }}
       />
     </div>
   );
@@ -194,7 +209,9 @@ export function Pill({
         !color && "bg-secondary text-secondary-foreground",
         className,
       )}
-      style={color ? { color, background: `color-mix(in oklch, ${color} 14%, transparent)` } : undefined}
+      style={
+        color ? { color, background: `color-mix(in oklch, ${color} 14%, transparent)` } : undefined
+      }
     >
       {children}
     </span>
@@ -217,8 +234,12 @@ export function PageHeader({
     <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-end md:justify-between">
       <div className="animate-rise">
         {eyebrow && <div className="mb-2 text-xs font-semibold text-primary">{eyebrow}</div>}
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">{title}</h1>
-        {description && <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{description}</p>}
+        <h1 className="text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">
+          {title}
+        </h1>
+        {description && (
+          <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{description}</p>
+        )}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>

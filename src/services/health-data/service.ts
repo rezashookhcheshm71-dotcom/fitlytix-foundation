@@ -25,7 +25,8 @@ const metrics: HealthMetric[] = [...DEMO_HEALTH_METRICS];
 const manualEntries: ManualHealthEntry[] = [];
 const intents = new Map<string, WearableIntent>([["ath_001", "yes"]]);
 const selections = new Map<string, HealthProvider[]>([["ath_001", ["garmin"]]]);
-const uid = (p: string) => `${p}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const uid = (p: string) =>
+  `${p}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
 export const healthDataService = {
   intent(athleteId: string): WearableIntent | undefined {
@@ -42,7 +43,15 @@ export const healthDataService = {
     const now = new Date().toISOString();
     for (const provider of providers) {
       if (connections.some((c) => c.athleteId === athleteId && c.provider === provider)) continue;
-      connections.push({ id: uid("hc"), athleteId, provider, status: "pending", scopes: [], createdAt: now, updatedAt: now });
+      connections.push({
+        id: uid("hc"),
+        athleteId,
+        provider,
+        status: "pending",
+        scopes: [],
+        createdAt: now,
+        updatedAt: now,
+      });
     }
   },
   listConnections(athleteId: string) {
@@ -52,21 +61,32 @@ export const healthDataService = {
   disconnect(athleteId: string, connectionId: string) {
     const target = connections.find((c) => c.id === connectionId && c.athleteId === athleteId);
     connections = connections.filter((c) => c !== target);
-    if (target) selections.set(athleteId, this.selectedProviders(athleteId).filter((p) => p !== target.provider));
+    if (target)
+      selections.set(
+        athleteId,
+        this.selectedProviders(athleteId).filter((p) => p !== target.provider),
+      );
   },
   /** Highest-priority connection status; manual data is reported separately via hasManualData. */
   overallStatus(athleteId: string): ConnectionStatus {
     const list = this.listConnections(athleteId);
-    for (const st of ["syncing", "connected", "error", "pending", "revoked"] as const) if (list.some((c) => c.status === st)) return st;
+    for (const st of ["syncing", "connected", "error", "pending", "revoked"] as const)
+      if (list.some((c) => c.status === st)) return st;
     return "not_connected";
   },
   hasManualData(athleteId: string) {
-    return this.listMetrics(athleteId).some((m) => m.source === "manual" && m.metadata?.["demo"] !== true);
+    return this.listMetrics(athleteId).some(
+      (m) => m.source === "manual" && m.metadata?.["demo"] !== true,
+    );
   },
   requestConnect(provider: HealthProvider): { available: boolean; message: string } {
     return HEALTH_DATA_PROVIDERS[provider].available
       ? { available: true, message: "" }
-      : { available: false, message: "اتصال مستقیم به این سرویس هنوز فعال نشده و به اپ موبایل یا API سرویس نیاز دارد. تا آن موقع می‌توانی داده‌ها را دستی وارد کنی." };
+      : {
+          available: false,
+          message:
+            "اتصال مستقیم به این سرویس هنوز فعال نشده و به اپ موبایل یا API سرویس نیاز دارد. تا آن موقع می‌توانی داده‌ها را دستی وارد کنی.",
+        };
   },
   validateManual(input: unknown) {
     return manualHealthInputSchema.safeParse(input);
@@ -76,10 +96,30 @@ export const healthDataService = {
     const parsed = manualHealthInputSchema.parse(input);
     const now = new Date().toISOString();
     const start = new Date(parsed.measuredAt).toISOString();
-    const rows = (Object.entries(parsed.values) as [HealthMetricType, number][]).map(([metricType, value]) => ({
-      id: uid("hm"), athleteId, source: "manual" as const, metricType, value, unit: METRIC_DEFS[metricType].unit, startTime: start, createdAt: now,
-    }));
-    manualEntries.push(...rows.map((r) => ({ id: uid("mh"), athleteId, metricType: r.metricType, value: r.value, unit: r.unit, measuredAt: start, createdAt: now, ...(parsed.notes ? { notes: parsed.notes } : {}) })));
+    const rows = (Object.entries(parsed.values) as [HealthMetricType, number][]).map(
+      ([metricType, value]) => ({
+        id: uid("hm"),
+        athleteId,
+        source: "manual" as const,
+        metricType,
+        value,
+        unit: METRIC_DEFS[metricType].unit,
+        startTime: start,
+        createdAt: now,
+      }),
+    );
+    manualEntries.push(
+      ...rows.map((r) => ({
+        id: uid("mh"),
+        athleteId,
+        metricType: r.metricType,
+        value: r.value,
+        unit: r.unit,
+        measuredAt: start,
+        createdAt: now,
+        ...(parsed.notes ? { notes: parsed.notes } : {}),
+      })),
+    );
     metrics.push(...rows);
     return rows;
   },
@@ -87,7 +127,11 @@ export const healthDataService = {
     return manualEntries.filter((e) => e.athleteId === athleteId);
   },
   /** Future connector ingest path: normalize then append. Unknown/implausible samples are dropped. */
-  ingest(athleteId: string, connection: HealthProviderConnection, samples: RawHealthSample[]): HealthMetric[] {
+  ingest(
+    athleteId: string,
+    connection: HealthProviderConnection,
+    samples: RawHealthSample[],
+  ): HealthMetric[] {
     const now = new Date().toISOString();
     const rows = samples
       .map((s) => normalizeSample(athleteId, connection.provider, s, connection.id))
@@ -97,7 +141,9 @@ export const healthDataService = {
     return rows;
   },
   listMetrics(athleteId: string, type?: HealthMetricType) {
-    return metrics.filter((m) => m.athleteId === athleteId && (!type || m.metricType === type)).sort((a, b) => a.startTime.localeCompare(b.startTime));
+    return metrics
+      .filter((m) => m.athleteId === athleteId && (!type || m.metricType === type))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
   },
   latestByType(athleteId: string): Partial<Record<HealthMetricType, HealthMetric>> {
     const out: Partial<Record<HealthMetricType, HealthMetric>> = {};

@@ -25,7 +25,20 @@ import { cn } from "@/lib/utils";
 import { Pill } from "./primitives";
 
 const icons: Record<string, LucideIcon> = {
-  User, Target, HeartPulse, Sunrise, Dumbbell, Wind, Flame, Sparkles, Weight, Moon, Footprints, Grid3x3, Timer, Activity,
+  User,
+  Target,
+  HeartPulse,
+  Sunrise,
+  Dumbbell,
+  Wind,
+  Flame,
+  Sparkles,
+  Weight,
+  Moon,
+  Footprints,
+  Grid3x3,
+  Timer,
+  Activity,
 };
 
 export function StepIndicator({ steps, current }: { steps: { label: string }[]; current: number }) {
@@ -37,8 +50,20 @@ export function StepIndicator({ steps, current }: { steps: { label: string }[]; 
         return (
           <li key={s.label} className="flex flex-1 items-center gap-2">
             <div className="flex flex-col gap-1.5 flex-1">
-              <div className={cn("h-1.5 w-full rounded-full transition-colors", done ? "bg-primary" : active ? "bg-gradient-ember" : "bg-muted")} />
-              <span className={cn("text-[11px] font-medium", active ? "text-foreground" : "text-muted-foreground")}>{s.label}</span>
+              <div
+                className={cn(
+                  "h-1.5 w-full rounded-full transition-colors",
+                  done ? "bg-primary" : active ? "bg-gradient-ember" : "bg-muted",
+                )}
+              />
+              <span
+                className={cn(
+                  "text-[11px] font-medium",
+                  active ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {s.label}
+              </span>
             </div>
           </li>
         );
@@ -68,29 +93,54 @@ export function AssessmentSectionCard({
   return (
     <section
       className="card-surface animate-rise relative overflow-hidden rounded-2xl p-5 md:p-6"
-      style={{ animationDelay: `${index * 60}ms`, borderInlineStartWidth: 3, borderInlineStartColor: color }}
+      style={{
+        animationDelay: `${index * 60}ms`,
+        borderInlineStartWidth: 3,
+        borderInlineStartColor: color,
+      }}
     >
-      <div className="pointer-events-none absolute -end-10 -top-10 size-40 rounded-full opacity-15 blur-3xl" style={{ background: color }} />
+      <div
+        className="pointer-events-none absolute -end-10 -top-10 size-40 rounded-full opacity-15 blur-3xl"
+        style={{ background: color }}
+      />
       <header className="mb-5 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="inline-flex size-10 items-center justify-center rounded-xl" style={{ background: `color-mix(in oklch, ${color} 16%, transparent)`, color }}>
+          <span
+            className="inline-flex size-10 items-center justify-center rounded-xl"
+            style={{ background: `color-mix(in oklch, ${color} 16%, transparent)`, color }}
+          >
             <Icon className="size-5" />
           </span>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold">{section.title}</h3>
-              {section.titleEn && <span className="font-display text-[11px] font-semibold uppercase tracking-widest" style={{ color }}>{section.titleEn}</span>}
+              {section.titleEn && (
+                <span
+                  className="font-display text-[11px] font-semibold uppercase tracking-widest"
+                  style={{ color }}
+                >
+                  {section.titleEn}
+                </span>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">{section.description}</p>
           </div>
         </div>
         <Pill color={answered === section.fields.length ? "var(--success)" : undefined}>
-          <span className="num">{answered}/{section.fields.length}</span>
+          <span className="num">
+            {answered}/{section.fields.length}
+          </span>
         </Pill>
       </header>
       <div className="grid gap-4 sm:grid-cols-2">
         {section.fields.map((f) => (
-          <FieldControl key={f.id} field={f} value={answers[f.id]} onChange={(v) => onChange(f.id, v)} color={color} />
+          <FieldControl
+            key={f.id}
+            field={f}
+            value={answers[f.id]}
+            onChange={(v) => onChange(f.id, v)}
+            color={color}
+          />
         ))}
       </div>
     </section>
@@ -113,8 +163,14 @@ function FieldControl({
       <label className="text-xs font-semibold text-foreground">{field.label}</label>
       <span className="flex items-center gap-1.5">
         {field.required && <span className="text-[10px] text-muted-foreground">لازم</span>}
-        {field.depth && field.depth !== "all" && <span className="text-[10px] font-semibold" style={{ color }}>جزئیات بیشتر برای باتجربه‌ها</span>}
-        {field.unit && <span className="font-display text-[10px] text-muted-foreground">{field.unit}</span>}
+        {field.depth && field.depth !== "all" && (
+          <span className="text-[10px] font-semibold" style={{ color }}>
+            جزئیات بیشتر برای باتجربه‌ها
+          </span>
+        )}
+        {field.unit && (
+          <span className="font-display text-[10px] text-muted-foreground">{field.unit}</span>
+        )}
       </span>
     </div>
   );
@@ -127,9 +183,20 @@ function FieldControl({
           {field.options?.map((o) => {
             const on = value === o.value;
             return (
-              <Button key={o.value} type="button" variant="outline" size="sm" onClick={() => onChange(on ? undefined : o.value)}
-                className={cn("h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs", on ? "border-transparent text-primary-foreground" : "bg-muted/40 text-muted-foreground")}
-                style={on ? { background: color } : undefined}>
+              <Button
+                key={o.value}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onChange(on ? undefined : o.value)}
+                className={cn(
+                  "h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs",
+                  on
+                    ? "border-transparent text-primary-foreground"
+                    : "bg-muted/40 text-muted-foreground",
+                )}
+                style={on ? { background: color } : undefined}
+              >
                 {o.label}
               </Button>
             );
@@ -148,9 +215,26 @@ function FieldControl({
           {field.options?.map((o) => {
             const on = arr.includes(o.value);
             return (
-              <Button key={o.value} type="button" variant="outline" size="sm" onClick={() => onChange(on ? arr.filter((x) => x !== o.value) : [...arr, o.value])}
-                className={cn("h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs", on ? "border-transparent" : "bg-muted/40 text-muted-foreground")}
-                style={on ? { background: `color-mix(in oklch, ${color} 22%, transparent)`, color, borderColor: color } : undefined}>
+              <Button
+                key={o.value}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onChange(on ? arr.filter((x) => x !== o.value) : [...arr, o.value])}
+                className={cn(
+                  "h-auto min-h-8 rounded-lg px-3 py-1.5 text-xs",
+                  on ? "border-transparent" : "bg-muted/40 text-muted-foreground",
+                )}
+                style={
+                  on
+                    ? {
+                        background: `color-mix(in oklch, ${color} 22%, transparent)`,
+                        color,
+                        borderColor: color,
+                      }
+                    : undefined
+                }
+              >
                 {o.label}
               </Button>
             );
@@ -164,7 +248,12 @@ function FieldControl({
     return (
       <div className="sm:col-span-2">
         {labelEl}
-        <Textarea value={value === undefined ? "" : String(value)} onChange={(event) => onChange(event.target.value)} placeholder={field.hint} className="min-h-28 resize-y bg-muted/40" />
+        <Textarea
+          value={value === undefined ? "" : String(value)}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={field.hint}
+          className="min-h-28 resize-y bg-muted/40"
+        />
       </div>
     );
   }
@@ -177,8 +266,17 @@ function FieldControl({
       <div>
         {labelEl}
         <div className="flex items-center gap-3" dir="ltr">
-          <Slider min={min} max={max} step={1} value={[v]} onValueChange={([n]) => onChange(n)} className="flex-1" />
-          <span className="num w-8 text-center text-sm font-bold" style={{ color }}>{v}</span>
+          <Slider
+            min={min}
+            max={max}
+            step={1}
+            value={[v]}
+            onValueChange={([n]) => onChange(n)}
+            className="flex-1"
+          />
+          <span className="num w-8 text-center text-sm font-bold" style={{ color }}>
+            {v}
+          </span>
         </div>
       </div>
     );
@@ -190,14 +288,37 @@ function FieldControl({
       <Input
         dir={field.type === "text" ? undefined : "ltr"}
         inputMode={field.type === "number" || field.type === "load" ? "decimal" : undefined}
-        placeholder={field.type === "time" ? "07:12" : field.hint ?? "—"}
+        placeholder={field.type === "time" ? "07:12" : (field.hint ?? "—")}
         value={value === undefined ? "" : String(value)}
-        onChange={(e) => onChange(field.type === "number" || field.type === "load" ? (e.target.value === "" ? undefined : Number(e.target.value)) : e.target.value)}
+        onChange={(e) =>
+          onChange(
+            field.type === "number" || field.type === "load"
+              ? e.target.value === ""
+                ? undefined
+                : Number(e.target.value)
+              : e.target.value,
+          )
+        }
         className={cn("h-10 bg-muted/40", field.type !== "text" && "font-mono")}
       />
-      {field.allowUnknown && <Button type="button" variant="ghost" size="sm" className="mt-1 h-7 px-1 text-xs text-muted-foreground" onClick={() => onChange("unknown")}>نمی‌دونم / تست نکردم</Button>}
+      {field.allowUnknown && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-1 h-7 px-1 text-xs text-muted-foreground"
+          onClick={() => onChange("unknown")}
+        >
+          نمی‌دونم / تست نکردم
+        </Button>
+      )}
     </div>
   );
 }
 
-export const ASSESSMENT_STEPS = [{ label: "عمومی" }, { label: "رشته" }, { label: "Fitness DNA" }, { label: "پلن" }];
+export const ASSESSMENT_STEPS = [
+  { label: "عمومی" },
+  { label: "رشته" },
+  { label: "Fitness DNA" },
+  { label: "پلن" },
+];

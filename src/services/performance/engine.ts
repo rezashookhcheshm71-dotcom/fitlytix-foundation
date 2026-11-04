@@ -3,7 +3,12 @@
  * Loop: Workout -> Athlete Feedback -> Performance Data -> Recovery -> Analysis -> Program Adjustment
  * TODO(backend): read workout_results / recovery tables; compute indices server-side.
  */
-import type { AthleteFeedback, PerformancePoint, RecoverySnapshot, WorkoutResult } from "@/domain/types";
+import type {
+  AthleteFeedback,
+  PerformancePoint,
+  RecoverySnapshot,
+  WorkoutResult,
+} from "@/domain/types";
 import { demoPerformance, demoRecovery, demoSessions } from "@/mock/athlete";
 
 export const performanceEngine = {

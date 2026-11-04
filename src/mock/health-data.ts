@@ -3,10 +3,26 @@ import type { HealthMetric, HealthMetricType, HealthProviderConnection } from "@
 import { METRIC_DEFS } from "@/domain/platform";
 
 export const DEMO_CONNECTIONS: HealthProviderConnection[] = [
-  { id: "hc_demo_garmin", athleteId: "ath_001", provider: "garmin", status: "pending", scopes: [], createdAt: "2026-09-01T08:00:00Z", updatedAt: "2026-09-01T08:00:00Z" },
+  {
+    id: "hc_demo_garmin",
+    athleteId: "ath_001",
+    provider: "garmin",
+    status: "pending",
+    scopes: [],
+    createdAt: "2026-09-01T08:00:00Z",
+    updatedAt: "2026-09-01T08:00:00Z",
+  },
 ];
 
-const days = ["2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28"];
+const days = [
+  "2026-09-22",
+  "2026-09-23",
+  "2026-09-24",
+  "2026-09-25",
+  "2026-09-26",
+  "2026-09-27",
+  "2026-09-28",
+];
 const series: Partial<Record<HealthMetricType, number[]>> = {
   resting_hr: [54, 55, 53, 56, 58, 55, 54],
   hrv: [68, 64, 70, 61, 57, 63, 66],
@@ -15,7 +31,9 @@ const series: Partial<Record<HealthMetricType, number[]>> = {
   training_load: [420, 610, 0, 540, 680, 300, 0],
 };
 
-export const DEMO_HEALTH_METRICS: HealthMetric[] = (Object.entries(series) as [HealthMetricType, number[]][]).flatMap(([metricType, vals]) =>
+export const DEMO_HEALTH_METRICS: HealthMetric[] = (
+  Object.entries(series) as [HealthMetricType, number[]][]
+).flatMap(([metricType, vals]) =>
   vals.map((value, i) => ({
     id: `hm_demo_${metricType}_${i}`,
     athleteId: "ath_001",

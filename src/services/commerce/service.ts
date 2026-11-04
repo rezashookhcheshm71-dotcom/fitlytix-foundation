@@ -16,7 +16,9 @@ export const commerceService = {
   suggestPlan(coachingType: CoachingType): Plan {
     return (demoPlans.find((p) => p.coachingType === coachingType) ?? demoPlans[1])!;
   },
-  async createMockCheckout(planId: string): Promise<{ subscription: Subscription; payment: Payment }> {
+  async createMockCheckout(
+    planId: string,
+  ): Promise<{ subscription: Subscription; payment: Payment }> {
     const now = new Date().toISOString();
     return {
       subscription: {
