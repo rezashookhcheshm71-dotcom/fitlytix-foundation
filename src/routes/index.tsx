@@ -39,7 +39,6 @@ import { SportIcon } from "@/components/domain/sport";
 import { SPORT_LIST } from "@/domain/sports";
 import { demoDNA, demoPerformance, demoRecovery } from "@/mock/athlete";
 import { demoPlans, formatIRR } from "@/mock/plans";
-import athleteHero from "@/assets/fitlytix-athlete-hero.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -112,75 +111,95 @@ const DNA_ICON: Record<string, typeof Dumbbell> = {
 function Landing() {
   return (
     <MarketingShell>
-      <section className="relative min-h-[calc(100svh-4rem)] overflow-hidden border-b border-border/60">
-        <img
-          src={athleteHero}
-          alt="ورزشکار کراس‌فیت در فضای تمرین"
-          width={1600}
-          height={1200}
-          fetchPriority="high"
-          className="absolute inset-0 size-full object-cover object-[37%_center]"
+      {/* Minimal hero: no full-bleed stock photo. Depth comes from the grid and a
+          single ember wash; proof comes from a live, sample-labelled product panel
+          that is visible at every width instead of a card hidden below lg. */}
+      <section className="relative overflow-hidden border-b border-border/60">
+        <div className="grid-noise pointer-events-none absolute inset-0 opacity-40" aria-hidden />
+        <div
+          className="pointer-events-none absolute -top-32 end-[-10%] size-[36rem] rounded-full bg-primary/12 blur-[120px]"
+          aria-hidden
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,oklch(0.12_0.006_260/5%)_0%,oklch(0.12_0.006_260/64%)_45%,oklch(0.12_0.006_260/98%)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,var(--background)_0%,transparent_35%)]" />
-        <div className="grid-noise pointer-events-none absolute inset-0 opacity-25" />
-        <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-7xl items-center px-4 py-16 md:px-8">
-          <div className="max-w-2xl animate-rise">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-background/55 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur-md">
+        <div className="relative mx-auto grid w-full max-w-7xl gap-12 px-4 py-20 md:px-8 md:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="max-w-2xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-3 py-1.5 text-xs text-muted-foreground">
               <Activity className="size-3.5 text-primary" /> Intelligent Sports Coaching &
               Performance
             </div>
-            <h1 className="text-4xl font-black leading-[1.2] md:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-black leading-[1.08] tracking-tight md:text-7xl">
               بدنت را بشناس.
               <br />
               <span className="text-gradient-ember">مسیرت را بساز.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-foreground/75 md:text-lg">
+            <p className="mt-6 max-w-xl text-base leading-8 text-foreground/70 md:text-lg">
               FitLytix پلتفرم هوشمند مربی‌گری و عملکرد است؛ جایی که ارزیابی، Fitness DNA، برنامه
               شخصی و داده هر تمرین، یک مسیر قابل اندازه‌گیری می‌سازند.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild variant="hero" size="xl">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Button asChild variant="hero" size="lg">
                 <Link to="/register">
                   شروع ارزیابی <ArrowLeft />
                 </Link>
               </Button>
-              <Button asChild variant="glass" size="xl">
+              <Button asChild variant="outline" size="lg">
                 <Link to="/login">ورود به FitLytix</Link>
               </Button>
             </div>
-            <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-foreground/60">
-              {["ارزیابی رشته‌محور", "برنامه تطبیقی", "AI + مربی انسانی"].map((x) => (
-                <span key={x} className="inline-flex items-center gap-1.5">
-                  <Check className="size-3.5 text-success" />
-                  {x}
-                </span>
+            <ul className="mt-9 flex flex-wrap gap-x-7 gap-y-3">
+              {[
+                { icon: Target, text: "ارزیابی رشته‌محور" },
+                { icon: Activity, text: "برنامه تطبیقی" },
+                { icon: Users, text: "AI + مربی انسانی" },
+              ].map((f) => (
+                <li key={f.text} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                    <f.icon className="size-3.5" />
+                  </span>
+                  {f.text}
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-          <div className="absolute bottom-6 left-4 hidden w-[360px] animate-rise rounded-lg border border-border bg-background/72 p-4 shadow-card backdrop-blur-xl lg:block [animation-delay:180ms]">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground">TODAY'S READINESS</span>
-                  {/* This 78 is a hardcoded illustration on a marketing page, and it
-                      asserts a readiness grade - the very thing the competitor
-                      analysis says not to compete on. It carried no label anywhere
-                      nearby, and the page's one MockBadge sits in a different
-                      section entirely. Badge the claim, not the route. */}
-                  <MockBadge />
+
+          {/* A live, sample-labelled product panel: the readiness ring, the trend and
+              two DNA dimensions, so the first screen shows the product instead of
+              only describing it. The MockBadge marks every figure as illustrative. */}
+          <div className="relative">
+            <div className="absolute inset-6 bg-primary/10 blur-3xl" aria-hidden />
+            <Panel glass className="relative rounded-2xl p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground">TODAY'S READINESS</span>
+                    <MockBadge />
+                  </div>
+                  <div className="num mt-1 text-3xl font-bold">
+                    78 <span className="text-xs text-success">آماده</span>
+                  </div>
                 </div>
-                <div className="num text-2xl font-bold">
-                  78 <span className="text-xs text-success">آماده</span>
-                </div>
+                <ProgressRing value={78} size={64} stroke={6} color="var(--success)">
+                  <span className="num text-sm font-bold">78</span>
+                </ProgressRing>
               </div>
-              <ProgressRing value={78} size={52} stroke={5} color="var(--success)">
-                <span className="num text-xs font-bold">78</span>
-              </ProgressRing>
-            </div>
-            <div className="mt-3">
-              <PerformanceTrendChart data={demoPerformance} height={74} />
-            </div>
+              <div className="mt-4">
+                <PerformanceTrendChart data={demoPerformance} height={92} />
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {demoDNA.dimensions.slice(0, 2).map((d) => {
+                  const Icon = DNA_ICON[d.id] ?? Dumbbell;
+                  return (
+                    <div key={d.id} className="surface-sunken rounded-lg px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Icon className="size-3.5 text-primary" />
+                        <span className="flex-1 truncate text-xs font-semibold">{d.label}</span>
+                        <span className="num text-sm font-bold">{d.score}</span>
+                      </div>
+                      <Bar value={d.score / 100} height={4} className="mt-2" />
+                    </div>
+                  );
+                })}
+              </div>
+            </Panel>
           </div>
         </div>
       </section>
