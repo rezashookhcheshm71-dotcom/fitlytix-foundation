@@ -2,59 +2,41 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Activity,
   ArrowLeft,
-  ArrowUpLeft,
-  Brain,
-  Check,
-  ClipboardCheck,
-  Dna,
-  Gauge,
-  Play,
-  RefreshCw,
-  RouteIcon,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react";
-import {
+  BarChart3,
   BatteryCharging,
   CalendarCheck2,
+  ClipboardList,
+  CreditCard,
   Dumbbell,
   HeartPulse,
+  LayoutDashboard,
   Move,
   PersonStanding,
-  BarChart3,
+  RefreshCw,
+  ShieldCheck,
   Target,
+  Users,
   Zap,
 } from "lucide-react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Bar, MockBadge, Panel, Pill, ProgressRing, Stat } from "@/components/domain/primitives";
-import { DnaRadarChart, PerformanceTrendChart } from "@/components/domain/charts";
-import { SportIcon } from "@/components/domain/sport";
-import { SPORT_LIST } from "@/domain/sports";
-import { demoDNA, demoPerformance, demoRecovery } from "@/mock/athlete";
-import { demoPlans, formatIRR } from "@/mock/plans";
+import { Bar, MockBadge, Panel, ProgressRing } from "@/components/domain/primitives";
+import { CarouselSlide, type CarouselSlideItem } from "@/components/domain/carousel";
+import { demoDNA, demoPerformance } from "@/mock/athlete";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FitLytix — مربی‌گری هوشمند برای ورزشکاران جدی" },
+      { title: "FitLytix — مربی‌گری و عملکرد هوشمند" },
       {
         name: "description",
         content:
-          "ارزیابی، Fitness DNA، برنامه شخصی و حلقه عملکرد در یک پلتفرم؛ برای کراس‌فیت، هایراکس، فانکشنال، بدنسازی و دویدن.",
+          "ارزیابی رشته‌محور، Fitness DNA، برنامه تطبیقی و داده هر تمرین؛ بدون نیاز به ساعت هوشمند.",
       },
-      { property: "og:title", content: "FitLytix — مربی‌گری هوشمند برای ورزشکاران جدی" },
+      { property: "og:title", content: "FitLytix — مربی‌گری و عملکرد هوشمند" },
       {
         property: "og:description",
-        content:
-          "بدنت را بشناس. مسیرت را بساز. ارزیابی، Fitness DNA، برنامه شخصی و مربی‌گری تطبیقی در یک پلتفرم.",
+        content: "ارزیابی، Fitness DNA، برنامه تطبیقی و داده؛ یک مسیر قابل اندازه‌گیری.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -63,41 +45,7 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const journey = [
-  { icon: ClipboardCheck, en: "Assess", fa: "ارزیابی", desc: "بدن، سابقه، هدف و رشته" },
-  { icon: Dna, en: "Understand", fa: "شناخت", desc: "ساخت Fitness DNA" },
-  { icon: RouteIcon, en: "Plan", fa: "برنامه", desc: "مسیر شخصی و قابل اجرا" },
-  { icon: Play, en: "Train", fa: "تمرین", desc: "جلسه‌های دقیق و هدفمند" },
-  { icon: Gauge, en: "Measure", fa: "اندازه‌گیری", desc: "عملکرد، ریکاوری و بازخورد" },
-  { icon: RefreshCw, en: "Adapt", fa: "تطبیق", desc: "اصلاح برنامه با داده واقعی" },
-];
-
-const faqs = [
-  [
-    "FitLytix چه تفاوتی با اپ‌های تمرینی معمولی دارد؟",
-    "FitLytix فقط یک فهرست تمرین نیست. ارزیابی، داده عملکرد، ریکاوری، هدف و سابقه شما را در یک مدل مشترک جمع می‌کند تا برنامه با بدن و مسیر واقعی شما هماهنگ شود.",
-  ],
-  [
-    "مربی هوشمند جای مربی انسانی را می‌گیرد؟",
-    "خیر. موتور هوشمند یک ابزار تحلیل و برنامه‌ریزی است، نه چت‌بات و نه جایگزین مربی. می‌توانید AI Coach، مربی انسانی یا مدل Hybrid را انتخاب کنید.",
-  ],
-  [
-    "Fitness DNA چیست؟",
-    "نمایی چندبعدی از قدرت، توان، موتور، مهارت، تحرک، ریکاوری و استمرار شماست که از ارزیابی و روند عملکرد ساخته می‌شود.",
-  ],
-  [
-    "برای چه سطحی مناسب است؟",
-    "از مبتدی تا ورزشکار حرفه‌ای. عمق ارزیابی بر اساس تجربه تغییر می‌کند و برای ورزشکاران باتجربه، PRها، Benchmarkها، مهارت‌ها و اسکیلینگ هم وارد مدل می‌شوند.",
-  ],
-  [
-    "آیا پرداخت و هوش مصنوعی در این نسخه فعال است؟",
-    "این نسخه یک تجربه نمایشی محصول است. خروجی‌های هوشمند، احراز هویت و پرداخت فعلاً شبیه‌سازی شده‌اند و هیچ تراکنش واقعی انجام نمی‌شود.",
-  ],
-];
-
-// One glyph per dimension so the profile reads as a set of capacities, not four
-// identical bars. Keyed by the registry id; an unknown id falls back rather than
-// rendering nothing.
+// One glyph per DNA dimension, keyed by registry id.
 const DNA_ICON: Record<string, typeof Dumbbell> = {
   strength: Dumbbell,
   power: Zap,
@@ -109,65 +57,82 @@ const DNA_ICON: Record<string, typeof Dumbbell> = {
   skill: Target,
 };
 
-// Replaces the hero's three-series area chart, which read as a flat muddy band at
-// panel size. Eight vertical bars, one per week, scaled from that week's training
-// load; the newest week is ember so the eye lands on "now". Heights are normalised
-// into a 20-80% band so the week labels always fit and small differences stay
-// visible. Everything is derived from the sample series the panel already labels.
-function WeekRhythm({ data }: { data: typeof demoPerformance }) {
-  const vols = data.map((d) => d.volume);
-  const min = Math.min(...vols);
-  const max = Math.max(...vols);
-  const span = max - min || 1;
-  const first = data[0];
-  const lastP = data[data.length - 1];
-  return (
-    <div>
-      <div className="mb-2.5 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <BarChart3 className="size-3 text-primary" /> ریتمِ بارِ تمرین · ۸ هفته
-        </span>
-        {first && lastP && (
-          <span className="num text-[10px] font-bold text-success">
-            +{lastP.performanceIndex - first.performanceIndex} شاخص
-          </span>
-        )}
-      </div>
-      {/* RTL row: W1 renders rightmost and the newest week leftmost, matching the
-          product's right-to-left time axis. */}
-      <div className="flex h-24 items-end gap-1.5">
-        {data.map((d, i) => {
-          const isLast = i === data.length - 1;
-          const h = 20 + ((d.volume - min) / span) * 60;
-          return (
-            <div key={d.week} className="flex h-full flex-1 flex-col justify-end gap-1.5">
-              <div
-                className={`w-full rounded-t-md transition-all duration-300 hover:-translate-y-0.5 ${
-                  isLast ? "bg-primary" : "bg-primary/25 hover:bg-primary/45"
-                }`}
-                style={{ height: `${h}%` }}
-              />
-              <span
-                className={`text-center font-display text-[9px] ${
-                  isLast ? "font-bold text-primary" : "text-muted-foreground"
-                }`}
-              >
-                {d.week}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// The homepage no longer explains the product in seven stacked sections. Each
+// pillar gets ONE slide in a banner, with a single line and a button that leaves
+// the homepage for the page that actually carries the detail. Explanation lives
+// where it belongs; the homepage's job is to get the user moving.
+const PILLARS: {
+  id: string;
+  icon: typeof Dumbbell;
+  title: string;
+  line: string;
+  to: string;
+  cta: string;
+}[] = [
+  {
+    id: "loop",
+    icon: RefreshCw,
+    title: "چرخه‌ی FitLytix",
+    line: "ارزیابی، برنامه، تمرین، سنجش، تطبیق — هر دور داده‌ی دور بعد را دقیق‌تر می‌کند.",
+    to: "/assessment/common",
+    cta: "شروع چرخه",
+  },
+  {
+    id: "dna",
+    icon: Target,
+    title: "Fitness DNA",
+    line: "قدرت، توان، موتور، مهارت، تحرک، ریکاوری و استمرار در یک پروفایل چندبعدی.",
+    to: "/athlete/fitness-dna",
+    cta: "دیدن DNA نمونه",
+  },
+  {
+    id: "coaching",
+    icon: Users,
+    title: "هوش + مربی انسانی",
+    line: "موتور تحلیل می‌کند و پیشنهاد می‌دهد؛ تصمیمِ حساس با مربی واقعی است.",
+    to: "/plans",
+    cta: "انواع مربی‌گری",
+  },
+  {
+    id: "performance",
+    icon: BarChart3,
+    title: "عملکرد در متن",
+    line: "روند، آمادگی، بار تمرین و PRها کنار هم — نه عددِ تنها.",
+    to: "/athlete/dashboard",
+    cta: "داشبورد نمونه",
+  },
+  {
+    id: "sports",
+    icon: Dumbbell,
+    title: "رشته‌ی تو",
+    line: "منطقِ تمرین و شاخص‌ها بر اساس رشته؛ بدون داده‌ی پایه‌ی ورزشکار از هم جدا.",
+    to: "/assessment/sport",
+    cta: "انتخاب رشته",
+  },
+];
+
+// Three doors into the product. The homepage ends here instead of continuing
+// into brochures: evaluate, look at a live dashboard, or see what it costs.
+const ACTIONS = [
+  {
+    icon: ClipboardList,
+    title: "شروع ارزیابی",
+    line: "چند دقیقه، بدون ساعت هوشمند.",
+    to: "/register",
+  },
+  {
+    icon: LayoutDashboard,
+    title: "داشبورد نمونه",
+    line: "خودت ببین، نه اینکه بخوانی.",
+    to: "/athlete/dashboard",
+  },
+  { icon: CreditCard, title: "پلن‌ها و قیمت", line: "شفاف، بدون تعهد پنهان.", to: "/plans" },
+];
 
 function Landing() {
   return (
     <MarketingShell>
-      {/* Minimal hero: no full-bleed stock photo. Depth comes from the grid and a
-          single ember wash; proof comes from a live, sample-labelled product panel
-          that is visible at every width instead of a card hidden below lg. */}
+      {/* Minimal hero: no stock photo; the product panel shows rather than tells. */}
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="grid-noise pointer-events-none absolute inset-0 opacity-40" aria-hidden />
         <div
@@ -196,38 +161,18 @@ function Landing() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/login">ورود به FitLytix</Link>
+                <Link to="/athlete/dashboard">دیدن داشبورد نمونه</Link>
               </Button>
             </div>
-            <ul className="mt-9 flex flex-wrap gap-x-7 gap-y-3">
-              {[
-                { icon: Target, text: "ارزیابی رشته‌محور" },
-                { icon: Activity, text: "برنامه تطبیقی" },
-                { icon: Users, text: "AI + مربی انسانی" },
-              ].map((f) => (
-                <li
-                  key={f.text}
-                  className="group flex items-center gap-2 text-sm text-muted-foreground"
-                >
-                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary transition duration-300 group-hover:scale-110">
-                    <f.icon className="size-3.5" />
-                  </span>
-                  {f.text}
-                </li>
-              ))}
-            </ul>
           </div>
 
-          {/* A live, sample-labelled product panel: the readiness ring, the trend and
-              two DNA dimensions, so the first screen shows the product instead of
-              only describing it. The MockBadge marks every figure as illustrative. */}
           <div className="relative">
             <div className="absolute inset-6 bg-primary/10 blur-3xl" aria-hidden />
             <Panel glass className="relative rounded-2xl p-5">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">TODAY'S READINESS</span>
+                    <span className="text-[10px] text-muted-foreground">{"TODAY'S READINESS"}</span>
                     <MockBadge />
                   </div>
                   <div className="num mt-1 text-3xl font-bold">
@@ -245,9 +190,12 @@ function Landing() {
                 {demoDNA.dimensions.slice(0, 2).map((d) => {
                   const Icon = DNA_ICON[d.id] ?? Dumbbell;
                   return (
-                    <div key={d.id} className="surface-sunken rounded-lg px-3 py-2.5">
+                    <div
+                      key={d.id}
+                      className="group surface-sunken rounded-lg px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:bg-card-elevated"
+                    >
                       <div className="flex items-center gap-2">
-                        <Icon className="size-3.5 text-primary" />
+                        <Icon className="size-3.5 text-primary transition duration-300 group-hover:scale-110" />
                         <span className="flex-1 truncate text-xs font-semibold">{d.label}</span>
                         <span className="num text-sm font-bold">{d.score}</span>
                       </div>
@@ -261,259 +209,66 @@ function Landing() {
         </div>
       </section>
 
-      <section id="journey" className="scroll-mt-20 border-b border-border/60 py-20 md:py-28">
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
-          <SectionIntro
-            eyebrow="THE FITLYTIX LOOP"
-            title="از حدس زدن تا تصمیم گرفتن"
-            text="هر مرحله، داده مرحله بعد را دقیق‌تر می‌کند. برنامه ثابت نمی‌ماند؛ با عملکرد واقعی شما رشد می‌کند."
-          />
-          <ol className="mt-10 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
-            {journey.map((step, i) => (
-              <li
-                key={step.en}
-                className="group surface-sunken relative rounded-xl p-5 transition duration-300 hover:-translate-y-1 hover:bg-card-elevated"
-              >
-                <span className="num absolute end-4 top-4 text-[10px] text-muted-foreground">
-                  0{i + 1}
-                </span>
-                <step.icon className="mb-6 size-5 text-primary" />
-                <div className="font-display text-xs font-bold text-primary">{step.en}</div>
-                <h3 className="mt-1 font-bold">{step.fa}</h3>
-                <p className="mt-2 text-xs leading-6 text-muted-foreground">{step.desc}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section id="sports" className="scroll-mt-20 py-20 md:py-28">
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
-          <SectionIntro
-            eyebrow="FIVE SPORTS · ONE PERFORMANCE LAYER"
-            title="رشته تو، منطق تمرین تو"
-            text="هر رشته مدل ارزیابی، شاخص‌ها و ساختار برنامه خودش را دارد؛ بدون اینکه داده‌های پایه ورزشکار از هم جدا شوند."
-          />
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {SPORT_LIST.map((sport) => {
-              const color = `var(${sport.colorToken})`;
-              return (
-                <Link
-                  key={sport.id}
-                  to="/assessment/sport"
-                  search={{ sport: sport.id }}
-                  className="group relative min-h-56 overflow-hidden rounded-lg border border-border bg-card p-5 transition-all hover:-translate-y-1 hover:border-foreground/20"
-                >
-                  <div className="absolute inset-x-0 top-0 h-0.5" style={{ background: color }} />
-                  <SportIcon sport={sport} className="size-7" />
-                  <div className="mt-10 font-display text-lg font-bold">{sport.name}</div>
-                  <div className="text-sm font-semibold" style={{ color }}>
-                    {sport.nameFa}
+      {/* The pillars as one rotating banner instead of five stacked sections. */}
+      <section className="border-b border-border/60 py-14 md:py-20">
+        <div className="mx-auto w-full max-w-5xl px-4 md:px-8">
+          <CarouselSlide
+            minHeight={240}
+            label="بنرِ ستون‌های محصول"
+            slides={PILLARS.map((p): CarouselSlideItem => {
+              const Icon = p.icon;
+              return {
+                id: p.id,
+                content: (
+                  <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center sm:p-10">
+                    <span className="inline-flex size-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                      <Icon className="size-6" />
+                    </span>
+                    <h2 className="text-2xl font-extrabold md:text-3xl">{p.title}</h2>
+                    <p className="max-w-xl text-sm leading-7 text-muted-foreground">{p.line}</p>
+                    <Button asChild variant="outline">
+                      <Link to={p.to as never}>
+                        {p.cta} <ArrowLeft className="size-4" />
+                      </Link>
+                    </Button>
                   </div>
-                  <p className="mt-3 text-xs leading-6 text-muted-foreground">{sport.tagline}</p>
-                  <ArrowUpLeft className="absolute bottom-5 end-5 size-4 text-muted-foreground transition-transform group-hover:-translate-x-1 group-hover:-translate-y-1" />
-                </Link>
-              );
+                ),
+              };
             })}
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="intelligence"
-        className="scroll-mt-20 border-y border-border/60 bg-card/25 py-20 md:py-28"
-      >
-        <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 md:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div>
-            <SectionIntro
-              eyebrow="FITNESS DNA"
-              title="یک تصویر زنده از ورزشکار"
-              text="قدرت، توان، موتور، مهارت، تحرک، ریکاوری و استمرار در یک پروفایل چندبعدی. نه یک امتیاز تزئینی؛ ورودی مستقیم برنامه‌ریزی."
-            />
-            {/* Each dimension becomes its own tile: an icon, the label, and the
-                score as a numeral with its denominator, so the number is no longer
-                a bare figure floating at the opposite end of a near-invisible
-                track. The track now sits on a sunken surface where it reads. */}
-            <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
-              {demoDNA.dimensions.slice(0, 4).map((d) => {
-                const Icon = DNA_ICON[d.id] ?? Dumbbell;
-                return (
-                  <div
-                    key={d.id}
-                    className="group surface-sunken rounded-xl p-3.5 transition duration-300 hover:-translate-y-0.5 hover:bg-card-elevated"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary transition duration-300 group-hover:scale-110">
-                        <Icon className="size-4" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-semibold">{d.label}</div>
-                        <div className="font-display text-[10px] text-muted-foreground">
-                          {d.labelEn}
-                        </div>
-                      </div>
-                      <div className="num text-lg font-bold">
-                        {d.score}
-                        <span className="text-[10px] font-normal text-muted-foreground">/100</span>
-                      </div>
-                    </div>
-                    <Bar value={d.score / 100} height={6} className="mt-3" />
-                  </div>
-                );
-              })}
-            </div>
-            <Button asChild variant="outline" className="mt-8">
-              <Link to="/athlete/fitness-dna">
-                مشاهده Fitness DNA نمونه <ArrowLeft />
-              </Link>
-            </Button>
-          </div>
-          <div className="relative mx-auto w-full max-w-xl">
-            <div className="absolute inset-10 bg-primary/10 blur-3xl" />
-            <Panel
-              glass
-              className="relative grid items-center gap-6 rounded-lg p-6 md:grid-cols-[1fr_0.8fr]"
-            >
-              <DnaRadarChart dimensions={demoDNA.dimensions} height={320} />
-              <div className="space-y-3">
-                <div>
-                  <div className="text-xs text-muted-foreground">ARCHETYPE</div>
-                  <div className="text-xl font-extrabold">{demoDNA.archetype}</div>
-                  <div className="font-display text-sm text-primary">{demoDNA.archetypeEn}</div>
-                </div>
-                {demoDNA.strengths.map((s) => (
-                  <Pill key={s} color="var(--success)">
-                    {s}
-                  </Pill>
-                ))}
-                <div className="pt-3 text-xs leading-6 text-muted-foreground">
-                  پروفایل نمایشی بر پایه داده ورزشکار کراس‌فیت
-                </div>
-              </div>
-            </Panel>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 md:py-28">
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
-          <SectionIntro
-            eyebrow="COACHING, NOT CHATTING"
-            title="هوش تحلیل می‌کند. مربی تصمیم می‌گیرد."
-            text="FitLytix هوش مصنوعی را به شکل یک موتور پشت محصول به‌کار می‌گیرد؛ نه یک صفحه چت. انتخاب می‌کنی چه میزان از مسیر با موتور هوشمند و چه میزان با مربی انسانی پیش برود."
           />
-          <div className="mt-10 grid gap-4 lg:grid-cols-3">
-            <CoachingCard
-              icon={Brain}
-              title="AI Coach"
-              en="ALWAYS ADAPTIVE"
-              text="برنامه بر اساس ارزیابی، هدف، تجربه، عملکرد و ریکاوری ساخته و به‌روزرسانی می‌شود."
-              items={["تنظیم هفتگی برنامه", "پیشنهاد شدت و حجم", "تحلیل روند عملکرد"]}
-            />
-            <CoachingCard
-              icon={Users}
-              title="Human Coach"
-              en="HUMAN JUDGEMENT"
-              text="یک مربی واقعی داده‌های شما را می‌بیند، زمینه را درک می‌کند و تصمیم‌های حساس را هدایت می‌کند."
-              items={["برنامه‌ریزی اختصاصی", "بازبینی تکنیک و ویدیو", "ارتباط مستقیم با مربی"]}
-            />
-            <CoachingCard
-              icon={Sparkles}
-              title="Hybrid"
-              en="BEST OF BOTH"
-              text="سرعت تحلیل موتور هوشمند در کنار قضاوت و تجربه مربی؛ برای ورزشکارانی که جدی‌تر پیش می‌روند."
-              items={["بازبینی هفتگی مربی", "تطبیق مداوم برنامه", "آمادگی مسابقه"]}
-              featured
-            />
-          </div>
         </div>
       </section>
 
-      <section className="border-y border-border/60 bg-card/25 py-20 md:py-28">
-        <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 md:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-          <SectionIntro
-            eyebrow="PERFORMANCE, IN CONTEXT"
-            title="اعداد وقتی ارزش دارند که به تصمیم برسند"
-            text="روند عملکرد، آمادگی روزانه، بار تمرین، PRها، Benchmarkها و بازخورد هر جلسه کنار هم دیده می‌شوند."
-          />
-          <Panel variant="raised" className="rounded-lg">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-              <div className="flex gap-7">
-                <Stat label="Performance Index" value="75" delta={14} tone="primary" size="hero" />
-                <Stat label="Readiness" value={demoRecovery.readiness} unit="%" tone="success" />
-              </div>
-              <MockBadge label="داده نمایشی · ۸ هفته" />
-            </div>
-            <PerformanceTrendChart data={demoPerformance} height={240} />
-          </Panel>
-        </div>
-      </section>
-
-      <section className="py-20 md:py-28">
-        <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
-          <SectionIntro
-            eyebrow="PLANS"
-            title="نوع مربی‌گری متناسب با مسیر تو"
-            text="بعد از ارزیابی، FitLytix یک پلن پیشنهاد می‌دهد. انتخاب نهایی همیشه با شماست."
-          />
-          <div className="mt-10 grid gap-3 md:grid-cols-3">
-            {demoPlans.map((p) => (
-              <Panel
-                key={p.id}
-                className={`flex flex-col rounded-lg transition duration-300 hover:-translate-y-1 ${
-                  p.highlight ? "border-primary/50 bg-primary-soft" : ""
-                }`}
+      {/* Three doors. This is the homepage's whole ask. */}
+      <section className="py-16 md:py-24">
+        <div className="mx-auto grid w-full max-w-5xl gap-4 px-4 md:grid-cols-3 md:px-8">
+          {ACTIONS.map((a) => {
+            const Icon = a.icon;
+            return (
+              <Link
+                key={a.to}
+                to={a.to as never}
+                className="group surface-sunken flex flex-col items-start gap-3 rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:bg-card-elevated"
               >
-                <div className="flex items-center justify-between">
-                  <div className="font-display text-lg font-bold">{p.name}</div>
-                  {p.highlight && <Pill color="var(--primary)">پیشنهادی</Pill>}
-                </div>
-                <div className="mt-3 text-xl font-extrabold">
-                  {formatIRR(p.priceMonthly)}{" "}
-                  <span className="text-xs font-normal text-muted-foreground">/ ماه</span>
-                </div>
-                <ul className="mt-5 flex-1 space-y-2 text-xs text-muted-foreground">
-                  {p.features.slice(0, 3).map((f) => (
-                    <li key={f} className="flex gap-2">
-                      <Check className="mt-0.5 size-3.5 shrink-0 text-success" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild variant={p.highlight ? "hero" : "outline"} className="mt-6">
-                  <Link to="/plans">جزئیات پلن‌ها</Link>
-                </Button>
-              </Panel>
-            ))}
-          </div>
+                <span className="inline-flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary transition duration-300 group-hover:scale-110">
+                  <Icon className="size-5" />
+                </span>
+                <span className="text-lg font-extrabold">{a.title}</span>
+                <span className="text-xs leading-6 text-muted-foreground">{a.line}</span>
+                <span className="mt-auto flex items-center gap-1.5 pt-2 text-xs font-semibold text-primary">
+                  برو{" "}
+                  <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
-      <section className="border-t border-border/60 py-20 md:py-28">
-        <div className="mx-auto grid w-full max-w-5xl gap-10 px-4 md:grid-cols-[0.7fr_1.3fr] md:px-8">
-          <SectionIntro
-            eyebrow="FAQ"
-            title="سؤال‌های پیش از شروع"
-            text="آنچه لازم است پیش از ساخت مسیر خود بدانید."
-          />
-          <Accordion type="single" collapsible className="border-t border-border">
-            {faqs.map(([q, a], i) => (
-              <AccordionItem key={q} value={`faq-${i}`}>
-                <AccordionTrigger className="text-start text-sm no-underline hover:no-underline md:text-base">
-                  {q}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm leading-7 text-muted-foreground">
-                  {a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
-
+      {/* Final nudge. */}
       <section className="px-4 pb-20 md:px-8 md:pb-28">
         <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center overflow-hidden rounded-lg border border-primary/25 bg-gradient-carbon px-6 py-16 text-center md:py-20">
-          <div className="grid-noise absolute inset-0 opacity-35" />
+          <div className="grid-noise absolute inset-0 opacity-35" aria-hidden />
           <ShieldCheck className="relative mb-5 size-8 text-primary" />
           <h2 className="relative text-3xl font-black md:text-5xl">
             اولین تصمیم دقیق، شناختن نقطه شروع است.
@@ -522,7 +277,7 @@ function Landing() {
             ارزیابی را شروع کن و ببین FitLytix چطور داده‌های پراکنده را به یک مسیر تمرینی قابل اجرا
             تبدیل می‌کند.
           </p>
-          <div className="relative mt-7 flex flex-col gap-3 sm:flex-row">
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild variant="hero" size="lg">
               <Link to="/register">
                 شروع ارزیابی <ArrowLeft />
@@ -538,51 +293,52 @@ function Landing() {
   );
 }
 
-function SectionIntro({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
+// Eight vertical bars, one per week, scaled from that week's training load; the
+// newest week is ember so the eye lands on "now". Heights normalised into a
+// 20-80% band so labels fit and small differences stay visible. All derived from
+// the sample series the panel labels as illustrative.
+function WeekRhythm({ data }: { data: typeof demoPerformance }) {
+  const vols = data.map((d) => d.volume);
+  const min = Math.min(...vols);
+  const max = Math.max(...vols);
+  const span = max - min || 1;
+  const first = data[0];
+  const lastP = data[data.length - 1];
   return (
     <div>
-      <div className="font-display text-xs font-bold text-primary">{eyebrow}</div>
-      <h2 className="mt-3 max-w-3xl text-2xl font-black leading-[1.35] md:text-4xl">{title}</h2>
-      <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground md:text-base md:leading-8">
-        {text}
-      </p>
+      <div className="mb-2.5 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <BarChart3 className="size-3 text-primary" /> ریتمِ بارِ تمرین · ۸ هفته
+        </span>
+        {first && lastP && (
+          <span className="num text-[10px] font-bold text-success">
+            +{lastP.performanceIndex - first.performanceIndex} شاخص
+          </span>
+        )}
+      </div>
+      <div className="flex h-24 items-end gap-1.5">
+        {data.map((d, i) => {
+          const isLast = i === data.length - 1;
+          const h = 20 + ((d.volume - min) / span) * 60;
+          return (
+            <div key={d.week} className="flex h-full flex-1 flex-col justify-end gap-1.5">
+              <div
+                className={`w-full rounded-t-md transition-all duration-300 hover:-translate-y-0.5 ${
+                  isLast ? "bg-primary" : "bg-primary/25 hover:bg-primary/45"
+                }`}
+                style={{ height: `${h}%` }}
+              />
+              <span
+                className={`text-center font-display text-[9px] ${
+                  isLast ? "font-bold text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {d.week}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
-  );
-}
-
-function CoachingCard({
-  icon: Icon,
-  title,
-  en,
-  text,
-  items,
-  featured,
-}: {
-  icon: typeof Brain;
-  title: string;
-  en: string;
-  text: string;
-  items: string[];
-  featured?: boolean;
-}) {
-  return (
-    <Panel
-      className={`group relative rounded-lg transition duration-300 hover:-translate-y-1 ${
-        featured ? "border-primary/45 bg-primary-soft" : ""
-      }`}
-    >
-      <Icon className="mb-8 size-7 text-primary transition duration-300 group-hover:scale-110" />
-      <div className="font-display text-[10px] font-bold text-muted-foreground">{en}</div>
-      <h3 className="mt-1 text-xl font-extrabold">{title}</h3>
-      <p className="mt-3 min-h-20 text-sm leading-7 text-muted-foreground">{text}</p>
-      <ul className="mt-5 space-y-2 text-sm">
-        {items.map((x) => (
-          <li key={x} className="flex gap-2">
-            <Check className="mt-1 size-3.5 text-success" />
-            {x}
-          </li>
-        ))}
-      </ul>
-    </Panel>
   );
 }

@@ -26,15 +26,15 @@ export function MarketingShell({ children, minimal }: { children: ReactNode; min
           <Logo />
           {!minimal && (
             <nav className="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
-              <a href="/#journey" className="transition-colors hover:text-foreground">
+              <Link to="/assessment/common" className="transition-colors hover:text-foreground">
                 چطور کار می‌کند
-              </a>
-              <a href="/#sports" className="transition-colors hover:text-foreground">
+              </Link>
+              <Link to="/assessment/sport" className="transition-colors hover:text-foreground">
                 رشته‌ها
-              </a>
-              <a href="/#intelligence" className="transition-colors hover:text-foreground">
+              </Link>
+              <Link to="/plans" className="transition-colors hover:text-foreground">
                 مربی‌گری
-              </a>
+              </Link>
               <Link to="/plans" className="transition-colors hover:text-foreground">
                 پلن‌ها
               </Link>
@@ -69,19 +69,22 @@ export function MarketingShell({ children, minimal }: { children: ReactNode; min
                   <Logo className="mb-10" />
                   <nav className="flex flex-col gap-1 text-base font-semibold">
                     <SheetClose asChild>
-                      <a href="/#journey" className="rounded-lg px-3 py-3 hover:bg-accent">
+                      <Link
+                        to="/assessment/common"
+                        className="rounded-lg px-3 py-3 hover:bg-accent"
+                      >
                         چطور کار می‌کند
-                      </a>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <a href="/#sports" className="rounded-lg px-3 py-3 hover:bg-accent">
+                      <Link to="/assessment/sport" className="rounded-lg px-3 py-3 hover:bg-accent">
                         رشته‌های ورزشی
-                      </a>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
-                      <a href="/#intelligence" className="rounded-lg px-3 py-3 hover:bg-accent">
+                      <Link to="/plans" className="rounded-lg px-3 py-3 hover:bg-accent">
                         AI + مربی انسانی
-                      </a>
+                      </Link>
                     </SheetClose>
                     <SheetClose asChild>
                       <Link to="/plans" className="rounded-lg px-3 py-3 hover:bg-accent">
