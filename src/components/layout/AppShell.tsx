@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { Avatar } from "@/components/domain/athlete";
-import { MockBadge } from "@/components/domain/primitives";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -155,9 +154,11 @@ export function AppShell({
             </Link>
             <span className="text-sm font-bold">{mode === "athlete" ? "ورزشکار" : "مربی"}</span>
           </div>
-          <div className="hidden items-center gap-2 lg:flex">
-            <MockBadge label="نسخه نمایشی · داده‌های شبیه‌سازی‌شده" />
-          </div>
+          {/* The header used to declare "demo version - simulated data" on every
+              screen. That was false on /athlete/health, which reads real rows from
+              health_metrics, and it trained the reader to discount the parts that
+              are genuine. Warnings now live on the data they describe: every page
+              showing sample content carries its own specific badge. */}
           <div className="flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>

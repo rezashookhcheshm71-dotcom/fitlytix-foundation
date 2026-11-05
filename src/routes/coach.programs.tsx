@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
-import { Bar, PageHeader, Panel, Pill } from "@/components/domain/primitives";
+import { Bar, MockBadge, PageHeader, Panel, Pill } from "@/components/domain/primitives";
 import { SportBadge } from "@/components/domain/sport";
 import { SPORTS } from "@/domain/sports";
 import { coachRoster, demoCoach } from "@/mock/coach";
@@ -40,9 +40,14 @@ function CoachPrograms() {
         title="برنامه‌های فعال"
         description="هر برنامه به یک ورزشکار، یک رشته و یک فاز متصل است."
         actions={
-          <Button variant="hero">
-            <Plus /> برنامه جدید
-          </Button>
+          <>
+            {/* demoProgram and coachRoster are both mock modules, so the active
+                programmes and the athlete list are sample content. */}
+            <MockBadge label="برنامه‌ها و روستر نمونه‌اند" />
+            <Button variant="hero">
+              <Plus /> برنامه جدید
+            </Button>
+          </>
         }
       />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

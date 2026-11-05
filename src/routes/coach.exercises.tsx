@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
-import { PageHeader, Panel, Pill } from "@/components/domain/primitives";
+import { MockBadge, PageHeader, Panel, Pill } from "@/components/domain/primitives";
 import { SPORTS } from "@/domain/sports";
 import { demoCoach } from "@/mock/coach";
 import { demoExercises } from "@/mock/program";
@@ -37,6 +37,9 @@ function Exercises() {
         eyebrow="EXERCISE DATABASE"
         title="پایگاه حرکات و اسکیلینگ"
         description="هر حرکت با الگو، تجهیزات، رشته‌ها و گزینه‌های اسکیلینگ تعریف می‌شود."
+        // demoExercises is a mock module, so the library is not a neutral reference
+        // yet - it is sample content presented as the product's database.
+        actions={<MockBadge label="پایگاهِ حرکات نمونه است" />}
       />
       <div className="relative mb-4 max-w-md">
         <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

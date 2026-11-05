@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
-import { Bar, PageHeader, Panel, Pill, SectionHeading, Stat } from "@/components/domain/primitives";
+import {
+  Bar,
+  MockBadge,
+  PageHeader,
+  Panel,
+  Pill,
+  SectionHeading,
+  Stat,
+} from "@/components/domain/primitives";
 import { PerformanceTrendChart, RecoveryBars } from "@/components/domain/charts";
 import { performanceEngine } from "@/services/performance/engine";
 import {
@@ -42,6 +50,13 @@ function PerformancePage() {
         eyebrow="PERFORMANCE ENGINE"
         title="تحلیل عملکرد"
         description="حلقه عملکرد: تمرین ← بازخورد ← داده ← ریکاوری ← تحلیل ← اصلاح برنامه."
+        // This tab had no badge of its own and leaned on the global one in the app
+        // header. It is the most fabricated page in the product: every index, PR,
+        // benchmark and session comes from src/mock/athlete, and the three deltas
+        // below are the literals 8, 13 and 7 - not computed changes.
+        actions={
+          <MockBadge label="شاخص‌ها، رکوردها و جلسه‌ها نمونه‌اند؛ سه تغییرِ درصد، عددِ ثابت است" />
+        }
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
