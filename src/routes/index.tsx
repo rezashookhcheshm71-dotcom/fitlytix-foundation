@@ -192,11 +192,11 @@ function Landing() {
             title="از حدس زدن تا تصمیم گرفتن"
             text="هر مرحله، داده مرحله بعد را دقیق‌تر می‌کند. برنامه ثابت نمی‌ماند؛ با عملکرد واقعی شما رشد می‌کند."
           />
-          <ol className="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-3 lg:grid-cols-6">
+          <ol className="mt-10 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
             {journey.map((step, i) => (
               <li
                 key={step.en}
-                className="group relative bg-card p-5 transition-colors hover:bg-card-elevated"
+                className="group surface-sunken relative rounded-xl p-5 transition-colors hover:bg-card-elevated"
               >
                 <span className="num absolute end-4 top-4 text-[10px] text-muted-foreground">
                   0{i + 1}
