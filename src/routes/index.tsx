@@ -15,6 +15,16 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import {
+  BatteryCharging,
+  CalendarCheck2,
+  Dumbbell,
+  HeartPulse,
+  Move,
+  PersonStanding,
+  Target,
+  Zap,
+} from "lucide-react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,6 +94,20 @@ const faqs = [
     "این نسخه یک تجربه نمایشی محصول است. خروجی‌های هوشمند، احراز هویت و پرداخت فعلاً شبیه‌سازی شده‌اند و هیچ تراکنش واقعی انجام نمی‌شود.",
   ],
 ];
+
+// One glyph per dimension so the profile reads as a set of capacities, not four
+// identical bars. Keyed by the registry id; an unknown id falls back rather than
+// rendering nothing.
+const DNA_ICON: Record<string, typeof Dumbbell> = {
+  strength: Dumbbell,
+  power: Zap,
+  engine: HeartPulse,
+  gymnastics: PersonStanding,
+  mobility: Move,
+  recovery: BatteryCharging,
+  consistency: CalendarCheck2,
+  skill: Target,
+};
 
 function Landing() {
   return (
@@ -230,19 +254,34 @@ function Landing() {
               title="یک تصویر زنده از ورزشکار"
               text="قدرت، توان، موتور، مهارت، تحرک، ریکاوری و استمرار در یک پروفایل چندبعدی. نه یک امتیاز تزئینی؛ ورودی مستقیم برنامه‌ریزی."
             />
-            <div className="mt-7 space-y-4">
-              {demoDNA.dimensions.slice(0, 4).map((d) => (
-                <div key={d.id}>
-                  <div className="mb-1.5 flex justify-between text-xs">
-                    <span>
-                      {d.label}{" "}
-                      <span className="font-display text-muted-foreground">{d.labelEn}</span>
-                    </span>
-                    <span className="num font-bold">{d.score}</span>
+            {/* Each dimension becomes its own tile: an icon, the label, and the
+                score as a numeral with its denominator, so the number is no longer
+                a bare figure floating at the opposite end of a near-invisible
+                track. The track now sits on a sunken surface where it reads. */}
+            <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
+              {demoDNA.dimensions.slice(0, 4).map((d) => {
+                const Icon = DNA_ICON[d.id] ?? Dumbbell;
+                return (
+                  <div key={d.id} className="surface-sunken rounded-xl p-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                        <Icon className="size-4" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold">{d.label}</div>
+                        <div className="font-display text-[10px] text-muted-foreground">
+                          {d.labelEn}
+                        </div>
+                      </div>
+                      <div className="num text-lg font-bold">
+                        {d.score}
+                        <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+                      </div>
+                    </div>
+                    <Bar value={d.score / 100} height={6} className="mt-3" />
                   </div>
-                  <Bar value={d.score / 100} height={5} />
-                </div>
-              ))}
+                );
+              })}
             </div>
             <Button asChild variant="outline" className="mt-8">
               <Link to="/athlete/fitness-dna">
@@ -254,7 +293,7 @@ function Landing() {
             <div className="absolute inset-10 bg-primary/10 blur-3xl" />
             <Panel
               glass
-              className="relative grid min-h-[430px] items-center rounded-lg md:grid-cols-[1fr_0.8fr]"
+              className="relative grid items-center gap-6 rounded-lg p-6 md:grid-cols-[1fr_0.8fr]"
             >
               <DnaRadarChart dimensions={demoDNA.dimensions} height={320} />
               <div className="space-y-3">
