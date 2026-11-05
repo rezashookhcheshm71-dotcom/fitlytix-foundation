@@ -9,8 +9,9 @@ import type { MetricRow } from "@/lib/athlete-health";
  * cannot be reviewed by the person whose sign-off the design needs.
  *
  * They are ordinary MetricRow values, chosen so every branch the real UI can take
- * appears at once: one rising, one falling, one flat, one measured but too sparse
- * to trend, one carrying an excluded reading with its reason, and two never
+ * appears at once: two rising (one of them a metric the spec excludes from scoring,
+ * so the "no reference" marker renders), one falling, one flat, one measured but too
+ * sparse to trend, one carrying an excluded reading with its reason, and two never
  * measured. The numbers are invented. Anything rendering them is required to say
  * so on screen, and useAthleteHealth refuses to serve them outside a dev build.
  */
@@ -80,6 +81,27 @@ export const DEMO_METRICS: MetricRow[] = [
     },
   },
   {
+    // Exercises the "no reference" marker on the performance tab's measured slide.
+    // training_load is one of only two metric types the spec deliberately excludes
+    // from scoring, and without a recorded value here that whole branch would never
+    // render - an unexercised path is an assertion, not a measurement. It also proves
+    // the snake_case metricType reaches the camelCase NO_REFERENCE key.
+    metricType: "training_load",
+    label: "بارِ تمرین",
+    unit: "AU",
+    status: "ESTABLISHED",
+    pointCount: 3,
+    pointsNeeded: 2,
+    trend: {
+      direction: "rising",
+      change: 210,
+      changePct: 18.4,
+      spanDays: 12,
+      last: { value: 1360, at: "2026-10-29T18:00:00Z" },
+      excluded: [],
+    },
+  },
+  {
     metricType: "hrv",
     label: "تغییرپذیریِ ضربانِ قلب",
     unit: "ms",
@@ -99,4 +121,4 @@ export const DEMO_METRICS: MetricRow[] = [
   },
 ];
 
-export const DEMO_SUMMARY = { totalMetricTypes: 6, withTrend: 3, withoutTrend: 3 };
+export const DEMO_SUMMARY = { totalMetricTypes: 7, withTrend: 4, withoutTrend: 3 };

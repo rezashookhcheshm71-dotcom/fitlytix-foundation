@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { Trophy } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import {
@@ -11,7 +12,9 @@ import {
   Stat,
 } from "@/components/domain/primitives";
 import { PerformanceTrendChart, RecoveryBars } from "@/components/domain/charts";
+import { PerformanceSlideshow } from "@/components/domain/performance-slides";
 import { performanceEngine } from "@/services/performance/engine";
+import { useAthleteHealth } from "@/lib/athlete-health";
 import {
   demoAthlete,
   demoBenchmarks,
@@ -39,9 +42,22 @@ export const Route = createFileRoute("/athlete/performance")({
     ],
   }),
   component: PerformancePage,
+  validateSearch: z.object({
+    // Dev-only design preview for the slideshow, which reads /api/athlete/health and
+    // therefore needs a session - and a session needs the host database. The token is
+    // a word because TanStack pre-parses the query as JSON, so ?demo=1 arrives as the
+    // number 1 and could never match a z.enum of strings. .catch means an
+    // unrecognised value drops this one field instead of 500-ing the page.
+    demo: z.enum(["on"]).optional().catch(undefined),
+  }),
 });
 
 function PerformancePage() {
+  const { demo } = Route.useSearch();
+  const demoDesign = demo === "on" && import.meta.env.DEV;
+  // Version 0 is deliberate: this page has no manual-entry flow that would need to
+  // trigger a refetch, so there is nothing to bump.
+  const health = useAthleteHealth(0, demoDesign);
   const name = `${demoAthlete.identity.firstName} ${demoAthlete.identity.lastName}`;
   const last = demoPerformance.at(-1)!;
   return (
@@ -59,6 +75,11 @@ function PerformancePage() {
         }
       />
 
+      {/* P25: the five slides. It reads real health data rather than the mock
+          performance indices below, so the two are deliberately not merged - the
+          badge on this page describes the mock part, and the slideshow describes
+          itself when it is showing sample rows. */}
+      <PerformanceSlideshow health={health} className="mb-6" />
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* One headline per screen: the first card is raised and its number is the
             hero size, so the four-up grid has a clear entry point instead of four
