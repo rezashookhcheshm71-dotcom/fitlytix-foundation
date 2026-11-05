@@ -137,7 +137,15 @@ function Landing() {
           <div className="absolute bottom-6 left-4 hidden w-[360px] animate-rise rounded-lg border border-border bg-background/72 p-4 shadow-card backdrop-blur-xl lg:block [animation-delay:180ms]">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-muted-foreground">TODAY'S READINESS</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">TODAY'S READINESS</span>
+                  {/* This 78 is a hardcoded illustration on a marketing page, and it
+                      asserts a readiness grade - the very thing the competitor
+                      analysis says not to compete on. It carried no label anywhere
+                      nearby, and the page's one MockBadge sits in a different
+                      section entirely. Badge the claim, not the route. */}
+                  <MockBadge />
+                </div>
                 <div className="num text-2xl font-bold">
                   78 <span className="text-xs text-success">آماده</span>
                 </div>
@@ -310,10 +318,10 @@ function Landing() {
             title="اعداد وقتی ارزش دارند که به تصمیم برسند"
             text="روند عملکرد، آمادگی روزانه، بار تمرین، PRها، Benchmarkها و بازخورد هر جلسه کنار هم دیده می‌شوند."
           />
-          <Panel className="rounded-lg">
+          <Panel variant="raised" className="rounded-lg">
             <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
               <div className="flex gap-7">
-                <Stat label="Performance Index" value="75" delta={14} tone="primary" />
+                <Stat label="Performance Index" value="75" delta={14} tone="primary" size="hero" />
                 <Stat label="Readiness" value={demoRecovery.readiness} unit="%" tone="success" />
               </div>
               <MockBadge label="داده نمایشی · ۸ هفته" />

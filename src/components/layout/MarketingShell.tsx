@@ -7,7 +7,20 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/com
 
 export function MarketingShell({ children, minimal }: { children: ReactNode; minimal?: boolean }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    // `isolate` gives the root its own stacking context, exactly as in AppShell, so
+    // the ambient layer below can sit at -z-10 without falling behind the body
+    // background.
+    <div className="relative isolate flex min-h-screen flex-col">
+      {/* Ambient depth, structurally identical to AppShell so the marketing surface
+          and the product speak one visual language. This page previously had two
+          ad-hoc grid-noise divs buried inside individual sections and no ember wash
+          at all, which is most of why it looked untouched after the visual passes:
+          every one of them landed in AppShell, and this route renders outside it. */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-48 end-[-12%] size-[40rem] rounded-full bg-primary/10 blur-[130px]" />
+        <div className="absolute bottom-[-16rem] start-[-10%] size-[34rem] rounded-full bg-primary/5 blur-[140px]" />
+        <div className="grid-noise absolute inset-0 opacity-40" />
+      </div>
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 md:px-8">
           <Logo />
@@ -95,7 +108,7 @@ export function MarketingShell({ children, minimal }: { children: ReactNode; min
           </div>
         </div>
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="stagger-rise flex-1">{children}</main>
       <footer className="border-t border-border/50 bg-card/25 py-10">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 md:grid-cols-[1.4fr_1fr_1fr] md:px-8">
           <div>
