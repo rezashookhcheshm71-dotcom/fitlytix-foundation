@@ -22,6 +22,7 @@ import {
   HeartPulse,
   Move,
   PersonStanding,
+  BarChart3,
   Target,
   Zap,
 } from "lucide-react";
@@ -108,6 +109,57 @@ const DNA_ICON: Record<string, typeof Dumbbell> = {
   skill: Target,
 };
 
+// Replaces the hero's three-series area chart, which read as a flat muddy band at
+// panel size. Eight vertical bars, one per week, scaled from that week's training
+// load; the newest week is ember so the eye lands on "now". Heights are normalised
+// into a 20-80% band so the week labels always fit and small differences stay
+// visible. Everything is derived from the sample series the panel already labels.
+function WeekRhythm({ data }: { data: typeof demoPerformance }) {
+  const vols = data.map((d) => d.volume);
+  const min = Math.min(...vols);
+  const max = Math.max(...vols);
+  const span = max - min || 1;
+  const first = data[0];
+  const lastP = data[data.length - 1];
+  return (
+    <div>
+      <div className="mb-2.5 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <BarChart3 className="size-3 text-primary" /> ریتمِ بارِ تمرین · ۸ هفته
+        </span>
+        {first && lastP && (
+          <span className="num text-[10px] font-bold text-success">
+            +{lastP.performanceIndex - first.performanceIndex} شاخص
+          </span>
+        )}
+      </div>
+      {/* RTL row: W1 renders rightmost and the newest week leftmost, matching the
+          product's right-to-left time axis. */}
+      <div className="flex h-24 items-end gap-1.5">
+        {data.map((d, i) => {
+          const isLast = i === data.length - 1;
+          const h = 20 + ((d.volume - min) / span) * 60;
+          return (
+            <div key={d.week} className="flex h-full flex-1 flex-col justify-end gap-1.5">
+              <div
+                className={`w-full rounded-t-md ${isLast ? "bg-primary" : "bg-primary/25"}`}
+                style={{ height: `${h}%` }}
+              />
+              <span
+                className={`text-center font-display text-[9px] ${
+                  isLast ? "font-bold text-primary" : "text-muted-foreground"
+                }`}
+              >
+                {d.week}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Landing() {
   return (
     <MarketingShell>
@@ -182,7 +234,7 @@ function Landing() {
                 </ProgressRing>
               </div>
               <div className="mt-4">
-                <PerformanceTrendChart data={demoPerformance} height={92} />
+                <WeekRhythm data={demoPerformance} />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {demoDNA.dimensions.slice(0, 2).map((d) => {
