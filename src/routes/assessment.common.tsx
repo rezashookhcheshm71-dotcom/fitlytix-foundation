@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, LogIn, UserPlus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, LogIn, UserPlus } from "lucide-react";
 import { MarketingShell } from "@/components/layout/MarketingShell";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +56,22 @@ function CommonAssessment() {
     () => assessmentEngine.completion(template, answers),
     [template, answers],
   );
+
+  // The questionnaire used to render every section in one long column, which is
+  // what read as a flat wall of inputs. Paging it into slides changes only what
+  // is on screen at once: the answers state, the draft persistence and the single
+  // submit are all exactly as before.
+  type Slide =
+    | { kind: "section"; section: (typeof template.sections)[number]; index: number }
+    | { kind: "body" }
+    | { kind: "wearable" };
+  const slides: Slide[] = [
+    ...template.sections.map((s, i) => ({ kind: "section" as const, section: s, index: i })),
+    { kind: "body" as const },
+    { kind: "wearable" as const },
+  ];
+  const [slide, setSlide] = useState(0);
+  const lastSlide = slide >= slides.length - 1;
 
   // Load saved common assessment, wearable preference (Step 3), or local session draft on mount
   useEffect(() => {
@@ -165,34 +181,68 @@ function CommonAssessment() {
               </p>
             </div>
 
-            {/* Step 1: Common Assessment Questionnaire Sections (including Section 3: common.life) */}
-            {template.sections.map((s, i) => (
-              <AssessmentSectionCard
-                key={s.id}
-                section={s}
-                answers={answers}
-                index={i}
-                onChange={(id, v) => {
-                  setAnswers((a) => {
-                    const next = { ...a, [id]: v };
-                    assessmentEngine.saveCommonDraft({ answers: next, wearable });
-                    return next;
-                  });
-                }}
-              />
-            ))}
+            {/* One slide at a time. `cur` falls back to the first slide so an
+                out-of-range index can never render nothing. */}
+            {(() => {
+              // slides[slide] is possibly undefined under noUncheckedIndexedAccess
+              // and so is slides[0], so the fallback is a valid Slide literal rather
+              // than another indexed read; that keeps `cur` a Slide and lets the
+              // kind checks below narrow it.
+              const cur: Slide = slides[slide] ?? { kind: "body" };
+              if (cur.kind === "section") {
+                return (
+                  <AssessmentSectionCard
+                    key={cur.section.id}
+                    section={cur.section}
+                    answers={answers}
+                    index={cur.index}
+                    onChange={(id, v) => {
+                      setAnswers((a) => {
+                        const next = { ...a, [id]: v };
+                        assessmentEngine.saveCommonDraft({ answers: next, wearable });
+                        return next;
+                      });
+                    }}
+                  />
+                );
+              }
+              if (cur.kind === "body") {
+                return <BodyAnalysisIntake state={body} onChange={setBody} errors={bodyErrors} />;
+              }
+              return (
+                <WearableIntake
+                  state={wearable}
+                  onChange={(nextWearable) => {
+                    setWearable(nextWearable);
+                    assessmentEngine.saveCommonDraft({ answers, wearable: nextWearable });
+                  }}
+                />
+              );
+            })()}
 
-            {/* Step 2: Optional Body Composition / InBody Intake */}
-            <BodyAnalysisIntake state={body} onChange={setBody} errors={bodyErrors} />
-
-            {/* Step 3: Recoverable Smartwatch & Wearable Health Sensor Intake */}
-            <WearableIntake
-              state={wearable}
-              onChange={(nextWearable) => {
-                setWearable(nextWearable);
-                assessmentEngine.saveCommonDraft({ answers, wearable: nextWearable });
-              }}
-            />
+            <div className="mt-6 flex items-center justify-between gap-3 border-t border-border/60 pt-5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSlide((v) => Math.max(0, v - 1))}
+                disabled={slide === 0}
+              >
+                <ArrowRight className="size-4" /> قبلی
+              </Button>
+              <span className="num text-xs text-muted-foreground">
+                {slide + 1} / {slides.length}
+              </span>
+              {lastSlide ? (
+                <Button variant="hero" disabled={submitting} onClick={handleSubmit}>
+                  {submitting ? "در حال ذخیره..." : "ادامه: انتخاب رشته"}{" "}
+                  <ArrowLeft className="size-4" />
+                </Button>
+              ) : (
+                <Button variant="hero" onClick={() => setSlide((v) => v + 1)}>
+                  بخش بعد <ArrowLeft className="size-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -231,15 +281,6 @@ function CommonAssessment() {
                   </div>
                 </div>
               )}
-
-              <Button
-                variant="hero"
-                className="w-full"
-                disabled={submitting}
-                onClick={handleSubmit}
-              >
-                {submitting ? "در حال ذخیره..." : "ادامه: انتخاب رشته"} <ArrowLeft />
-              </Button>
 
               <Link
                 to="/onboarding"
