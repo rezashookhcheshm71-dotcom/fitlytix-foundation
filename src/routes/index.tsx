@@ -142,7 +142,9 @@ function WeekRhythm({ data }: { data: typeof demoPerformance }) {
           return (
             <div key={d.week} className="flex h-full flex-1 flex-col justify-end gap-1.5">
               <div
-                className={`w-full rounded-t-md ${isLast ? "bg-primary" : "bg-primary/25"}`}
+                className={`w-full rounded-t-md transition-all duration-300 hover:-translate-y-0.5 ${
+                  isLast ? "bg-primary" : "bg-primary/25 hover:bg-primary/45"
+                }`}
                 style={{ height: `${h}%` }}
               />
               <span
@@ -203,8 +205,11 @@ function Landing() {
                 { icon: Activity, text: "برنامه تطبیقی" },
                 { icon: Users, text: "AI + مربی انسانی" },
               ].map((f) => (
-                <li key={f.text} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <li
+                  key={f.text}
+                  className="group flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary transition duration-300 group-hover:scale-110">
                     <f.icon className="size-3.5" />
                   </span>
                   {f.text}
@@ -267,7 +272,7 @@ function Landing() {
             {journey.map((step, i) => (
               <li
                 key={step.en}
-                className="group surface-sunken relative rounded-xl p-5 transition-colors hover:bg-card-elevated"
+                className="group surface-sunken relative rounded-xl p-5 transition duration-300 hover:-translate-y-1 hover:bg-card-elevated"
               >
                 <span className="num absolute end-4 top-4 text-[10px] text-muted-foreground">
                   0{i + 1}
@@ -333,9 +338,12 @@ function Landing() {
               {demoDNA.dimensions.slice(0, 4).map((d) => {
                 const Icon = DNA_ICON[d.id] ?? Dumbbell;
                 return (
-                  <div key={d.id} className="surface-sunken rounded-xl p-3.5">
+                  <div
+                    key={d.id}
+                    className="group surface-sunken rounded-xl p-3.5 transition duration-300 hover:-translate-y-0.5 hover:bg-card-elevated"
+                  >
                     <div className="flex items-center gap-2.5">
-                      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary transition duration-300 group-hover:scale-110">
                         <Icon className="size-4" />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -452,7 +460,9 @@ function Landing() {
             {demoPlans.map((p) => (
               <Panel
                 key={p.id}
-                className={`flex flex-col rounded-lg ${p.highlight ? "border-primary/50 bg-primary-soft" : ""}`}
+                className={`flex flex-col rounded-lg transition duration-300 hover:-translate-y-1 ${
+                  p.highlight ? "border-primary/50 bg-primary-soft" : ""
+                }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="font-display text-lg font-bold">{p.name}</div>
@@ -556,8 +566,12 @@ function CoachingCard({
   featured?: boolean;
 }) {
   return (
-    <Panel className={`relative rounded-lg ${featured ? "border-primary/45 bg-primary-soft" : ""}`}>
-      <Icon className="mb-8 size-7 text-primary" />
+    <Panel
+      className={`group relative rounded-lg transition duration-300 hover:-translate-y-1 ${
+        featured ? "border-primary/45 bg-primary-soft" : ""
+      }`}
+    >
+      <Icon className="mb-8 size-7 text-primary transition duration-300 group-hover:scale-110" />
       <div className="font-display text-[10px] font-bold text-muted-foreground">{en}</div>
       <h3 className="mt-1 text-xl font-extrabold">{title}</h3>
       <p className="mt-3 min-h-20 text-sm leading-7 text-muted-foreground">{text}</p>

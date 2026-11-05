@@ -238,7 +238,7 @@ function RegisterPage() {
                           // text-gradient-ember utilities - so both classes generated no
                           // CSS at all and the selected button differed from the
                           // unselected one by text opacity alone.
-                          className={`flex flex-col items-start gap-2 rounded-xl border px-4 py-3 text-start transition ${
+                          className={`flex flex-col items-start gap-2 rounded-xl border px-4 py-3 text-start transition duration-300 hover:-translate-y-0.5 ${
                             role === opt.value
                               ? "border-primary bg-primary-soft text-primary"
                               : "border-border bg-card text-muted-foreground hover:border-primary/40"
