@@ -68,9 +68,11 @@ const PILLARS: {
   line: string;
   to: string;
   cta: string;
+  accent: string;
 }[] = [
   {
     id: "loop",
+    accent: "var(--primary)",
     icon: RefreshCw,
     title: "چرخه‌ی FitLytix",
     line: "ارزیابی، برنامه، تمرین، سنجش، تطبیق — هر دور داده‌ی دور بعد را دقیق‌تر می‌کند.",
@@ -79,6 +81,7 @@ const PILLARS: {
   },
   {
     id: "dna",
+    accent: "var(--success)",
     icon: Target,
     title: "Fitness DNA",
     line: "قدرت، توان، موتور، مهارت، تحرک، ریکاوری و استمرار در یک پروفایل چندبعدی.",
@@ -87,6 +90,7 @@ const PILLARS: {
   },
   {
     id: "coaching",
+    accent: "var(--warning)",
     icon: Users,
     title: "هوش + مربی انسانی",
     line: "موتور تحلیل می‌کند و پیشنهاد می‌دهد؛ تصمیمِ حساس با مربی واقعی است.",
@@ -95,6 +99,7 @@ const PILLARS: {
   },
   {
     id: "performance",
+    accent: "var(--primary)",
     icon: BarChart3,
     title: "عملکرد در متن",
     line: "روند، آمادگی، بار تمرین و PRها کنار هم — نه عددِ تنها.",
@@ -103,6 +108,7 @@ const PILLARS: {
   },
   {
     id: "sports",
+    accent: "var(--success)",
     icon: Dumbbell,
     title: "رشته‌ی تو",
     line: "منطقِ تمرین و شاخص‌ها بر اساس رشته؛ بدون داده‌ی پایه‌ی ورزشکار از هم جدا.",
@@ -220,13 +226,30 @@ function Landing() {
               return {
                 id: p.id,
                 content: (
-                  <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center sm:p-10">
-                    <span className="inline-flex size-12 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <div className="relative flex h-full flex-col items-center justify-center gap-4 overflow-hidden p-6 text-center sm:p-10">
+                    <div
+                      className="pointer-events-none absolute -top-24 size-72 rounded-full blur-[100px]"
+                      style={{ background: p.accent, opacity: 0.14 }}
+                      aria-hidden
+                    />
+                    <span className="num relative text-[10px] font-bold tracking-widest text-primary">
+                      {String(PILLARS.indexOf(p) + 1).padStart(2, "0")} /{" "}
+                      {String(PILLARS.length).padStart(2, "0")}
+                    </span>
+                    <span
+                      className="relative inline-flex size-14 items-center justify-center rounded-2xl"
+                      style={{
+                        background: `color-mix(in oklab, ${p.accent} 16%, transparent)`,
+                        color: p.accent,
+                      }}
+                    >
                       <Icon className="size-6" />
                     </span>
-                    <h2 className="text-2xl font-extrabold md:text-3xl">{p.title}</h2>
-                    <p className="max-w-xl text-sm leading-7 text-muted-foreground">{p.line}</p>
-                    <Button asChild variant="outline">
+                    <h2 className="relative text-2xl font-extrabold md:text-3xl">{p.title}</h2>
+                    <p className="relative max-w-xl text-sm leading-7 text-muted-foreground">
+                      {p.line}
+                    </p>
+                    <Button asChild variant="hero">
                       <Link to={p.to as never}>
                         {p.cta} <ArrowLeft className="size-4" />
                       </Link>
@@ -248,9 +271,13 @@ function Landing() {
               <Link
                 key={a.to}
                 to={a.to as never}
-                className="group surface-sunken flex flex-col items-start gap-3 rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:bg-card-elevated"
+                className="group surface-sunken relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl p-6 transition duration-300 hover:-translate-y-1 hover:bg-card-elevated"
               >
-                <span className="inline-flex size-11 items-center justify-center rounded-xl bg-primary/15 text-primary transition duration-300 group-hover:scale-110">
+                <span
+                  className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-l from-transparent via-primary to-transparent opacity-0 transition duration-300 group-hover:opacity-100"
+                  aria-hidden
+                />
+                <span className="inline-flex size-11 items-center justify-center rounded-xl bg-linear-to-br from-primary/25 to-primary/5 text-primary transition duration-300 group-hover:scale-110">
                   <Icon className="size-5" />
                 </span>
                 <span className="text-lg font-extrabold">{a.title}</span>
@@ -316,17 +343,20 @@ function WeekRhythm({ data }: { data: typeof demoPerformance }) {
           </span>
         )}
       </div>
-      <div className="flex h-24 items-end gap-1.5">
+      <div className="flex h-24 items-end gap-1.5 border-b border-border/60 pb-px">
         {data.map((d, i) => {
           const isLast = i === data.length - 1;
           const h = 20 + ((d.volume - min) / span) * 60;
           return (
             <div key={d.week} className="flex h-full flex-1 flex-col justify-end gap-1.5">
               <div
-                className={`w-full rounded-t-md transition-all duration-300 hover:-translate-y-0.5 ${
-                  isLast ? "bg-primary" : "bg-primary/25 hover:bg-primary/45"
+                className={`w-full rounded-t-lg bg-linear-to-t transition-all duration-300 hover:-translate-y-1 ${
+                  isLast
+                    ? "from-primary/70 to-primary shadow-glow"
+                    : "from-primary/10 to-primary/35 hover:to-primary/60"
                 }`}
                 style={{ height: `${h}%` }}
+                title={`${d.week} · بارِ تمرین ${d.volume}`}
               />
               <span
                 className={`text-center font-display text-[9px] ${
