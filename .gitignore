@@ -34,3 +34,10 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Python (model training only — runtime is Node)
+.venv/
+__pycache__/
+*.pyc
+ml/**/__pycache__/
+ml/artifacts/

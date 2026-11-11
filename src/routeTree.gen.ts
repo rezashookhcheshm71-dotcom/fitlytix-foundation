@@ -14,10 +14,12 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as RecommendationRouteImport } from './routes/recommendation'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ApiAssessmentRouteImport } from './routes/api/assessment'
 import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiRecommendRouteImport } from './routes/api/recommend'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
 import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
 import { Route as AthleteDashboardRouteImport } from './routes/athlete.dashboard'
@@ -69,6 +71,11 @@ const PlansRoute = PlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecommendationRoute = RecommendationRouteImport.update({
+  id: '/recommendation',
+  path: '/recommendation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -87,6 +94,11 @@ const ApiDbTestRoute = ApiDbTestRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRecommendRoute = ApiRecommendRouteImport.update({
+  id: '/api/recommend',
+  path: '/api/recommend',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssessmentCommonRoute = AssessmentCommonRouteImport.update({
@@ -221,10 +233,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
+  '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
@@ -257,10 +271,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
+  '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
@@ -294,10 +310,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/plans': typeof PlansRoute
+  '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
   '/athlete/dashboard': typeof AthleteDashboardRoute
@@ -332,10 +350,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/plans'
+    | '/recommendation'
     | '/register'
     | '/api/assessment'
     | '/api/db-test'
     | '/api/health'
+    | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
@@ -368,10 +388,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/plans'
+    | '/recommendation'
     | '/register'
     | '/api/assessment'
     | '/api/db-test'
     | '/api/health'
+    | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
@@ -404,10 +426,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/plans'
+    | '/recommendation'
     | '/register'
     | '/api/assessment'
     | '/api/db-test'
     | '/api/health'
+    | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
     | '/athlete/dashboard'
@@ -441,10 +465,12 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PlansRoute: typeof PlansRoute
+  RecommendationRoute: typeof RecommendationRoute
   RegisterRoute: typeof RegisterRoute
   ApiAssessmentRoute: typeof ApiAssessmentRoute
   ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiRecommendRoute: typeof ApiRecommendRoute
   AssessmentCommonRoute: typeof AssessmentCommonRoute
   AssessmentSportRoute: typeof AssessmentSportRoute
   AthleteDashboardRoute: typeof AthleteDashboardRoute
@@ -509,6 +535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlansRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recommendation': {
+      id: '/recommendation'
+      path: '/recommendation'
+      fullPath: '/recommendation'
+      preLoaderRoute: typeof RecommendationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -535,6 +568,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/recommend': {
+      id: '/api/recommend'
+      path: '/api/recommend'
+      fullPath: '/api/recommend'
+      preLoaderRoute: typeof ApiRecommendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assessment/common': {
@@ -721,10 +761,12 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PlansRoute: PlansRoute,
+  RecommendationRoute: RecommendationRoute,
   RegisterRoute: RegisterRoute,
   ApiAssessmentRoute: ApiAssessmentRoute,
   ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiRecommendRoute: ApiRecommendRoute,
   AssessmentCommonRoute: AssessmentCommonRoute,
   AssessmentSportRoute: AssessmentSportRoute,
   AthleteDashboardRoute: AthleteDashboardRoute,

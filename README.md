@@ -5,6 +5,7 @@ Build the first production-quality React/TypeScript foundation of a new app call
 FitLytix is a premium intelligent sports coaching platform connecting Athlete, Human Coach, AI Coaching Engine, and a shared Data/Performance Engine. This is NOT a WordPress-style admin panel and NOT merely a chatbot. It must be designed as a real product whose web app will later be the foundation for a mobile app.
 
 TECH:
+
 - React + TypeScript
 - Tailwind + shadcn/ui
 - Responsive, mobile-first
@@ -14,6 +15,7 @@ TECH:
 - Use mock domain data only where necessary, clearly isolated.
 
 BRAND / UX:
+
 - Premium Sport + Technology aesthetic.
 - Dark-first interface with sophisticated contrast, subtle gradients, glass/solid cards, strong typography, restrained animation.
 - Avoid generic SaaS dashboard appearance.
@@ -24,29 +26,31 @@ BRAND / UX:
 - Charts, progress rings, skill maps, performance cards and workout blocks should be visually rich.
 
 PRODUCT ARCHITECTURE:
+
 1. Athlete/User:
-Registration fields: first name, last name, verified mobile OTP, email, password. Account data must conceptually belong to an independent FitLytix identity layer rather than WordPress users.
+   Registration fields: first name, last name, verified mobile OTP, email, password. Account data must conceptually belong to an independent FitLytix identity layer rather than WordPress users.
 2. Assessment Engine:
-Common assessment + sport-specific assessment.
-Sports: CrossFit, Hyrox, Functional Training, Bodybuilding, Running.
-Create an extensible assessment model and UI. CrossFit sections should include Warm-up, Bodybuilding, Engine, WOD, Skill, Weightlifting, Cooldown, with deeper fields for experienced athletes such as PRs, benchmark WODs, skills, lifts, running and scaling.
-Assessment ultimately feeds a Fitness DNA profile.
+   Common assessment + sport-specific assessment.
+   Sports: CrossFit, Hyrox, Functional Training, Bodybuilding, Running.
+   Create an extensible assessment model and UI. CrossFit sections should include Warm-up, Bodybuilding, Engine, WOD, Skill, Weightlifting, Cooldown, with deeper fields for experienced athletes such as PRs, benchmark WODs, skills, lifts, running and scaling.
+   Assessment ultimately feeds a Fitness DNA profile.
 3. AI Coaching Engine:
-Assessment -> User Profile -> Fitness DNA -> Goal -> Sport -> Experience -> Performance History -> AI Coaching Engine -> Personalized Program.
-The AI layer must be represented as a domain/service boundary, not as a chat screen.
+   Assessment -> User Profile -> Fitness DNA -> Goal -> Sport -> Experience -> Performance History -> AI Coaching Engine -> Personalized Program.
+   The AI layer must be represented as a domain/service boundary, not as a chat screen.
 4. Performance Loop:
-Workout -> Athlete Feedback -> Performance Data -> Recovery -> Analysis -> Program Adjustment.
+   Workout -> Athlete Feedback -> Performance Data -> Recovery -> Analysis -> Program Adjustment.
 5. Coach Platform:
-Coach Command Center with Athletes, Programs, Exercise Database, Scaling, Skills, Assessments, Performance.
-Athlete 360 with Overview, Performance, Program, Fitness DNA, Recovery, Goals, Assessment, Benchmarks, PRs, Skills, Calendar, Sessions, Exercise History.
+   Coach Command Center with Athletes, Programs, Exercise Database, Scaling, Skills, Assessments, Performance.
+   Athlete 360 with Overview, Performance, Program, Fitness DNA, Recovery, Goals, Assessment, Benchmarks, PRs, Skills, Calendar, Sessions, Exercise History.
 6. Commerce:
-Registration -> Assessment -> Sport -> Coaching Type (AI/Human) -> Suggested Plan -> Subscription -> Payment -> Membership -> Dashboard.
+   Registration -> Assessment -> Sport -> Coaching Type (AI/Human) -> Suggested Plan -> Subscription -> Payment -> Membership -> Dashboard.
 7. Data model concepts:
-User/Profile, Assessment, Goals, Sport, Fitness DNA, Skills, PRs, Benchmarks, Programs, Workouts, Workout Results, Feedback, Recovery, Payments, Subscription.
+   User/Profile, Assessment, Goals, Sport, Fitness DNA, Skills, PRs, Benchmarks, Programs, Workouts, Workout Results, Feedback, Recovery, Payments, Subscription.
 
 FIRST BUILD SCOPE:
 Create a polished app shell and representative working flows, not every backend feature at once.
 Routes/screens:
+
 - / : premium landing/dashboard entry
 - /onboarding : onboarding/assessment entry
 - /assessment/common
@@ -65,6 +69,7 @@ Routes/screens:
 - /register
 
 Make the navigation and buttons actually route between these screens. Build a realistic Athlete Dashboard as the flagship screen:
+
 - Today’s Focus
 - active program
 - next workout
@@ -74,13 +79,14 @@ Make the navigation and buttons actually route between these screens. Build a re
 - skill progress
 - recent sessions
 - clear CTA for today's workout.
-Create a visually strong Assessment flow with progress indicator, sport cards and CrossFit assessment section cards.
-Create a Coach Command Center with athlete cards and an Athlete 360 page.
-Create a Program screen with workout blocks for warm-up, strength/bodybuilding, engine, WOD, skill and cooldown.
-Create Fitness DNA visualization using meaningful mock dimensions.
-Create a plans/checkout flow visually, but payment must remain mock/unconnected.
+  Create a visually strong Assessment flow with progress indicator, sport cards and CrossFit assessment section cards.
+  Create a Coach Command Center with athlete cards and an Athlete 360 page.
+  Create a Program screen with workout blocks for warm-up, strength/bodybuilding, engine, WOD, skill and cooldown.
+  Create Fitness DNA visualization using meaningful mock dimensions.
+  Create a plans/checkout flow visually, but payment must remain mock/unconnected.
 
 IMPORTANT ARCHITECTURE:
+
 - Define TypeScript domain types/interfaces for athlete profile, sport, assessment, fitness DNA, exercise, skill, program, workout, workout result, recovery, subscription.
 - Create reusable UI primitives and domain components.
 - Centralize sport definitions and sport-specific visual tokens.
@@ -115,7 +121,27 @@ npm run dev
 ```
 
 ## Architecture
+
 See [docs/architecture.md](docs/architecture.md) and the unapplied future schema in docs/schema/future-schema.sql.
+
+## Plan recommendation engine (self-hosted ML)
+
+The training/nutrition plan recommender is a real ML model that runs **inside this Node
+server** — no Python and no external AI service at runtime.
+
+- Train offline: `python ml/train.py` → writes the JSON tree ensemble to
+  `src/services/recommendation/model/`.
+- Serve: `POST /api/recommend` (assessment + behaviour + body composition → programme,
+  nutrition structure, cycle length, coaching mode, adherence forecast and a "why").
+- Try it in the UI: `/recommendation`.
+- Verify parity with scikit-learn: `node --experimental-strip-types scripts/check-model-parity.mjs`.
+- Full documentation: [docs/ml-recommendation-engine-fa.md](docs/ml-recommendation-engine-fa.md)
+  and [ml/README.md](ml/README.md).
+
+The model currently learns from a documented coaching simulator, not from real outcomes.
+`database/migrations/mysql/003_fitlytix_recommendation_engine.sql` adds the decision log and
+outcome tables needed to retrain on real data; until then every response is labelled
+`synthetic-trained` and must not be presented as clinically validated.
 
 ## Self-hosted cPanel / Node.js deployment
 
@@ -142,14 +168,14 @@ npm run build
 
 4. cPanel → **Setup Node.js App** (Application Manager) → Create / Edit:
 
-| Field | Value |
-| --- | --- |
-| Node.js version | `22.x` (or `20.x` if 22 is unavailable) |
-| Application mode | `Production` |
-| Application root | `fitlytix-app` *(placeholder — the folder you cloned into, relative to home)* |
-| Application URL | `app.fitlytix.ir` *(create the subdomain in cPanel → Domains first)* |
-| Application startup file | `app.js` |
-| Environment variables | `NODE_ENV=production` (do **not** set `PORT`; Passenger assigns it) |
+| Field                    | Value                                                                         |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| Node.js version          | `22.x` (or `20.x` if 22 is unavailable)                                       |
+| Application mode         | `Production`                                                                  |
+| Application root         | `fitlytix-app` _(placeholder — the folder you cloned into, relative to home)_ |
+| Application URL          | `app.fitlytix.ir` _(create the subdomain in cPanel → Domains first)_          |
+| Application startup file | `app.js`                                                                      |
+| Environment variables    | `NODE_ENV=production` (do **not** set `PORT`; Passenger assigns it)           |
 
 5. Click **Start** (or **Restart** after every new build). Over SSH you can also run `touch tmp/restart.txt` in the application root.
 6. Verify: `curl https://app.fitlytix.ir/api/health` should return HTTP 200 JSON. Optional smoke test on the server: `PORT=3000 npm run start`, then in another shell `PORT=3000 npm run verify:prod`.

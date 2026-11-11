@@ -29,6 +29,22 @@ These migrations target the current cPanel MySQL/MariaDB schema (UUIDs stored as
 
 If import reports a foreign-key or collation error, stop and share the error text only (do not share credentials). Do not try random ALTER statements.
 
+## Migration 003 — recommendation engine (additive)
+
+`003_fitlytix_recommendation_engine.sql` adds the audit + feedback loop for the
+self-hosted plan recommender:
+
+- `recommendation_events` — every model decision with its exact inputs (context), chosen
+  action and model version. Append-only.
+- `recommendation_outcomes` — the reward signal recorded when a cycle ends
+  (`completed_cycle`, `adherence`, `sessions_completed`, `progress_score`).
+- `model_registry` — which model version is live, with the artifact SHA256 and metrics.
+
+None of these tables are read on the request path, so the app keeps working if the
+migration has not been applied yet (logging is best-effort and silently skipped).
+Apply it after 001/002, then start collecting 90 days of data before retraining on
+real outcomes (`ml/README.md`).
+
 ## What this migration does not do
 
 - It does not populate sample plans or prices.

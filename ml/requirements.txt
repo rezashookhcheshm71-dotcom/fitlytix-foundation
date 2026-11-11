@@ -1,0 +1,4 @@
+# Training-only dependencies. The deployed runtime is pure Node — it needs none of these.
+numpy>=1.26,<3
+pandas>=2.1,<4
+scikit-learn>=1.4,<2

@@ -1,0 +1,990 @@
+{
+  "schemaVersion": 1,
+  "rows": 48000,
+  "trainRows": 38400,
+  "testRows": 9600,
+  "seed": 42,
+  "features": 56,
+  "labels": {
+    "program": {
+      "cf_foundation": 6783,
+      "bb_full_body_foundation": 5802,
+      "cf_strength_skill": 3783,
+      "rn_base_build": 3668,
+      "bb_weak_point": 2967,
+      "cf_engine_competition": 2912,
+      "rn_speed_maintenance": 2612,
+      "bb_upper_lower": 2375,
+      "fn_conditioning_gpp": 2076,
+      "fn_mobility_recovery": 2042,
+      "hx_base_engine": 1987,
+      "hx_hybrid_maintenance": 1893,
+      "bb_push_pull_legs": 1816,
+      "fn_strength_balance": 1815,
+      "hx_race_prep": 1422,
+      "rn_threshold_5k10k": 953,
+      "hx_station_strength": 938,
+      "cf_balanced_performance": 922,
+      "fn_movement_foundation": 787,
+      "rn_half_marathon": 447
+    },
+    "nutrition": {
+      "performance_fuel": 14279,
+      "recomp": 10569,
+      "fat_loss_deficit": 9021,
+      "lean_gain": 7940,
+      "maintenance": 6191
+    },
+    "duration": {
+      "3.0": 24728,
+      "6.0": 14858,
+      "1.0": 7186,
+      "12.0": 1228
+    },
+    "coaching": {
+      "ai": 25082,
+      "hybrid": 18052,
+      "human": 4866
+    }
+  },
+  "program": {
+    "crossfit": {
+      "rows": 2880,
+      "classes": [
+        "cf_balanced_performance",
+        "cf_engine_competition",
+        "cf_foundation",
+        "cf_strength_skill"
+      ],
+      "accuracy": 0.8514,
+      "baselineMajority": 0.4712,
+      "macroF1": 0.7139,
+      "logLoss": 0.3996,
+      "predictedDistribution": {
+        "cf_foundation": 1427,
+        "cf_strength_skill": 727,
+        "cf_engine_competition": 646,
+        "cf_balanced_performance": 80
+      },
+      "actualDistribution": {
+        "cf_foundation": 1357,
+        "cf_strength_skill": 757,
+        "cf_engine_competition": 582,
+        "cf_balanced_performance": 184
+      },
+      "confusion": [
+        [
+          31,
+          60,
+          75,
+          18
+        ],
+        [
+          21,
+          522,
+          31,
+          8
+        ],
+        [
+          19,
+          30,
+          1253,
+          55
+        ],
+        [
+          9,
+          34,
+          68,
+          646
+        ]
+      ],
+      "top2Accuracy": 0.9531,
+      "topFeatures": [
+        {
+          "name": "experience_rank",
+          "importance": 0.3571
+        },
+        {
+          "name": "goal_competition",
+          "importance": 0.173
+        },
+        {
+          "name": "goal_strength",
+          "importance": 0.1301
+        },
+        {
+          "name": "goal_fat_loss",
+          "importance": 0.0795
+        },
+        {
+          "name": "goal_endurance",
+          "importance": 0.0434
+        },
+        {
+          "name": "goal_muscle",
+          "importance": 0.0368
+        },
+        {
+          "name": "goal_health",
+          "importance": 0.0341
+        },
+        {
+          "name": "wants_skill",
+          "importance": 0.0328
+        },
+        {
+          "name": "pain_area_count",
+          "importance": 0.0216
+        },
+        {
+          "name": "pain_severity",
+          "importance": 0.0203
+        },
+        {
+          "name": "sessions_available",
+          "importance": 0.0175
+        },
+        {
+          "name": "skill_index",
+          "importance": 0.0138
+        }
+      ]
+    },
+    "hyrox": {
+      "rows": 1248,
+      "classes": [
+        "hx_base_engine",
+        "hx_hybrid_maintenance",
+        "hx_race_prep",
+        "hx_station_strength"
+      ],
+      "accuracy": 0.879,
+      "baselineMajority": 0.3181,
+      "macroF1": 0.8819,
+      "logLoss": 0.3227,
+      "predictedDistribution": {
+        "hx_base_engine": 386,
+        "hx_hybrid_maintenance": 363,
+        "hx_race_prep": 286,
+        "hx_station_strength": 213
+      },
+      "actualDistribution": {
+        "hx_base_engine": 397,
+        "hx_hybrid_maintenance": 379,
+        "hx_race_prep": 284,
+        "hx_station_strength": 188
+      },
+      "confusion": [
+        [
+          348,
+          36,
+          13,
+          0
+        ],
+        [
+          15,
+          314,
+          17,
+          33
+        ],
+        [
+          21,
+          8,
+          255,
+          0
+        ],
+        [
+          2,
+          5,
+          1,
+          180
+        ]
+      ],
+      "top2Accuracy": 0.9792,
+      "topFeatures": [
+        {
+          "name": "goal_endurance",
+          "importance": 0.2737
+        },
+        {
+          "name": "goal_competition",
+          "importance": 0.2076
+        },
+        {
+          "name": "goal_fat_loss",
+          "importance": 0.1505
+        },
+        {
+          "name": "goal_strength",
+          "importance": 0.1376
+        },
+        {
+          "name": "experience_rank",
+          "importance": 0.052
+        },
+        {
+          "name": "goal_health",
+          "importance": 0.0456
+        },
+        {
+          "name": "goal_muscle",
+          "importance": 0.0411
+        },
+        {
+          "name": "pain_area_count",
+          "importance": 0.0138
+        },
+        {
+          "name": "pain_severity",
+          "importance": 0.0128
+        },
+        {
+          "name": "sessions_available",
+          "importance": 0.0091
+        },
+        {
+          "name": "skill_index",
+          "importance": 0.0062
+        },
+        {
+          "name": "training_age_years",
+          "importance": 0.0057
+        }
+      ]
+    },
+    "functional": {
+      "rows": 1344,
+      "classes": [
+        "fn_conditioning_gpp",
+        "fn_mobility_recovery",
+        "fn_movement_foundation",
+        "fn_strength_balance"
+      ],
+      "accuracy": 0.8862,
+      "baselineMajority": 0.3088,
+      "macroF1": 0.8366,
+      "logLoss": 0.2739,
+      "predictedDistribution": {
+        "fn_conditioning_gpp": 439,
+        "fn_mobility_recovery": 394,
+        "fn_strength_balance": 376,
+        "fn_movement_foundation": 135
+      },
+      "actualDistribution": {
+        "fn_conditioning_gpp": 415,
+        "fn_mobility_recovery": 408,
+        "fn_strength_balance": 363,
+        "fn_movement_foundation": 158
+      },
+      "confusion": [
+        [
+          384,
+          6,
+          24,
+          1
+        ],
+        [
+          7,
+          371,
+          23,
+          7
+        ],
+        [
+          48,
+          12,
+          83,
+          15
+        ],
+        [
+          0,
+          5,
+          5,
+          353
+        ]
+      ],
+      "top2Accuracy": 0.9688,
+      "topFeatures": [
+        {
+          "name": "goal_health",
+          "importance": 0.2972
+        },
+        {
+          "name": "goal_strength",
+          "importance": 0.182
+        },
+        {
+          "name": "goal_endurance",
+          "importance": 0.1253
+        },
+        {
+          "name": "goal_muscle",
+          "importance": 0.1159
+        },
+        {
+          "name": "goal_fat_loss",
+          "importance": 0.1096
+        },
+        {
+          "name": "experience_rank",
+          "importance": 0.0593
+        },
+        {
+          "name": "goal_competition",
+          "importance": 0.0193
+        },
+        {
+          "name": "pain_area_count",
+          "importance": 0.018
+        },
+        {
+          "name": "pain_severity",
+          "importance": 0.0147
+        },
+        {
+          "name": "wants_skill",
+          "importance": 0.0123
+        },
+        {
+          "name": "training_age_years",
+          "importance": 0.008
+        },
+        {
+          "name": "sleep_hours",
+          "importance": 0.0037
+        }
+      ]
+    },
+    "bodybuilding": {
+      "rows": 2592,
+      "classes": [
+        "bb_full_body_foundation",
+        "bb_push_pull_legs",
+        "bb_upper_lower",
+        "bb_weak_point"
+      ],
+      "accuracy": 0.7064,
+      "baselineMajority": 0.4479,
+      "macroF1": 0.6551,
+      "logLoss": 0.6923,
+      "predictedDistribution": {
+        "bb_full_body_foundation": 1288,
+        "bb_weak_point": 536,
+        "bb_upper_lower": 410,
+        "bb_push_pull_legs": 358
+      },
+      "actualDistribution": {
+        "bb_full_body_foundation": 1161,
+        "bb_weak_point": 593,
+        "bb_upper_lower": 475,
+        "bb_push_pull_legs": 363
+      },
+      "confusion": [
+        [
+          1000,
+          16,
+          66,
+          79
+        ],
+        [
+          26,
+          226,
+          82,
+          29
+        ],
+        [
+          180,
+          42,
+          215,
+          38
+        ],
+        [
+          82,
+          74,
+          47,
+          390
+        ]
+      ],
+      "top2Accuracy": 0.9097,
+      "topFeatures": [
+        {
+          "name": "experience_rank",
+          "importance": 0.3788
+        },
+        {
+          "name": "goal_fat_loss",
+          "importance": 0.1042
+        },
+        {
+          "name": "goal_muscle",
+          "importance": 0.0972
+        },
+        {
+          "name": "sessions_available",
+          "importance": 0.0761
+        },
+        {
+          "name": "pain_severity",
+          "importance": 0.0659
+        },
+        {
+          "name": "pain_area_count",
+          "importance": 0.0601
+        },
+        {
+          "name": "goal_strength",
+          "importance": 0.0468
+        },
+        {
+          "name": "goal_health",
+          "importance": 0.017
+        },
+        {
+          "name": "sleep_hours",
+          "importance": 0.0143
+        },
+        {
+          "name": "strength_index",
+          "importance": 0.0141
+        },
+        {
+          "name": "stress",
+          "importance": 0.0125
+        },
+        {
+          "name": "adherence_28d",
+          "importance": 0.0104
+        }
+      ]
+    },
+    "running": {
+      "rows": 1536,
+      "classes": [
+        "rn_base_build",
+        "rn_half_marathon",
+        "rn_speed_maintenance",
+        "rn_threshold_5k10k"
+      ],
+      "accuracy": 0.8724,
+      "baselineMajority": 0.4779,
+      "macroF1": 0.7833,
+      "logLoss": 0.392,
+      "predictedDistribution": {
+        "rn_base_build": 797,
+        "rn_speed_maintenance": 526,
+        "rn_threshold_5k10k": 151,
+        "rn_half_marathon": 62
+      },
+      "actualDistribution": {
+        "rn_base_build": 734,
+        "rn_speed_maintenance": 522,
+        "rn_threshold_5k10k": 191,
+        "rn_half_marathon": 89
+      },
+      "confusion": [
+        [
+          689,
+          0,
+          38,
+          7
+        ],
+        [
+          25,
+          45,
+          2,
+          17
+        ],
+        [
+          33,
+          0,
+          484,
+          5
+        ],
+        [
+          50,
+          17,
+          2,
+          122
+        ]
+      ],
+      "top2Accuracy": 0.9629,
+      "topFeatures": [
+        {
+          "name": "goal_endurance",
+          "importance": 0.4902
+        },
+        {
+          "name": "goal_competition",
+          "importance": 0.2974
+        },
+        {
+          "name": "experience_rank",
+          "importance": 0.0666
+        },
+        {
+          "name": "pain_severity",
+          "importance": 0.0184
+        },
+        {
+          "name": "pain_area_count",
+          "importance": 0.0131
+        },
+        {
+          "name": "sessions_available",
+          "importance": 0.0108
+        },
+        {
+          "name": "goal_muscle",
+          "importance": 0.0092
+        },
+        {
+          "name": "engine_index",
+          "importance": 0.0079
+        },
+        {
+          "name": "goal_fat_loss",
+          "importance": 0.007
+        },
+        {
+          "name": "weekly_mileage",
+          "importance": 0.007
+        },
+        {
+          "name": "strength_index",
+          "importance": 0.0065
+        },
+        {
+          "name": "skill_index",
+          "importance": 0.0055
+        }
+      ]
+    }
+  },
+  "nutrition": {
+    "rows": 9600,
+    "classes": [
+      "fat_loss_deficit",
+      "lean_gain",
+      "maintenance",
+      "performance_fuel",
+      "recomp"
+    ],
+    "accuracy": 0.9406,
+    "baselineMajority": 0.2969,
+    "macroF1": 0.9437,
+    "logLoss": 0.1503,
+    "predictedDistribution": {
+      "performance_fuel": 2974,
+      "recomp": 2037,
+      "fat_loss_deficit": 1811,
+      "lean_gain": 1587,
+      "maintenance": 1191
+    },
+    "actualDistribution": {
+      "performance_fuel": 2850,
+      "recomp": 2130,
+      "fat_loss_deficit": 1812,
+      "lean_gain": 1557,
+      "maintenance": 1251
+    },
+    "confusion": [
+      [
+        1808,
+        0,
+        1,
+        2,
+        1
+      ],
+      [
+        0,
+        1480,
+        5,
+        0,
+        72
+      ],
+      [
+        2,
+        0,
+        1174,
+        37,
+        38
+      ],
+      [
+        0,
+        0,
+        2,
+        2745,
+        103
+      ],
+      [
+        1,
+        107,
+        9,
+        190,
+        1823
+      ]
+    ],
+    "top2Accuracy": 0.9938,
+    "topFeatures": [
+      {
+        "name": "goal_fat_loss",
+        "importance": 0.2261
+      },
+      {
+        "name": "goal_muscle",
+        "importance": 0.171
+      },
+      {
+        "name": "goal_strength",
+        "importance": 0.1541
+      },
+      {
+        "name": "goal_endurance",
+        "importance": 0.1506
+      },
+      {
+        "name": "goal_health",
+        "importance": 0.1473
+      },
+      {
+        "name": "goal_competition",
+        "importance": 0.106
+      },
+      {
+        "name": "body_fat_pct",
+        "importance": 0.0245
+      },
+      {
+        "name": "bmi",
+        "importance": 0.0074
+      },
+      {
+        "name": "sex_male",
+        "importance": 0.0047
+      },
+      {
+        "name": "age",
+        "importance": 0.0024
+      },
+      {
+        "name": "body_fat_available",
+        "importance": 0.001
+      },
+      {
+        "name": "experience_rank",
+        "importance": 0.0009
+      }
+    ]
+  },
+  "duration": {
+    "rows": 9600,
+    "classes": [
+      "1.0",
+      "3.0",
+      "6.0",
+      "12.0"
+    ],
+    "accuracy": 0.7385,
+    "baselineMajority": 0.5147,
+    "macroF1": 0.6209,
+    "logLoss": 0.5914,
+    "predictedDistribution": {
+      "3.0": 4980,
+      "6.0": 3038,
+      "1.0": 1504,
+      "12.0": 78
+    },
+    "actualDistribution": {
+      "3.0": 4941,
+      "6.0": 2979,
+      "1.0": 1456,
+      "12.0": 224
+    },
+    "confusion": [
+      [
+        966,
+        297,
+        193,
+        0
+      ],
+      [
+        382,
+        3969,
+        589,
+        1
+      ],
+      [
+        152,
+        695,
+        2105,
+        27
+      ],
+      [
+        4,
+        19,
+        151,
+        50
+      ]
+    ],
+    "top2Accuracy": 0.9401,
+    "topFeatures": [
+      {
+        "name": "adherence_28d",
+        "importance": 0.1995
+      },
+      {
+        "name": "missed_sessions_28d",
+        "importance": 0.1513
+      },
+      {
+        "name": "goal_health",
+        "importance": 0.0976
+      },
+      {
+        "name": "pain_severity",
+        "importance": 0.0954
+      },
+      {
+        "name": "pain_area_count",
+        "importance": 0.0636
+      },
+      {
+        "name": "nutrition_adherence",
+        "importance": 0.0634
+      },
+      {
+        "name": "prior_plan_months",
+        "importance": 0.0502
+      },
+      {
+        "name": "goal_competition",
+        "importance": 0.0497
+      },
+      {
+        "name": "experience_rank",
+        "importance": 0.0422
+      },
+      {
+        "name": "wants_consistency",
+        "importance": 0.0356
+      },
+      {
+        "name": "nutrition_adherence_available",
+        "importance": 0.0331
+      },
+      {
+        "name": "readiness_avg",
+        "importance": 0.0235
+      }
+    ]
+  },
+  "coaching": {
+    "rows": 9600,
+    "classes": [
+      "ai",
+      "human",
+      "hybrid"
+    ],
+    "accuracy": 0.7805,
+    "baselineMajority": 0.5209,
+    "macroF1": 0.7311,
+    "logLoss": 0.4988,
+    "predictedDistribution": {
+      "ai": 5336,
+      "hybrid": 3546,
+      "human": 718
+    },
+    "actualDistribution": {
+      "ai": 5001,
+      "hybrid": 3644,
+      "human": 955
+    },
+    "confusion": [
+      [
+        4421,
+        1,
+        579
+      ],
+      [
+        6,
+        527,
+        422
+      ],
+      [
+        909,
+        190,
+        2545
+      ]
+    ],
+    "top2Accuracy": 0.9823,
+    "topFeatures": [
+      {
+        "name": "experience_rank",
+        "importance": 0.5543
+      },
+      {
+        "name": "goal_competition",
+        "importance": 0.241
+      },
+      {
+        "name": "pain_severity",
+        "importance": 0.1024
+      },
+      {
+        "name": "adherence_28d",
+        "importance": 0.0188
+      },
+      {
+        "name": "pain_area_count",
+        "importance": 0.0142
+      },
+      {
+        "name": "goal_fat_loss",
+        "importance": 0.0123
+      },
+      {
+        "name": "sport_bodybuilding",
+        "importance": 0.0066
+      },
+      {
+        "name": "wants_consistency",
+        "importance": 0.0064
+      },
+      {
+        "name": "sport_functional",
+        "importance": 0.0057
+      },
+      {
+        "name": "readiness_avg",
+        "importance": 0.0055
+      },
+      {
+        "name": "sleep_hours",
+        "importance": 0.0044
+      },
+      {
+        "name": "nutrition_adherence",
+        "importance": 0.0029
+      }
+    ]
+  },
+  "sessions": {
+    "rows": 9600,
+    "mae": 0.2547,
+    "rmse": 0.3666,
+    "r2": 0.8337,
+    "predictedMean": 3.3806,
+    "actualMean": 3.3793
+  },
+  "adherence": {
+    "rows": 9600,
+    "mae": 0.0657,
+    "rmse": 0.0857,
+    "r2": 0.7975,
+    "predictedMean": 0.7317,
+    "actualMean": 0.7307,
+    "topFeatures": [
+      {
+        "name": "pain_severity",
+        "importance": 0.5402
+      },
+      {
+        "name": "pain_area_count",
+        "importance": 0.22
+      },
+      {
+        "name": "goal_competition",
+        "importance": 0.0456
+      },
+      {
+        "name": "adherence_28d",
+        "importance": 0.0425
+      },
+      {
+        "name": "wearable_connected",
+        "importance": 0.0364
+      },
+      {
+        "name": "missed_sessions_28d",
+        "importance": 0.0237
+      },
+      {
+        "name": "wants_consistency",
+        "importance": 0.0129
+      },
+      {
+        "name": "experience_rank",
+        "importance": 0.0104
+      },
+      {
+        "name": "sport_functional",
+        "importance": 0.0082
+      },
+      {
+        "name": "sleep_hours",
+        "importance": 0.0072
+      },
+      {
+        "name": "goal_health",
+        "importance": 0.0072
+      },
+      {
+        "name": "sessions_available",
+        "importance": 0.0061
+      }
+    ],
+    "calibration": [
+      {
+        "predicted": 0.468,
+        "actual": 0.452,
+        "share": 0.2
+      },
+      {
+        "predicted": 0.693,
+        "actual": 0.696,
+        "share": 0.2
+      },
+      {
+        "predicted": 0.782,
+        "actual": 0.78,
+        "share": 0.2
+      },
+      {
+        "predicted": 0.829,
+        "actual": 0.836,
+        "share": 0.2
+      },
+      {
+        "predicted": 0.887,
+        "actual": 0.89,
+        "share": 0.2
+      }
+    ],
+    "calibrationMaxGap": 0.016
+  },
+  "model": {
+    "version": "2026.11.11-cce631a",
+    "trainedAt": "2026-11-11T10:18:43+00:00",
+    "bytes": 1307164,
+    "sha256": "2500a09c1447cbd23210990f719c07184863cb603021277e43493458ca49e7e1",
+    "gitSha": "cce631a",
+    "estimator": {
+      "family": "gradient_boosting_trees",
+      "classifier": {
+        "n_estimators": 90,
+        "max_depth": 3,
+        "learning_rate": 0.09,
+        "subsample": 0.9,
+        "min_samples_leaf": 25,
+        "random_state": 0
+      },
+      "regressor": {
+        "n_estimators": 120,
+        "max_depth": 3,
+        "learning_rate": 0.08,
+        "subsample": 0.9,
+        "min_samples_leaf": 25,
+        "random_state": 0
+      }
+    }
+  }
+}
