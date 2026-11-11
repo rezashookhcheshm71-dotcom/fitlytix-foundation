@@ -171,6 +171,48 @@ curl -X POST http://localhost:8080/api/recommend \
 
 ---
 
+### `GET|POST /api/plan` — برنامهٔ خود ورزشکار (مسیر واقعی محصول)
+
+مسیر اصلی محصول همین است: هیچ ورودی‌ای از کلاینت پذیرفته نمی‌شود و همهٔ سیگنال‌ها از
+رکوردهای همان کاربر لاگین‌شده خوانده می‌شوند.
+
+```bash
+curl -s https://app.fitlytix.ir/api/plan                      # برنامهٔ ذخیره‌شده یا محاسبهٔ تازه
+curl -s -X POST https://app.fitlytix.ir/api/plan \
+  -H 'content-type: application/json' \
+  -d '{"regenerate": true, "constraints": {"durationMonths": 3}}'
+```
+
+پاسخ: `{ ok, plan, program, workout, meta }`
+
+| بخش       | محتوا                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------- |
+| `plan`    | خلاصهٔ تایپ‌دار (`PlanSummary`): archetype، جلسات/هفته، مدت جلسه، دوره، تغذیه، مربی‌گری، ایمنی، پایبندی |
+| `program` | `Program` آمادهٔ رندر در `/athlete/program` (روزها، بلوک‌ها، حرکت‌ها، دقیقه‌ها)                         |
+| `workout` | جلسهٔ امروز                                                                                             |
+| `meta`    | `fromSnapshot`, `persisted`, `generatedAt`, `inputHash`, `sourcesFa`, `missingFa`, `diagnostics`        |
+
+منابع ورودی (همه اختیاری، با تخریب تدریجی):
+
+| منبع               | جدول                       | چه چیزی می‌دهد                                        |
+| ------------------ | -------------------------- | ----------------------------------------------------- |
+| ارزیابی عمومی/رشته | `assessments.answers_json` | همان ۵۶ ویژگی (کلیدها عیناً `common.*`, `crossfit.*`) |
+| پروفایل            | `athlete_profiles`         | سن، جنسیت، قد، وزن، سطح تجربه                         |
+| ترکیب بدن          | `body_analysis_records`    | درصد چربی آخرین اندازه‌گیری                           |
+| رفتار ۲۸ روز       | `training_sessions`        | برنامه‌ریزی‌شده/انجام‌شده، RPE جاری و دورهٔ قبل       |
+| پایبندی تغذیه      | `nutrition_logs`           | روزهای ثبت‌شده در ۲۸ روز                              |
+| اشتراک             | `subscriptions` + `plans`  | طول دوره و بستهٔ خریداری‌شده                          |
+
+### چرخهٔ تولید و ذخیره (snapshot)
+
+1. پایان ارزیابی (`POST /api/assessment`) → `refreshPlanForUser` برنامه را می‌سازد و ذخیره می‌کند.
+   این مرحله best-effort است و هرگز ذخیرهٔ ارزیابی را خراب نمی‌کند.
+2. `/athlete/program` و داشبورد با `GET /api/plan` همان برنامه را می‌خوانند؛ تا وقتی ورودی‌ها
+   عوض نشده‌اند، همان snapshot برمی‌گردد (پس برنامه زیر پای کاربر تغییر نمی‌کند).
+3. تغییر هر ورودی (ارزیابی جدید، رفتار جدید) یا گذشت ۷ روز → محاسبهٔ مجدد و snapshot تازه.
+4. هر snapshot در `recommendation_snapshots` با `input_hash` + `model_version` یکتا می‌شود،
+   پس ورودی یکسان با مدل یکسان رکورد تکراری نمی‌سازد.
+
 ## ۶) گاردریل‌های ایمنی (پس از مدل اجرا می‌شوند)
 
 | شرایط                                 | اثر                                                                                      |
@@ -357,17 +399,25 @@ migration: `database/migrations/mysql/003_fitlytix_recommendation_engine.sql`
 
 ## ۱۲) فایل‌های مرتبط
 
-| مسیر                                        | نقش                              |
-| ------------------------------------------- | -------------------------------- |
-| `ml/train.py`                               | آموزش، ارزیابی، خروجی JSON       |
-| `ml/fitlytix_ml/schema.py`                  | منبع واحد ویژگی‌ها و archetypeها |
-| `ml/fitlytix_ml/simulator.py`               | شبیه‌ساز کوهورت و تابع سود       |
-| `src/services/recommendation/engine.ts`     | هماهنگ‌کننده                     |
-| `src/services/recommendation/features.ts`   | نگاشت ارزیابی → بردار ویژگی      |
-| `src/services/recommendation/ensemble.ts`   | مفسر درخت‌های JSON               |
-| `src/services/recommendation/guardrails.ts` | ایمنی و محدودیت‌ها               |
-| `src/services/recommendation/archetypes.ts` | ساختار هفتگی هر برنامه           |
-| `src/services/recommendation/nutrition.ts`  | ساختار تغذیه هر استراتژی         |
-| `src/routes/api/recommend.ts`               | endpoint                         |
-| `scripts/check-model-parity.mjs`            | صحت‌سنجی TS ↔ sklearn            |
-| `database/migrations/mysql/003_…sql`        | جدول‌های ثبت تصمیم/نتیجه         |
+| مسیر                                              | نقش                              |
+| ------------------------------------------------- | -------------------------------- |
+| `ml/train.py`                                     | آموزش، ارزیابی، خروجی JSON       |
+| `ml/fitlytix_ml/schema.py`                        | منبع واحد ویژگی‌ها و archetypeها |
+| `ml/fitlytix_ml/simulator.py`                     | شبیه‌ساز کوهورت و تابع سود       |
+| `src/services/recommendation/engine.ts`           | هماهنگ‌کننده                     |
+| `src/services/recommendation/features.ts`         | نگاشت ارزیابی → بردار ویژگی      |
+| `src/services/recommendation/ensemble.ts`         | مفسر درخت‌های JSON               |
+| `src/services/recommendation/guardrails.ts`       | ایمنی و محدودیت‌ها               |
+| `src/services/recommendation/archetypes.ts`       | ساختار هفتگی هر برنامه           |
+| `src/services/recommendation/nutrition.ts`        | ساختار تغذیه هر استراتژی         |
+| `src/routes/api/recommend.ts`                     | endpoint آمارِ/دموی مدل          |
+| `src/routes/api/plan.ts`                          | endpoint برنامهٔ خود ورزشکار     |
+| `src/services/recommendation/assembly.server.ts`  | ساخت درخواست از دادهٔ DB         |
+| `src/services/recommendation/userPlan.server.ts`  | چرخهٔ snapshot/محاسبهٔ مجدد      |
+| `src/services/recommendation/snapshots.server.ts` | ذخیره/خواندن snapshot            |
+| `src/services/recommendation/presentation.ts`     | نگاشت خروجی مدل → `Program`      |
+| `src/hooks/use-plan.ts`                           | hook کلاینت برای `/api/plan`     |
+| `src/components/domain/plan-summary.tsx`          | کارت داشبورد                     |
+| `scripts/check-model-parity.mjs`                  | صحت‌سنجی TS ↔ sklearn            |
+| `database/migrations/mysql/003_…sql`              | جدول‌های ثبت تصمیم/نتیجه         |
+| `database/migrations/mysql/004_…sql`              | snapshot برنامه‌های تولیدشده     |

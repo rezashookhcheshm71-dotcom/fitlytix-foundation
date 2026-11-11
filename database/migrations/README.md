@@ -45,6 +45,21 @@ migration has not been applied yet (logging is best-effort and silently skipped)
 Apply it after 001/002, then start collecting 90 days of data before retraining on
 real outcomes (`ml/README.md`).
 
+## Migration 004 — recommendation snapshots (additive)
+
+`004_recommendation_snapshots.sql` stores every plan the model produced for an athlete:
+
+- `recommendation_snapshots` — one row per (athlete, input hash, model version): the exact
+  request (`request_json`), the full recommendation (`result_json`) and the chosen action
+  columns (archetype, nutrition strategy, cycle length, coaching mode, safety level).
+  The UI reads the latest row instead of recomputing, so athletes never see a plan change
+  without a reason.
+- `v_latest_recommendation` — convenience view with the newest snapshot per athlete.
+
+The app degrades gracefully when the table is absent (plans are computed on demand and not
+stored), but with it you get a full audit trail for support and the training data needed to
+retrain on real outcomes. Apply after 001/002/003.
+
 ## What this migration does not do
 
 - It does not populate sample plans or prices.

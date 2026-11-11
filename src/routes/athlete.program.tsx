@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { CheckCircle2, MessageSquare, Play } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
-import { MockBadge, PageHeader } from "@/components/domain/primitives";
+import { MockBadge, PageHeader, Pill } from "@/components/domain/primitives";
 import { WorkoutBlockCard } from "@/components/domain/workout";
 import { demoAthlete } from "@/mock/athlete";
 import { programDisplayService } from "@/services/program/service";
+import { usePlan } from "@/hooks/use-plan";
+import { faNumber } from "@/lib/locale";
 import { SPORTS, SPORT_LIST, EXPERIENCE_LABEL } from "@/domain/sports";
 import type { ExperienceLevel, SportId } from "@/domain/types";
 import { cn } from "@/lib/utils";
@@ -44,7 +46,12 @@ function ProgramPage() {
   const navigate = useNavigate();
   const sport: SportId = search.sport ?? demoAthlete.primarySport;
   const experience: ExperienceLevel = search.level ?? demoAthlete.experience;
-  const { program, workout } = programDisplayService.getToday(sport, experience);
+  // The athlete's own model-generated plan wins; demo content is only a fallback.
+  const plan = usePlan();
+  const readyPlan = plan.status === "ready" ? plan.data : null;
+  const fallback = programDisplayService.getToday(sport, experience);
+  const program = readyPlan?.program ?? fallback.program;
+  const workout = readyPlan?.workout ?? fallback.workout;
   const [activeBlock, setActiveBlock] = useState<string>();
   const [doneBlocks, setDoneBlocks] = useState<string[]>([]);
   const [sessionStarted, setSessionStarted] = useState(false);
@@ -82,9 +89,11 @@ function ProgramPage() {
     >
       <PageHeader
         eyebrow={
-          sport === "crossfit"
-            ? `${program.name} · هفته ${program.weekIndex}/${program.totalWeeks}`
-            : `${SPORTS[sport].nameFa} · برنامه نمایشی`
+          readyPlan
+            ? `${SPORTS[readyPlan.plan.sport].nameFa} · ${program.name} · هفته ${program.weekIndex}/${program.totalWeeks}`
+            : sport === "crossfit"
+              ? `${program.name} · هفته ${program.weekIndex}/${program.totalWeeks}`
+              : `${SPORTS[sport].nameFa} · برنامه نمایشی`
         }
         title="تمرین امروز"
         description={`${workout.title} · ${workout.focus}`}
@@ -94,6 +103,87 @@ function ProgramPage() {
           </Button>
         }
       />
+      {readyPlan ? (
+        <div className="mb-5 rounded-lg border border-primary/30 bg-primary-soft px-4 py-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span className="font-display text-sm font-bold">
+              {readyPlan.plan.archetypeLabelFa}
+            </span>
+            <span>
+              {faNumber(readyPlan.plan.sessionsPerWeek)} جلسه در هفته ·{" "}
+              {faNumber(readyPlan.plan.sessionMinutes)} دقیقه
+            </span>
+            <span>{readyPlan.plan.durationLabelFa}</span>
+            <span>{readyPlan.plan.nutritionLabelFa}</span>
+            <span>{readyPlan.plan.coachingLabelFa}</span>
+            <Pill>
+              پایبندی پیش‌بینی‌شده: {faNumber(Math.round(readyPlan.plan.adherence30d * 100))}٪
+            </Pill>
+            {readyPlan.plan.safetyLevel !== "none" && (
+              <Pill color="var(--warning, #d97706)">
+                {readyPlan.plan.safetyLevel === "review_required"
+                  ? "نیازمند بازبینی مربی"
+                  : "با احتیاط"}
+              </Pill>
+            )}
+          </div>
+          <p className="mt-2 text-[11px] leading-5 text-muted-foreground">
+            {readyPlan.plan.archetypeSummaryFa} · مدل {readyPlan.plan.model.version}
+            {readyPlan.plan.model.trainingData === "simulated"
+              ? " (داده آموزشی شبیه‌سازی‌شده)"
+              : ""}
+            {readyPlan.meta.fromSnapshot ? " · از برنامهٔ ذخیره‌شده" : " · همین حالا محاسبه شد"}
+            {readyPlan.meta.sourcesFa.length > 0
+              ? ` · ورودی‌ها: ${readyPlan.meta.sourcesFa.join("، ")}`
+              : ""}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void plan.refresh()}
+              disabled={plan.refreshing}
+            >
+              {plan.refreshing ? "در حال بازتولید…" : "بازتولید برنامه"}
+            </Button>
+            <Button size="sm" variant="ghost" asChild>
+              <Link to="/athlete/nutrition">ساختار تغذیه</Link>
+            </Button>
+            {readyPlan.plan.safetyFlags.length > 0 && (
+              <span className="text-[11px] text-warning-foreground">
+                {readyPlan.plan.safetyFlags[0]?.actionFa}
+              </span>
+            )}
+          </div>
+        </div>
+      ) : plan.status === "loading" ? (
+        <div className="mb-5 rounded-lg border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
+          در حال دریافت برنامهٔ شخصی…
+        </div>
+      ) : plan.status === "unauthenticated" ? (
+        <div className="mb-5 rounded-lg border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
+          برنامهٔ شخصی پس از ارزیابی ساخته می‌شود. برای دیدن نمونه می‌توانید همین صفحه را ببینید، یا{" "}
+          <Link
+            to="/assessment/common"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            ارزیابی اولیه را کامل کنید
+          </Link>
+          .
+        </div>
+      ) : (
+        <div className="mb-5 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-xs">
+          برنامهٔ شخصی دریافت نشد{plan.error ? `: ${plan.error}` : ""}. نمونهٔ نمایشی نشان داده
+          می‌شود.{" "}
+          <button
+            type="button"
+            className="font-semibold text-primary underline"
+            onClick={() => void plan.refresh()}
+          >
+            تلاش دوباره
+          </button>
+        </div>
+      )}
       <div className="mb-5 flex flex-wrap gap-2" aria-label="نمایش نمونه رشته و سطح">
         {SPORT_LIST.map((item) => (
           <Button
@@ -181,7 +271,7 @@ function ProgramPage() {
       </section>
       <div className="mb-6 overflow-x-auto">
         <ol className="flex min-w-max gap-2">
-          {(sport === "crossfit" ? program.workouts : [workout]).map((w) => {
+          {(readyPlan || sport === "crossfit" ? program.workouts : [workout]).map((w) => {
             return (
               <li
                 key={w.id}

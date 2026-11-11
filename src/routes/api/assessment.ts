@@ -8,6 +8,7 @@ import type {
   WearableIntent,
 } from "@/domain/types";
 import { AuthHttpError, requireAuthenticatedUser } from "@/lib/auth.server";
+import { refreshPlanForUser } from "@/services/recommendation/userPlan.server";
 import { athleteRepository } from "@/server/athlete.repository";
 
 export const Route = createFileRoute("/api/assessment")({
@@ -28,7 +29,10 @@ export const Route = createFileRoute("/api/assessment")({
               { status: err.statusCode, headers: { "cache-control": "no-store" } },
             );
           }
-          console.error("[api/assessment GET] Unexpected error:", err instanceof Error ? err.message : err);
+          console.error(
+            "[api/assessment GET] Unexpected error:",
+            err instanceof Error ? err.message : err,
+          );
           return Response.json(
             { ok: false, error: "خطا در بارگذاری اطلاعات ارزیابی از سرور." },
             { status: 500, headers: { "cache-control": "no-store" } },
@@ -65,10 +69,14 @@ export const Route = createFileRoute("/api/assessment")({
 
           const sport = typeof body.sport === "string" ? (body.sport as SportId) : undefined;
           const experienceLevel =
-            typeof body.experienceLevel === "string" ? (body.experienceLevel as ExperienceLevel) : undefined;
+            typeof body.experienceLevel === "string"
+              ? (body.experienceLevel as ExperienceLevel)
+              : undefined;
 
           const bodyAnalysis =
-            body.bodyAnalysis && typeof body.bodyAnalysis === "object" && !Array.isArray(body.bodyAnalysis)
+            body.bodyAnalysis &&
+            typeof body.bodyAnalysis === "object" &&
+            !Array.isArray(body.bodyAnalysis)
               ? (body.bodyAnalysis as Partial<BodyAnalysisInput>)
               : undefined;
 
@@ -101,8 +109,29 @@ export const Route = createFileRoute("/api/assessment")({
             wearable,
           });
 
+          // Finishing an assessment is what should produce a plan. The refresh is
+          // best-effort by design: if the model or the snapshot table is unavailable,
+          // the assessment is still saved and the UI falls back to on-demand generation.
+          let plan: { archetypeId: string; durationMonths: number; safetyLevel: string } | null =
+            null;
+          try {
+            const refreshed = await refreshPlanForUser(user);
+            if (refreshed) {
+              plan = {
+                archetypeId: refreshed.recommendation.program.archetypeId,
+                durationMonths: refreshed.recommendation.duration.months,
+                safetyLevel: refreshed.recommendation.safety.level,
+              };
+            }
+          } catch (error) {
+            console.warn(
+              "[api/assessment POST] plan refresh skipped:",
+              error instanceof Error ? error.message : error,
+            );
+          }
+
           return Response.json(
-            { ok: true, assessment: saved },
+            { ok: true, assessment: saved, plan },
             { status: 200, headers: { "cache-control": "no-store" } },
           );
         } catch (err) {
@@ -112,9 +141,15 @@ export const Route = createFileRoute("/api/assessment")({
               { status: err.statusCode, headers: { "cache-control": "no-store" } },
             );
           }
-          console.error("[api/assessment POST] Unexpected error:", err instanceof Error ? err.message : err);
+          console.error(
+            "[api/assessment POST] Unexpected error:",
+            err instanceof Error ? err.message : err,
+          );
           return Response.json(
-            { ok: false, error: "ذخیره ارزیابی در پایگاه داده با خطا مواجه شد. لطفاً دوباره تلاش کنید." },
+            {
+              ok: false,
+              error: "ذخیره ارزیابی در پایگاه داده با خطا مواجه شد. لطفاً دوباره تلاش کنید.",
+            },
             { status: 500, headers: { "cache-control": "no-store" } },
           );
         }

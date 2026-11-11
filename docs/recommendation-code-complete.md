@@ -28,11 +28,19 @@
 17. `src/services/recommendation/engine.ts`
 18. `src/services/recommendation/requestSchema.ts`
 19. `src/services/recommendation/store.server.ts`
-20. `src/routes/api/recommend.ts`
-21. `src/routes/recommendation.tsx`
-22. `scripts/check-model-parity.mjs`
-23. `scripts/verify-prod.mjs`
-24. `database/migrations/mysql/003_fitlytix_recommendation_engine.sql`
+20. `src/services/recommendation/snapshots.server.ts`
+21. `src/services/recommendation/assembly.server.ts`
+22. `src/services/recommendation/userPlan.server.ts`
+23. `src/services/recommendation/presentation.ts`
+24. `src/hooks/use-plan.ts`
+25. `src/components/domain/plan-summary.tsx`
+26. `src/routes/api/recommend.ts`
+27. `src/routes/api/plan.ts`
+28. `src/routes/recommendation.tsx`
+29. `scripts/check-model-parity.mjs`
+30. `scripts/verify-prod.mjs`
+31. `database/migrations/mysql/003_fitlytix_recommendation_engine.sql`
+32. `database/migrations/mysql/004_recommendation_snapshots.sql`
 
 ---
 
@@ -4977,7 +4985,1328 @@ export async function recordRecommendationOutcome(args: RecordOutcomeArgs): Prom
 
 ---
 
-## 20) `src/routes/api/recommend.ts`
+## 20) `src/services/recommendation/snapshots.server.ts`
+
+```ts
+/**
+ * Persistence for plan snapshots (`recommendation_snapshots`, migration 004).
+ *
+ * The athlete must always see *the plan that was actually generated*, with the exact
+ * inputs behind it — not a freshly recomputed plan that silently changes after a model
+ * update. Snapshots are therefore keyed by (user, input hash, model version), so the
+ * same inputs against the same model never produce duplicate rows.
+ *
+ * Everything here is best-effort: a missing table or an unconfigured database must
+ * degrade to "recompute on demand", never break a page or an API call.
+ */
+import crypto from "node:crypto";
+import type { RowDataPacket } from "mysql2/promise";
+import { dbExecute, dbQuery, isDatabaseConfigured, tableExists } from "@/lib/db.server";
+import type {
+  PlanDurationMonths,
+  PlanRecommendation,
+  RecommendationRequest,
+} from "@/domain/recommendation";
+
+export interface RecommendationSnapshot {
+  id: string;
+  userId: string;
+  sport: string;
+  source: string;
+  createdAt: string;
+  inputHash: string;
+  modelVersion: string;
+  request: RecommendationRequest;
+  recommendation: PlanRecommendation;
+}
+
+export interface SaveSnapshotArgs {
+  userId: string;
+  request: RecommendationRequest;
+  recommendation: PlanRecommendation;
+  source?: "assessment" | "manual" | "backfill" | "recompute";
+}
+
+const SNAPSHOT_TABLE = "recommendation_snapshots";
+let warnedUnavailable = false;
+
+function warnOnce(message: string): void {
+  if (warnedUnavailable) return;
+  warnedUnavailable = true;
+  console.warn(`[recommendation/snapshots] ${message}`);
+}
+
+/** Stable hash so equivalent requests reuse one snapshot. */
+export function hashRecommendationRequest(request: RecommendationRequest): string {
+  const canonical = {
+    sport: request.sport,
+    profile: request.profile ?? null,
+    answers: request.assessmentAnswers ?? null,
+    body: request.bodyAnalysis ?? null,
+    behavior: request.behavior ?? null,
+    nutrition: request.nutrition ?? null,
+    constraints: request.constraints ?? null,
+  };
+
+  const sortValue = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(sortValue);
+    if (value && typeof value === "object") {
+      const entries = Object.entries(value as Record<string, unknown>)
+        .filter(([, v]) => v !== undefined)
+        .sort(([a], [b]) => a.localeCompare(b));
+      return Object.fromEntries(entries.map(([k, v]) => [k, sortValue(v)]));
+    }
+    return value;
+  };
+
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(sortValue(canonical)))
+    .digest("hex");
+}
+
+export async function snapshotsAvailable(): Promise<boolean> {
+  if (!isDatabaseConfigured()) return false;
+  try {
+    return await tableExists(SNAPSHOT_TABLE);
+  } catch {
+    return false;
+  }
+}
+
+function toIso(value: unknown): string {
+  if (!value) return new Date(0).toISOString();
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(String(value));
+  return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : new Date(0).toISOString();
+}
+
+function safeParse<T>(value: unknown, fallback: T): T {
+  if (value == null) return fallback;
+  if (typeof value === "object") return value as T;
+  try {
+    return JSON.parse(String(value)) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function mapRow(row: RowDataPacket): RecommendationSnapshot {
+  return {
+    id: String(row["id"]),
+    userId: String(row["user_id"]),
+    sport: String(row["sport"]),
+    source: String(row["source"] ?? "assessment"),
+    createdAt: toIso(row["created_at"]),
+    inputHash: String(row["input_hash"]),
+    modelVersion: String(row["model_version"]),
+    request: safeParse<RecommendationRequest>(row["request_json"], { sport: "crossfit" }),
+    recommendation: safeParse<PlanRecommendation>(row["result_json"], null as never),
+  };
+}
+
+/** Stores the plan; returns null when persistence is unavailable (never throws). */
+export async function saveRecommendationSnapshot(args: SaveSnapshotArgs): Promise<string | null> {
+  try {
+    if (!(await snapshotsAvailable())) {
+      warnOnce("table recommendation_snapshots is missing — plans will not be persisted");
+      return null;
+    }
+
+    const { request, recommendation } = args;
+    const id = crypto.randomUUID();
+    const inputHash = hashRecommendationRequest(request);
+
+    const result = await dbExecute(
+      `INSERT INTO recommendation_snapshots
+        (id, user_id, sport, source, model_version, model_schema_version, model_training_data,
+         archetype_id, nutrition_strategy_id, duration_months, coaching_mode, package_id,
+         safety_level, confidence, adherence_30d, adherence_cycle, data_completeness,
+         input_hash, request_json, result_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE id = id`,
+      [
+        id,
+        args.userId,
+        recommendation.sport,
+        args.source ?? "assessment",
+        recommendation.model.version,
+        recommendation.model.schemaVersion,
+        recommendation.model.trainingData,
+        recommendation.program.archetypeId,
+        recommendation.nutrition.strategyId,
+        recommendation.duration.months,
+        recommendation.coaching.mode,
+        recommendation.package.id,
+        recommendation.safety.level,
+        recommendation.expectations.confidence,
+        recommendation.expectations.adherence30d,
+        recommendation.expectations.adherenceCycle,
+        recommendation.expectations.dataCompleteness,
+        inputHash,
+        JSON.stringify(request),
+        JSON.stringify(recommendation),
+      ],
+    );
+
+    // A duplicate (same athlete + inputs + model version) keeps the original row.
+    if (result.affectedRows === 0) {
+      const existing = await dbQuery<RowDataPacket[]>(
+        `SELECT id FROM recommendation_snapshots
+         WHERE user_id = ? AND input_hash = ? AND model_version = ?
+         LIMIT 1`,
+        [args.userId, inputHash, recommendation.model.version],
+      );
+      return existing[0] ? String(existing[0]["id"]) : null;
+    }
+
+    return id;
+  } catch (error) {
+    warnOnce(`save failed: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+export async function getLatestRecommendationSnapshot(
+  userId: string,
+): Promise<RecommendationSnapshot | null> {
+  try {
+    if (!(await snapshotsAvailable())) return null;
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT * FROM ${SNAPSHOT_TABLE} WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`,
+      [userId],
+    );
+    const row = rows[0];
+    return row ? mapRow(row) : null;
+  } catch (error) {
+    warnOnce(`read failed: ${error instanceof Error ? error.message : String(error)}`);
+    return null;
+  }
+}
+
+export async function countRecommendationSnapshots(userId: string): Promise<number> {
+  try {
+    if (!(await snapshotsAvailable())) return 0;
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM ${SNAPSHOT_TABLE} WHERE user_id = ?`,
+      [userId],
+    );
+    return Number(rows[0]?.["total"] ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+/** How old a snapshot is, in hours — used to decide whether a plan needs recomputing. */
+export function snapshotAgeHours(snapshot: RecommendationSnapshot, now = Date.now()): number {
+  const created = new Date(snapshot.createdAt).getTime();
+  if (!Number.isFinite(created)) return Number.POSITIVE_INFINITY;
+  return (now - created) / 3_600_000;
+}
+```
+
+---
+
+## 21) `src/services/recommendation/assembly.server.ts`
+
+```ts
+/**
+ * Builds a recommendation request from what the platform already knows about an athlete.
+ *
+ * This is the bridge between the product database and the model:
+ *   profile row  → age / sex / height / weight / experience
+ *   assessments  → the 56 assessment-derived features (common + sport templates, same field ids)
+ *   body records → latest measured body-fat percentage
+ *   training_sessions / workout_logs / nutrition_logs → real 28-day behaviour
+ *   subscriptions → the commercial cycle length the athlete actually bought
+ *
+ * Every lookup is defensive: a missing table, column or value simply drops that signal,
+ * and the engine imputes from training medians instead of inventing an answer.
+ */
+import type { RowDataPacket } from "mysql2/promise";
+import { dbQuery, getTableColumns, isDatabaseConfigured, tableExists } from "@/lib/db.server";
+import type { AuthenticatedUser } from "@/lib/auth.server";
+import type {
+  GoalId,
+  PlanDurationMonths,
+  RecommendationBehaviorInput,
+  RecommendationConstraints,
+  RecommendationRequest,
+} from "@/domain/recommendation";
+import type { BodyAnalysisRecord } from "@/domain/body-analysis";
+import type { AssessmentAnswers, ExperienceLevel, SportId } from "@/domain/types";
+import {
+  athleteRepository,
+  isValidExperienceLevel,
+  isValidSportSlug,
+} from "@/server/athlete.repository";
+
+export interface AssembledRecommendationRequest {
+  request: RecommendationRequest;
+  /** Human-readable list of the signals that were actually available. */
+  sourcesFa: string[];
+  /** Signals the model would use but that are still missing. */
+  missingFa: string[];
+}
+
+const WINDOW_DAYS = 28;
+const GOALS: GoalId[] = ["strength", "muscle", "fat_loss", "endurance", "competition", "health"];
+const DURATIONS: PlanDurationMonths[] = [1, 3, 6, 12];
+
+function toNumber(value: unknown): number | undefined {
+  if (value === null || value === undefined) return undefined;
+  const n = typeof value === "number" ? value : Number(String(value));
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+async function readProfileRow(userId: string): Promise<Record<string, unknown> | null> {
+  try {
+    if (!(await tableExists("athlete_profiles"))) return null;
+    const cols = await getTableColumns("athlete_profiles");
+    const wanted = [
+      "age",
+      "gender",
+      "height_cm",
+      "weight_kg",
+      "experience_level",
+      "coaching_type",
+    ].filter((c) => cols.has(c));
+    if (wanted.length === 0) return null;
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT ${wanted.join(", ")} FROM athlete_profiles WHERE user_id = ? LIMIT 1`,
+      [userId],
+    );
+    return rows[0] ? (rows[0] as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function readDaysSinceSignup(userId: string): Promise<number | undefined> {
+  try {
+    if (!(await tableExists("users"))) return undefined;
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT created_at FROM users WHERE id = ? LIMIT 1`,
+      [userId],
+    );
+    const createdAt = rows[0]?.["created_at"];
+    if (!createdAt) return undefined;
+    const created = new Date(String(createdAt)).getTime();
+    if (!Number.isFinite(created)) return undefined;
+    return Math.max(0, Math.round((Date.now() - created) / 86_400_000));
+  } catch {
+    return undefined;
+  }
+}
+
+interface SessionBehaviour {
+  planned: number;
+  completed: number;
+  avgRpe?: number;
+  previousAvgRpe?: number;
+}
+
+async function readSessionBehaviour(userId: string): Promise<SessionBehaviour | null> {
+  try {
+    if (!(await tableExists("training_sessions"))) return null;
+    const cols = await getTableColumns("training_sessions");
+    const scheduled = cols.has("scheduled_at")
+      ? "scheduled_at"
+      : cols.has("created_at")
+        ? "created_at"
+        : null;
+    if (!scheduled) return null;
+
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT
+         COUNT(*) AS total,
+         SUM(CASE WHEN status = 'completed' OR completed_at IS NOT NULL THEN 1 ELSE 0 END) AS done,
+         AVG(CASE WHEN ${scheduled} >= (NOW() - INTERVAL 28 DAY) THEN perceived_exertion END) AS rpe_now,
+         AVG(CASE WHEN ${scheduled} < (NOW() - INTERVAL 28 DAY)
+                   AND ${scheduled} >= (NOW() - INTERVAL 56 DAY) THEN perceived_exertion END) AS rpe_prev
+       FROM training_sessions
+       WHERE athlete_user_id = ?
+         AND ${scheduled} >= (NOW() - INTERVAL 56 DAY)`,
+      [userId],
+    );
+
+    const row = rows[0];
+    if (!row) return null;
+    const planned = Number(row["total"] ?? 0);
+    const completed = Number(row["done"] ?? 0);
+    if (planned === 0 && completed === 0) return null;
+
+    const avgRpe = toNumber(row["rpe_now"]);
+    const previousAvgRpe = toNumber(row["rpe_prev"]);
+    return {
+      planned,
+      completed,
+      ...(avgRpe !== undefined ? { avgRpe: clamp(avgRpe, 0, 10) } : {}),
+      ...(previousAvgRpe !== undefined ? { previousAvgRpe: clamp(previousAvgRpe, 0, 10) } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function readNutritionAdherence(userId: string): Promise<number | undefined> {
+  try {
+    if (!(await tableExists("nutrition_logs"))) return undefined;
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT COUNT(DISTINCT DATE(logged_at)) AS days
+       FROM nutrition_logs
+       WHERE athlete_user_id = ? AND logged_at >= (NOW() - INTERVAL ${WINDOW_DAYS} DAY)`,
+      [userId],
+    );
+    const days = Number(rows[0]?.["days"] ?? 0);
+    if (!Number.isFinite(days) || days <= 0) return undefined;
+    return clamp(days / WINDOW_DAYS, 0, 1);
+  } catch {
+    return undefined;
+  }
+}
+
+interface SubscriptionContext {
+  durationMonths?: PlanDurationMonths;
+  packageId?: "training" | "nutrition" | "combined";
+  labelFa?: string;
+}
+
+async function readActiveSubscription(userId: string): Promise<SubscriptionContext | null> {
+  try {
+    if (!(await tableExists("subscriptions"))) return null;
+    const planTable = (await tableExists("subscription_plans")) ? "subscription_plans" : null;
+    const cols = await getTableColumns("subscriptions");
+    const statusFilter = cols.has("status") ? "AND s.status IN ('active', 'trialing', 'paid')" : "";
+    const planJoin = planTable ? `LEFT JOIN ${planTable} p ON p.id = s.plan_id` : "";
+    const planCols = planTable ? ["p.plan_code", "p.features", "p.name"] : [];
+    const select = ["s.current_period_start", "s.current_period_end", ...planCols].join(", ");
+
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT ${select}
+       FROM subscriptions s ${planJoin}
+       WHERE s.user_id = ? ${statusFilter}
+       ORDER BY s.created_at DESC
+       LIMIT 1`,
+      [userId],
+    );
+    const row = rows[0];
+    if (!row) return null;
+
+    const start = row["current_period_start"]
+      ? new Date(String(row["current_period_start"]))
+      : null;
+    const end = row["current_period_end"] ? new Date(String(row["current_period_end"])) : null;
+
+    let durationMonths: PlanDurationMonths | undefined;
+    if (start && end && Number.isFinite(start.getTime()) && Number.isFinite(end.getTime())) {
+      const months = (end.getTime() - start.getTime()) / (30.44 * 86_400_000);
+      durationMonths = DURATIONS.find((option) => Math.abs(option - months) <= 0.6);
+    }
+
+    let packageId: SubscriptionContext["packageId"];
+    const features = row["features"];
+    const parsedFeatures = typeof features === "string" ? safeJson(features) : features;
+    if (isRecord(parsedFeatures) && typeof parsedFeatures["package"] === "string") {
+      const raw = String(parsedFeatures["package"]);
+      if (raw === "training" || raw === "nutrition" || raw === "combined") packageId = raw;
+    }
+    if (!packageId && typeof row["plan_code"] === "string") {
+      const code = String(row["plan_code"]).toLowerCase();
+      if (code.includes("nutrition") && code.includes("train")) packageId = "combined";
+      else if (code.includes("nutrition")) packageId = "nutrition";
+      else if (code.includes("train")) packageId = "training";
+    }
+
+    const label = typeof row["name"] === "string" ? row["name"] : undefined;
+    return {
+      ...(durationMonths ? { durationMonths } : {}),
+      ...(packageId ? { packageId } : {}),
+      ...(label ? { labelFa: label } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function safeJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function latestBodyRecord(records: BodyAnalysisRecord[]): BodyAnalysisRecord | undefined {
+  return [...records].sort((a, b) =>
+    String(b.measuredAt ?? "").localeCompare(String(a.measuredAt ?? "")),
+  )[0];
+}
+
+export async function assembleRecommendationRequest(
+  user: AuthenticatedUser,
+): Promise<AssembledRecommendationRequest> {
+  const sourcesFa: string[] = [];
+  const missingFa: string[] = [];
+
+  let sport: SportId = isValidSportSlug(user.primarySport) ? user.primarySport : "crossfit";
+  let experience: ExperienceLevel | undefined;
+  let answers: AssessmentAnswers = {};
+  let bodyRecords: BodyAnalysisRecord[] = [];
+  let wearableConnected = false;
+
+  try {
+    const state = await athleteRepository.getAthleteAssessmentState(user);
+    if (isValidSportSlug(state.primarySport)) sport = state.primarySport;
+    if (isValidExperienceLevel(state.experienceLevel)) experience = state.experienceLevel;
+
+    const commonAnswers = state.commonAssessment?.answers ?? {};
+    const sportAnswers = state.sportAssessments[sport]?.answers ?? {};
+    answers = { ...commonAnswers, ...sportAnswers };
+
+    if (Object.keys(commonAnswers).length > 0) sourcesFa.push("ارزیابی عمومی");
+    if (Object.keys(sportAnswers).length > 0) sourcesFa.push("ارزیابی رشته");
+    if (state.wearable.intent === "yes") {
+      wearableConnected = true;
+      sourcesFa.push("اتصال داده سلامت");
+    }
+
+    bodyRecords = state.bodyRecords;
+  } catch (error) {
+    console.warn(
+      "[recommendation/assembly] assessment state unavailable:",
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  const profileRow = await readProfileRow(user.id);
+  const age = toNumber(profileRow?.["age"]);
+  const heightCm = toNumber(profileRow?.["height_cm"]);
+  const weightKg = toNumber(profileRow?.["weight_kg"]);
+  const genderRaw = profileRow?.["gender"];
+  const gender =
+    genderRaw === "male" || genderRaw === "female" || genderRaw === "other" ? genderRaw : undefined;
+  if (!experience && isValidExperienceLevel(profileRow?.["experience_level"])) {
+    experience = profileRow["experience_level"] as ExperienceLevel;
+  }
+
+  const body = latestBodyRecord(bodyRecords);
+  const bodyAnalysis = body
+    ? {
+        ...(toNumber(body.weightKg) !== undefined ? { weightKg: toNumber(body.weightKg) } : {}),
+        ...(toNumber(body.heightCm) !== undefined ? { heightCm: toNumber(body.heightCm) } : {}),
+        ...(toNumber(body.bodyFatPct) !== undefined
+          ? { bodyFatPct: toNumber(body.bodyFatPct) }
+          : {}),
+        ...(body.measuredAt ? { measuredAt: String(body.measuredAt) } : {}),
+      }
+    : undefined;
+  if (bodyAnalysis) sourcesFa.push("ترکیب بدن");
+
+  const sessions = await readSessionBehaviour(user.id);
+  const nutritionAdherence = await readNutritionAdherence(user.id);
+  const daysSinceSignup = await readDaysSinceSignup(user.id);
+
+  const behavior: RecommendationBehaviorInput = {
+    windowDays: WINDOW_DAYS,
+    ...(sessions
+      ? {
+          plannedSessions: sessions.planned,
+          completedSessions: sessions.completed,
+          missedSessions: Math.max(0, sessions.planned - sessions.completed),
+        }
+      : {}),
+    ...(sessions?.avgRpe !== undefined ? { avgRpe: sessions.avgRpe } : {}),
+    ...(sessions?.previousAvgRpe !== undefined ? { previousAvgRpe: sessions.previousAvgRpe } : {}),
+    ...(nutritionAdherence !== undefined ? { nutritionAdherence } : {}),
+    ...(daysSinceSignup !== undefined ? { daysSinceSignup } : {}),
+    wearableConnected,
+  };
+
+  if (sessions) sourcesFa.push("سابقه جلسات ۲۸ روز");
+  else missingFa.push("سابقه جلسات تمرین");
+  if (nutritionAdherence !== undefined) sourcesFa.push("پایبندی تغذیه");
+  else missingFa.push("لاگ تغذیه");
+  if (!body?.bodyFatPct) missingFa.push("درصد چربی بدن");
+
+  const subscription = await readActiveSubscription(user.id);
+  if (subscription?.labelFa) sourcesFa.push(`اشتراک فعال: ${subscription.labelFa}`);
+
+  const constraints: RecommendationConstraints | undefined = subscription
+    ? {
+        ...(subscription.durationMonths ? { durationMonths: subscription.durationMonths } : {}),
+        ...(subscription.packageId ? { packageId: subscription.packageId } : {}),
+      }
+    : undefined;
+
+  const goalRaw = answers["common.goals.primary"];
+  let primaryGoal: GoalId | undefined;
+  if (typeof goalRaw === "string") {
+    const match = /^option_(\d+)$/.exec(goalRaw);
+    const index = match ? Number(match[1]) : Number.NaN;
+    if (Number.isFinite(index)) primaryGoal = GOALS[index - 1] ?? undefined;
+  }
+
+  const request: RecommendationRequest = {
+    athleteId: user.athleteId,
+    sport,
+    ...(age !== undefined ||
+    gender ||
+    heightCm !== undefined ||
+    weightKg !== undefined ||
+    experience ||
+    primaryGoal
+      ? {
+          profile: {
+            ...(age !== undefined ? { age: clamp(age, 12, 85) } : {}),
+            ...(gender ? { gender } : {}),
+            ...(heightCm !== undefined ? { heightCm: clamp(heightCm, 120, 230) } : {}),
+            ...(weightKg !== undefined ? { weightKg: clamp(weightKg, 30, 250) } : {}),
+            ...(experience ? { experience } : {}),
+            ...(primaryGoal ? { primaryGoal } : {}),
+          },
+        }
+      : {}),
+    assessmentAnswers: answers,
+    ...(bodyAnalysis ? { bodyAnalysis } : {}),
+    behavior,
+    ...(constraints ? { constraints } : {}),
+  };
+
+  if (Object.keys(answers).length === 0) missingFa.push("ارزیابی اولیه");
+
+  return { request, sourcesFa, missingFa };
+}
+
+/** True when the athlete has enough stored data for a real (non-cold-start) plan. */
+export async function hasStoredAssessment(userId: string): Promise<boolean> {
+  try {
+    if (!isDatabaseConfigured()) return false;
+    if (!(await tableExists("assessments"))) return false;
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM assessments WHERE athlete_user_id = ?`,
+      [userId],
+    );
+    return Number(rows[0]?.["total"] ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+```
+
+---
+
+## 22) `src/services/recommendation/userPlan.server.ts`
+
+```ts
+/**
+ * Server-side plan orchestration for a signed-in athlete.
+ *
+ * One entry point (`resolvePlanForUser`) decides between three states:
+ *   1. a stored snapshot that still matches the athlete's current inputs → return it,
+ *   2. inputs changed (new assessment / behaviour) or the snapshot is old → recompute,
+ *   3. explicit regeneration (coach or athlete asked) → recompute and persist.
+ *
+ * The UI therefore never needs to know how the model works; it just asks for "my plan"
+ * and gets back the plan that was actually generated, its provenance and freshness.
+ */
+import { getModel } from "./model.server";
+import { recommendPlan, type RecommendationDiagnostics } from "./engine";
+import { assembleRecommendationRequest } from "./assembly.server";
+import {
+  getLatestRecommendationSnapshot,
+  hashRecommendationRequest,
+  saveRecommendationSnapshot,
+  snapshotAgeHours,
+} from "./snapshots.server";
+import { recordRecommendationEvent } from "./store.server";
+import type { AuthenticatedUser } from "@/lib/auth.server";
+import type {
+  CoachingType,
+  PlanDurationMonths,
+  PlanRecommendation,
+  RecommendationConstraints,
+  RecommendationRequest,
+} from "@/domain/recommendation";
+
+/** A weekly plan stays fresh this long unless the athlete's own inputs change. */
+const DEFAULT_MAX_AGE_HOURS = 24 * 7;
+
+export interface ResolvePlanOptions {
+  /** Ignore the stored snapshot and recompute. */
+  force?: boolean;
+  /** Constraints coming from the request (subscription, athlete choice). */
+  constraints?: {
+    durationMonths?: PlanDurationMonths | "auto" | undefined;
+    packageId?: "training" | "nutrition" | "combined" | undefined;
+    coachingPreference?: CoachingType | "auto" | undefined;
+    maxSessionsPerWeek?: number | undefined;
+  };
+  maxAgeHours?: number;
+  persist?: boolean;
+  source?: "assessment" | "manual" | "backfill" | "recompute";
+}
+
+export interface ResolvedPlan {
+  request: RecommendationRequest;
+  recommendation: PlanRecommendation;
+  diagnostics: RecommendationDiagnostics | null;
+  inputHash: string;
+  generatedAt: string;
+  fromSnapshot: boolean;
+  persisted: boolean;
+  snapshotId: string | null;
+  /** Signals used to build the request (Persian, for the "why" panel). */
+  sourcesFa: string[];
+  /** Signals that would improve the plan but are still missing. */
+  missingFa: string[];
+}
+
+function mergeConstraints(
+  base: RecommendationConstraints | undefined,
+  overrides: ResolvePlanOptions["constraints"],
+): RecommendationConstraints | undefined {
+  if (!overrides) return base;
+  const merged: RecommendationConstraints = {
+    ...(base ?? {}),
+    ...(overrides.durationMonths !== undefined ? { durationMonths: overrides.durationMonths } : {}),
+    ...(overrides.packageId !== undefined ? { packageId: overrides.packageId } : {}),
+    ...(overrides.coachingPreference !== undefined
+      ? { coachingPreference: overrides.coachingPreference }
+      : {}),
+    ...(overrides.maxSessionsPerWeek !== undefined
+      ? { maxSessionsPerWeek: overrides.maxSessionsPerWeek }
+      : {}),
+  };
+  return Object.keys(merged).length > 0 ? merged : undefined;
+}
+
+export async function resolvePlanForUser(
+  user: AuthenticatedUser,
+  options: ResolvePlanOptions = {},
+): Promise<ResolvedPlan> {
+  const assembled = await assembleRecommendationRequest(user);
+  const constraints = mergeConstraints(assembled.request.constraints, options.constraints);
+
+  const request: RecommendationRequest = {
+    ...assembled.request,
+    ...(constraints ? { constraints } : {}),
+  };
+
+  const inputHash = hashRecommendationRequest(request);
+  const persist = options.persist !== false;
+  const maxAgeHours = options.maxAgeHours ?? DEFAULT_MAX_AGE_HOURS;
+
+  if (!options.force) {
+    const latest = await getLatestRecommendationSnapshot(user.id);
+    if (latest && latest.inputHash === inputHash && snapshotAgeHours(latest) <= maxAgeHours) {
+      return {
+        request,
+        recommendation: latest.recommendation,
+        diagnostics: null,
+        inputHash,
+        generatedAt: latest.createdAt,
+        fromSnapshot: true,
+        persisted: true,
+        snapshotId: latest.id,
+        sourcesFa: assembled.sourcesFa,
+        missingFa: assembled.missingFa,
+      };
+    }
+  }
+
+  const result = recommendPlan(request, getModel());
+
+  let snapshotId: string | null = null;
+  if (persist) {
+    snapshotId = await saveRecommendationSnapshot({
+      userId: user.id,
+      request,
+      recommendation: result.recommendation,
+      source: options.source ?? (options.force ? "recompute" : "assessment"),
+    });
+  }
+
+  // Append-only decision log (migration 003) — best-effort, never blocking.
+  void recordRecommendationEvent({
+    athleteId: user.athleteId,
+    request,
+    recommendation: result.recommendation,
+    diagnostics: result.diagnostics,
+  });
+
+  return {
+    request,
+    recommendation: result.recommendation,
+    diagnostics: result.diagnostics,
+    inputHash,
+    generatedAt: result.recommendation.generatedAt,
+    fromSnapshot: false,
+    persisted: snapshotId !== null,
+    snapshotId,
+    sourcesFa: assembled.sourcesFa,
+    missingFa: assembled.missingFa,
+  };
+}
+
+/** Recomputes and stores a plan — call after an assessment is saved. */
+export async function refreshPlanForUser(user: AuthenticatedUser): Promise<ResolvedPlan | null> {
+  try {
+    return await resolvePlanForUser(user, { force: true, source: "assessment", maxAgeHours: 0 });
+  } catch (error) {
+    console.warn(
+      "[recommendation/userPlan] refresh failed:",
+      error instanceof Error ? error.message : error,
+    );
+    return null;
+  }
+}
+```
+
+---
+
+## 23) `src/services/recommendation/presentation.ts`
+
+```ts
+/**
+ * Pure presentation mapping: model output → the objects the athlete UI already renders.
+ *
+ * Keeping this separate from both the engine and the routes means:
+ *  - the program page consumes `Program` / `Workout` exactly like the demo data does,
+ *  - the dashboard consumes a small, stable `PlanSummary`,
+ *  - nothing here touches the database, the clock or the network, so it is safe in SSR
+ *    and cannot drift between server and client renders.
+ */
+import type {
+  CoachingType,
+  NutritionStrategyId,
+  PlanDurationMonths,
+  PlanRecommendation,
+  ProgramDayTemplate,
+} from "@/domain/recommendation";
+import { COACHING_LABEL, PACKAGE_NAME_FA, PLAN_DURATION_LABEL } from "@/domain/recommendation";
+import type {
+  PackageId,
+  Program,
+  SportId,
+  Workout,
+  WorkoutBlock,
+  WorkoutBlockType,
+  WorkoutMovement,
+} from "@/domain/types";
+
+const BLOCK_TITLES: Record<WorkoutBlockType, { title: string; titleEn: string; scheme: string }> = {
+  warmup: { title: "گرم کردن", titleEn: "Warm-up", scheme: "۸–۱۰ دقیقه + حرکت‌های تحرک" },
+  strength: { title: "قدرت", titleEn: "Strength", scheme: "۴×۵ @ RPE ۷" },
+  weightlifting: { title: "وزنه‌برداری", titleEn: "Weightlifting", scheme: "۵×۲ @ ۷۵٪" },
+  skill: { title: "مهارت", titleEn: "Skill", scheme: "۵×۳ با تمرکز روی کیفیت" },
+  engine: { title: "موتور هوازی", titleEn: "Engine", scheme: "۳×۶ دقیقه @ Zone 2" },
+  wod: { title: "WOD", titleEn: "WOD", scheme: "AMRAP ۱۲ دقیقه" },
+  cooldown: { title: "سرد کردن", titleEn: "Cooldown", scheme: "۵ دقیقه تنفس و کشش" },
+};
+
+export interface PlanSummarySafety {
+  code: string;
+  labelFa: string;
+  actionFa: string;
+  severity: "info" | "caution" | "review_required";
+}
+
+export interface PlanSummary {
+  sport: SportId;
+  archetypeId: string;
+  archetypeLabelFa: string;
+  archetypeSummaryFa: string;
+  sessionsPerWeek: number;
+  sessionMinutes: number;
+  weeks: number;
+  durationMonths: PlanDurationMonths;
+  durationLabelFa: string;
+  durationRationaleFa: string;
+  nutritionStrategyId: NutritionStrategyId;
+  nutritionLabelFa: string;
+  nutritionSummaryFa: string;
+  energyIntentFa: string;
+  coachingMode: CoachingType;
+  coachingLabelFa: string;
+  packageId: PackageId;
+  packageNameFa: string;
+  safetyLevel: "none" | "caution" | "review_required";
+  safetyFlags: PlanSummarySafety[];
+  adherence30d: number;
+  adherenceCycle: number;
+  dataCompleteness: number;
+  confidence: "low" | "medium" | "high";
+  deloadWeekIndexes: number[];
+  progressionNotes: string[];
+  focusTags: string[];
+  model: PlanRecommendation["model"];
+  generatedAt: string;
+  inputs: PlanRecommendation["inputs"];
+  explanations: PlanRecommendation["explanations"];
+}
+
+export function buildPlanSummary(recommendation: PlanRecommendation): PlanSummary {
+  return {
+    sport: recommendation.sport,
+    archetypeId: recommendation.program.archetypeId,
+    archetypeLabelFa: recommendation.program.labelFa,
+    archetypeSummaryFa: recommendation.program.summaryFa,
+    sessionsPerWeek: recommendation.program.sessionsPerWeek,
+    sessionMinutes: recommendation.program.sessionMinutes,
+    weeks: recommendation.program.weeks,
+    durationMonths: recommendation.duration.months,
+    durationLabelFa:
+      PLAN_DURATION_LABEL[recommendation.duration.months] ?? recommendation.duration.labelFa,
+    durationRationaleFa: recommendation.duration.rationaleFa,
+    nutritionStrategyId: recommendation.nutrition.strategyId,
+    nutritionLabelFa: recommendation.nutrition.labelFa,
+    nutritionSummaryFa: recommendation.nutrition.summaryFa,
+    energyIntentFa: recommendation.nutrition.energyIntentFa,
+    coachingMode: recommendation.coaching.mode,
+    coachingLabelFa:
+      COACHING_LABEL[recommendation.coaching.mode] ?? recommendation.coaching.labelFa,
+    packageId: recommendation.package.id,
+    packageNameFa: PACKAGE_NAME_FA[recommendation.package.id] ?? recommendation.package.nameFa,
+    safetyLevel: recommendation.safety.level,
+    safetyFlags: recommendation.safety.flags.map((flag) => ({
+      code: flag.code,
+      labelFa: flag.labelFa,
+      actionFa: flag.actionFa,
+      severity: flag.severity,
+    })),
+    adherence30d: recommendation.expectations.adherence30d,
+    adherenceCycle: recommendation.expectations.adherenceCycle,
+    dataCompleteness: recommendation.expectations.dataCompleteness,
+    confidence: recommendation.expectations.confidence,
+    deloadWeekIndexes: recommendation.program.deloadWeekIndexes,
+    progressionNotes: recommendation.program.progressionNotes,
+    focusTags: recommendation.program.focusTags,
+    model: recommendation.model,
+    generatedAt: recommendation.generatedAt,
+    inputs: recommendation.inputs,
+    explanations: recommendation.explanations,
+  };
+}
+
+const GENERIC_WARMUP: WorkoutMovement[] = [
+  { exerciseName: "دویدن سبک یا روئینگ", scheme: "۵ دقیقه @ Zone 1" },
+  { exerciseName: "تحرک مفاصل و فعال‌سازی", scheme: "۳–۴ دقیقه" },
+];
+
+const GENERIC_COOLDOWN: WorkoutMovement[] = [
+  { exerciseName: "کشش ایستا و تنفس دیافراگمی", scheme: "۵–۸ دقیقه" },
+];
+
+function mainMovementsFor(day: ProgramDayTemplate): WorkoutMovement[] {
+  const scheme = "۴×۵ @ RPE ۷";
+  return day.mainMovements.slice(0, 3).map((name) => ({ exerciseName: name, scheme }));
+}
+
+function movementsFor(
+  day: ProgramDayTemplate,
+  block: WorkoutBlockType,
+  index: number,
+): WorkoutMovement[] {
+  if (block === "warmup") return GENERIC_WARMUP;
+  if (block === "cooldown") return GENERIC_COOLDOWN;
+
+  const main = mainMovementsFor(day);
+  if (main.length === 0) {
+    return [{ exerciseName: day.titleFa, scheme: BLOCK_TITLES[block].scheme }];
+  }
+  // Spread the day's main lifts across the working blocks so they don't repeat.
+  const perBlock = Math.max(1, Math.ceil(main.length / Math.max(1, day.blocks.length - 2)));
+  const start = Math.max(0, (index - 1) * perBlock) % main.length;
+  return Array.from({ length: perBlock }, (_, offset) => main[(start + offset) % main.length]!).map(
+    (movement) => ({
+      exerciseName: movement.exerciseName,
+      scheme: BLOCK_TITLES[block].scheme,
+    }),
+  );
+}
+
+function blocksForDay(
+  day: ProgramDayTemplate,
+  sessionMinutes: number,
+  archetypeId: string,
+): WorkoutBlock[] {
+  const types =
+    day.blocks.length > 0 ? day.blocks : (["warmup", "strength", "cooldown"] as WorkoutBlockType[]);
+  const warmupMinutes = Math.min(12, Math.max(6, Math.round(sessionMinutes * 0.15)));
+  const cooldownMinutes = 8;
+  const workingTypes = types.filter((type) => type !== "warmup" && type !== "cooldown");
+  const workingBudget = Math.max(
+    workingTypes.length * 8,
+    sessionMinutes - warmupMinutes - cooldownMinutes,
+  );
+
+  return types.map((type, index) => {
+    const meta = BLOCK_TITLES[type];
+    const duration =
+      type === "warmup"
+        ? warmupMinutes
+        : type === "cooldown"
+          ? cooldownMinutes
+          : Math.round(workingBudget / Math.max(1, workingTypes.length));
+    return {
+      id: `${archetypeId}_d${day.index}_b${index}`,
+      type,
+      title: meta.title,
+      titleEn: meta.titleEn,
+      durationMin: duration,
+      intent: day.focusFa,
+      movements: movementsFor(day, type, index),
+    } satisfies WorkoutBlock;
+  });
+}
+
+export interface BuiltProgram {
+  program: Program;
+  workout: Workout;
+}
+
+/**
+ * Turns a stored recommendation into the `Program`/`Workout` objects the athlete pages
+ * render, so the UI shows the *model's* plan instead of demo content.
+ */
+export function buildProgramFromRecommendation(args: {
+  recommendation: PlanRecommendation;
+  athleteId: string;
+}): BuiltProgram {
+  const { recommendation, athleteId } = args;
+  const programId = `rec_${recommendation.program.archetypeId}`;
+  const generatedBy: Program["generatedBy"] =
+    recommendation.coaching.mode === "ai"
+      ? "ai"
+      : recommendation.coaching.mode === "human"
+        ? "coach"
+        : "hybrid";
+
+  const workouts: Workout[] = recommendation.program.days.map((day, index) => ({
+    id: `${programId}_w${day.index}`,
+    programId,
+    dayIndex: day.index,
+    date: index === 0 ? "امروز" : `+${index} روز`,
+    title: day.titleFa,
+    focus: day.focusFa,
+    blocks: blocksForDay(
+      day,
+      recommendation.program.sessionMinutes,
+      recommendation.program.archetypeId,
+    ),
+    estimatedMin: recommendation.program.sessionMinutes,
+    status: index === 0 ? "today" : "planned",
+  }));
+
+  const program: Program = {
+    id: programId,
+    athleteId,
+    name: recommendation.program.labelFa,
+    sport: recommendation.sport,
+    phase: recommendation.program.focusTags[0] ?? "پایه",
+    weekIndex: 1,
+    totalWeeks: recommendation.program.weeks,
+    generatedBy,
+    goal: recommendation.package.nameFa,
+    workouts,
+    adherence: recommendation.expectations.adherence30d,
+  };
+
+  const workout: Workout = workouts[0] ?? {
+    id: `${programId}_w1`,
+    programId,
+    dayIndex: 1,
+    date: "امروز",
+    title: recommendation.program.labelFa,
+    focus: recommendation.program.summaryFa,
+    blocks: [],
+    estimatedMin: recommendation.program.sessionMinutes,
+    status: "today",
+  };
+
+  return { program, workout };
+}
+```
+
+---
+
+## 24) `src/hooks/use-plan.ts`
+
+```ts
+/**
+ * Client hook around GET/POST /api/plan.
+ *
+ * States are explicit so pages can degrade honestly:
+ *   loading        → skeleton / demo fallback
+ *   unauthenticated→ show demo content + "complete your assessment" call-to-action
+ *   ready          → the athlete's real, stored plan
+ *   error          → demo fallback + retry
+ */
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { PlanDurationMonths } from "@/domain/recommendation";
+import type { Program, Workout } from "@/domain/types";
+import type { PlanSummary } from "@/services/recommendation/presentation";
+import type { RecommendationDiagnostics } from "@/services/recommendation/engine";
+
+export interface PlanMeta {
+  fromSnapshot: boolean;
+  persisted: boolean;
+  snapshotId: string | null;
+  generatedAt: string;
+  inputHash: string;
+  diagnostics: RecommendationDiagnostics | null;
+  sourcesFa: string[];
+  missingFa: string[];
+}
+
+export interface PlanResponse {
+  ok: true;
+  authenticated: true;
+  plan: PlanSummary;
+  program: Program;
+  workout: Workout;
+  meta: PlanMeta;
+}
+
+export type PlanStatus = "loading" | "unauthenticated" | "ready" | "error";
+
+export interface UsePlanResult {
+  status: PlanStatus;
+  data: PlanResponse | null;
+  error: string | null;
+  refreshing: boolean;
+  refresh: (constraints?: { durationMonths?: PlanDurationMonths | "auto" }) => Promise<void>;
+}
+
+async function readPlan(
+  init?: RequestInit,
+): Promise<{ status: PlanStatus; data: PlanResponse | null; error: string | null }> {
+  const response = await fetch("/api/plan", {
+    credentials: "same-origin",
+    headers: { accept: "application/json" },
+    ...init,
+  });
+
+  if (response.status === 401 || response.status === 403) {
+    return { status: "unauthenticated", data: null, error: null };
+  }
+
+  const json = (await response.json().catch(() => null)) as
+    (PlanResponse | { ok: false; error?: string }) | null;
+
+  if (!response.ok || !json || !("ok" in json) || json.ok !== true) {
+    return {
+      status: "error",
+      data: null,
+      error:
+        (json && "error" in json && typeof json.error === "string" && json.error) ||
+        "دریافت برنامه ناموفق بود.",
+    };
+  }
+
+  return { status: "ready", data: json, error: null };
+}
+
+export function usePlan(options: { enabled?: boolean } = {}): UsePlanResult {
+  const enabled = options.enabled !== false;
+  const [status, setStatus] = useState<PlanStatus>(enabled ? "loading" : "unauthenticated");
+  const [data, setData] = useState<PlanResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const result = await readPlan();
+        if (cancelled || !mounted.current) return;
+        setStatus(result.status);
+        setData(result.data);
+        setError(result.error);
+      } catch {
+        if (cancelled || !mounted.current) return;
+        setStatus("error");
+        setError("ارتباط با سرور برقرار نشد.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  const refresh = useCallback(
+    async (constraints?: { durationMonths?: PlanDurationMonths | "auto" }) => {
+      if (!enabled) return;
+      setRefreshing(true);
+      try {
+        const result = await readPlan({
+          method: "POST",
+          headers: { "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify({ regenerate: true, ...(constraints ? { constraints } : {}) }),
+        });
+        if (!mounted.current) return;
+        setStatus(result.status);
+        setData(result.data);
+        setError(result.error);
+      } catch {
+        if (!mounted.current) return;
+        setStatus("error");
+        setError("به‌روزرسانی برنامه ناموفق بود.");
+      } finally {
+        if (mounted.current) setRefreshing(false);
+      }
+    },
+    [enabled],
+  );
+
+  return { status, data, error, refreshing, refresh };
+}
+```
+
+---
+
+## 25) `src/components/domain/plan-summary.tsx`
+
+```tsx
+/**
+ * Dashboard card for the model-generated plan.
+ *
+ * Shows the athlete's stored plan (programme archetype, cycle length, nutrition strategy,
+ * coaching mode and the predicted adherence) and links to the real pages. Falls back to a
+ * clear call-to-action when the athlete has not completed an assessment yet.
+ */
+import { Link } from "@tanstack/react-router";
+import { Brain, RefreshCw, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Panel, Pill, ProgressRing, SectionHeading } from "@/components/domain/primitives";
+import { usePlan } from "@/hooks/use-plan";
+import { faNumber } from "@/lib/locale";
+
+export function PlanSummaryCard({ className }: { className?: string }) {
+  const plan = usePlan();
+  const ready = plan.status === "ready" ? plan.data : null;
+
+  if (ready) {
+    const summary = ready.plan;
+    return (
+      <Panel className={className}>
+        <SectionHeading
+          title="برنامهٔ پیشنهادی مدل"
+          subtitle={`${summary.archetypeLabelFa} · ${summary.durationLabelFa}`}
+          action={{ label: "برنامهٔ تمرین", to: "/athlete/program" }}
+        />
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+          <div className="min-w-0 space-y-2 text-xs">
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              <span>
+                {faNumber(summary.sessionsPerWeek)} جلسه در هفته ·{" "}
+                {faNumber(summary.sessionMinutes)} دقیقه
+              </span>
+              <span>{summary.nutritionLabelFa}</span>
+              <span>{summary.coachingLabelFa}</span>
+            </div>
+            <p className="text-muted-foreground">{summary.nutritionSummaryFa}</p>
+            <p className="text-[11px] text-muted-foreground">
+              مدل {summary.model.version}
+              {summary.model.trainingData === "simulated" ? " · داده آموزشی شبیه‌سازی‌شده" : ""}
+              {ready.meta.fromSnapshot ? " · از برنامهٔ ذخیره‌شده" : " · همین حالا محاسبه شد"}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {summary.safetyLevel !== "none" && (
+                <Pill color="var(--warning, #d97706)">
+                  {summary.safetyLevel === "review_required" ? "نیازمند بازبینی مربی" : "با احتیاط"}
+                </Pill>
+              )}
+              <Pill>
+                اطمینان:{" "}
+                {summary.confidence === "high"
+                  ? "بالا"
+                  : summary.confidence === "medium"
+                    ? "متوسط"
+                    : "کم"}
+              </Pill>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-[11px]"
+                onClick={() => void plan.refresh()}
+                disabled={plan.refreshing}
+              >
+                <RefreshCw className={plan.refreshing ? "size-3.5 animate-spin" : "size-3.5"} />
+                {plan.refreshing ? "بازتولید…" : "بازتولید"}
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <ProgressRing value={Math.round(summary.adherence30d * 100)} size={78} />
+            <span className="text-[10px] text-muted-foreground">پایبندی ۳۰ روز</span>
+          </div>
+        </div>
+      </Panel>
+    );
+  }
+
+  if (plan.status === "loading") {
+    return (
+      <Panel className={className}>
+        <SectionHeading title="برنامهٔ پیشنهادی مدل" subtitle="در حال دریافت…" />
+        <p className="text-xs text-muted-foreground">برنامهٔ شما از سرور خوانده می‌شود.</p>
+      </Panel>
+    );
+  }
+
+  if (plan.status === "unauthenticated") {
+    return (
+      <Panel className={className}>
+        <SectionHeading title="برنامهٔ پیشنهادی مدل" subtitle="پس از ارزیابی ساخته می‌شود" />
+        <p className="mb-3 text-xs text-muted-foreground">
+          با تکمیل ارزیابی اولیه و ارزیابی رشته، موتور FitLytix برنامهٔ تمرین، ساختار تغذیه، طول
+          دوره و نوع مربی‌گری را مخصوص شما تولید می‌کند.
+        </p>
+        <Button size="sm" variant="hero" asChild>
+          <Link to="/assessment/common">
+            <Sparkles className="size-4" /> شروع ارزیابی
+          </Link>
+        </Button>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel className={className}>
+      <SectionHeading title="برنامهٔ پیشنهادی مدل" subtitle="دریافت برنامه ناموفق بود" />
+      <p className="mb-3 text-xs text-muted-foreground">
+        {plan.error ?? "ارتباط با سرور برقرار نشد."}
+      </p>
+      <Button size="sm" variant="outline" onClick={() => void plan.refresh()}>
+        <Brain className="size-4" /> تلاش دوباره
+      </Button>
+    </Panel>
+  );
+}
+```
+
+---
+
+## 26) `src/routes/api/recommend.ts`
 
 ```ts
 import { createFileRoute } from "@tanstack/react-router";
@@ -5100,7 +6429,144 @@ export const Route = createFileRoute("/api/recommend")({
 
 ---
 
-## 21) `src/routes/recommendation.tsx`
+## 27) `src/routes/api/plan.ts`
+
+```ts
+/**
+ * Athlete-facing plan endpoint.
+ *
+ *   GET  /api/plan   → the plan for the signed-in athlete (stored snapshot when it is
+ *                      still valid, otherwise compute + persist)
+ *   POST /api/plan   → recompute now, optionally overriding the cycle length / package /
+ *                      coaching mode (e.g. the athlete picked a different subscription)
+ *
+ * Unlike `POST /api/recommend` (stateless, accepts arbitrary input, used by the demo page
+ * and by external clients), this route never trusts client-supplied assessment data:
+ * everything comes from the authenticated athlete's stored records.
+ */
+import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
+import { AuthHttpError, requireAuthenticatedUser } from "@/lib/auth.server";
+import {
+  buildPlanSummary,
+  buildProgramFromRecommendation,
+} from "@/services/recommendation/presentation";
+import { resolvePlanForUser } from "@/services/recommendation/userPlan.server";
+
+const constraintsSchema = z
+  .object({
+    durationMonths: z
+      .union([z.literal(1), z.literal(3), z.literal(6), z.literal(12), z.literal("auto")])
+      .optional(),
+    packageId: z.enum(["training", "nutrition", "combined"]).optional(),
+    coachingPreference: z.enum(["ai", "hybrid", "human", "auto"]).optional(),
+    maxSessionsPerWeek: z.number().int().min(1).max(7).optional(),
+  })
+  .optional();
+
+const bodySchema = z
+  .object({
+    regenerate: z.boolean().optional(),
+    constraints: constraintsSchema,
+  })
+  .optional();
+
+function authErrorResponse(err: AuthHttpError): Response {
+  return Response.json(
+    { ok: false, error: err.message, code: "unauthenticated" },
+    { status: err.statusCode, headers: { "cache-control": "no-store" } },
+  );
+}
+
+function failureResponse(error: unknown, scope: string): Response {
+  console.error(`[api/plan ${scope}]`, error instanceof Error ? error.message : error);
+  return Response.json(
+    { ok: false, error: "تولید یا بازیابی برنامه با خطا مواجه شد. لطفاً دوباره تلاش کنید." },
+    { status: 500, headers: { "cache-control": "no-store" } },
+  );
+}
+
+async function respondWithPlan(
+  request: Request,
+  options: { force: boolean; constraints?: z.infer<typeof constraintsSchema> },
+): Promise<Response> {
+  const user = await requireAuthenticatedUser(request);
+  const resolved = await resolvePlanForUser(user, {
+    force: options.force,
+    ...(options.constraints ? { constraints: options.constraints } : {}),
+    ...(options.force ? { source: "manual" as const } : {}),
+  });
+
+  const program = buildProgramFromRecommendation({
+    recommendation: resolved.recommendation,
+    athleteId: user.athleteId,
+  });
+
+  return Response.json(
+    {
+      ok: true,
+      authenticated: true,
+      plan: buildPlanSummary(resolved.recommendation),
+      program: program.program,
+      workout: program.workout,
+      meta: {
+        fromSnapshot: resolved.fromSnapshot,
+        persisted: resolved.persisted,
+        snapshotId: resolved.snapshotId,
+        generatedAt: resolved.generatedAt,
+        inputHash: resolved.inputHash,
+        diagnostics: resolved.diagnostics,
+        sourcesFa: resolved.sourcesFa,
+        missingFa: resolved.missingFa,
+      },
+    },
+    { status: 200, headers: { "cache-control": "no-store" } },
+  );
+}
+
+export const Route = createFileRoute("/api/plan")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        try {
+          return await respondWithPlan(request, { force: false });
+        } catch (err) {
+          if (err instanceof AuthHttpError) return authErrorResponse(err);
+          return failureResponse(err, "GET");
+        }
+      },
+
+      POST: async ({ request }) => {
+        try {
+          const raw = await request.json().catch(() => ({}));
+          const parsed = bodySchema.safeParse(raw);
+          if (!parsed.success) {
+            return Response.json(
+              {
+                ok: false,
+                error: parsed.error.issues[0]?.message ?? "ورودی نامعتبر است.",
+              },
+              { status: 400, headers: { "cache-control": "no-store" } },
+            );
+          }
+          const body = parsed.data ?? {};
+          return await respondWithPlan(request, {
+            force: body.regenerate !== false,
+            ...(body.constraints ? { constraints: body.constraints } : {}),
+          });
+        } catch (err) {
+          if (err instanceof AuthHttpError) return authErrorResponse(err);
+          return failureResponse(err, "POST");
+        }
+      },
+    },
+  },
+});
+```
+
+---
+
+## 28) `src/routes/recommendation.tsx`
 
 ```tsx
 import { useState } from "react";
@@ -5777,7 +7243,7 @@ function RecommendationDemo() {
 
 ---
 
-## 22) `scripts/check-model-parity.mjs`
+## 29) `scripts/check-model-parity.mjs`
 
 ```js
 #!/usr/bin/env node
@@ -5925,7 +7391,7 @@ if (failures.length > 0) {
 
 ---
 
-## 23) `scripts/verify-prod.mjs`
+## 30) `scripts/verify-prod.mjs`
 
 ```js
 // Smoke-checks a running production server: node scripts/verify-prod.mjs [baseUrl]
@@ -5989,7 +7455,7 @@ process.exit(failed ? 1 : 0);
 
 ---
 
-## 24) `database/migrations/mysql/003_fitlytix_recommendation_engine.sql`
+## 31) `database/migrations/mysql/003_fitlytix_recommendation_engine.sql`
 
 ```sql
 -- FitLytix MySQL migration 003: recommendation engine audit + feedback loop
@@ -6055,4 +7521,58 @@ CREATE TABLE IF NOT EXISTS model_registry (
   UNIQUE KEY uq_model_registry_version (model_version),
   KEY idx_model_registry_active (kind, is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+---
+
+## 32) `database/migrations/mysql/004_recommendation_snapshots.sql`
+
+```sql
+-- 004 — Snapshot of every plan the recommendation engine produced for an athlete.
+--
+-- Why a dedicated table (instead of only recommendation_events from 003):
+--   * the athlete UI must be able to re-open *the exact plan it showed* days later,
+--     even after the model artefact changed;
+--   * support/coach needs the inputs that produced a plan, not just its outputs;
+--   * retraining needs a time-ordered history of (inputs → action → later outcome).
+--
+-- Additive and non-destructive: safe to run on an existing database.
+
+CREATE TABLE IF NOT EXISTS recommendation_snapshots (
+  id CHAR(36) NOT NULL PRIMARY KEY,
+  user_id CHAR(36) NOT NULL,
+  sport VARCHAR(30) NOT NULL,
+  source VARCHAR(24) NOT NULL DEFAULT 'assessment',
+  model_version VARCHAR(64) NOT NULL,
+  model_schema_version INT NOT NULL DEFAULT 1,
+  model_training_data VARCHAR(32) NOT NULL DEFAULT 'simulated',
+  archetype_id VARCHAR(64) NOT NULL,
+  nutrition_strategy_id VARCHAR(64) NOT NULL,
+  duration_months TINYINT UNSIGNED NOT NULL,
+  coaching_mode VARCHAR(20) NOT NULL,
+  package_id VARCHAR(20) NOT NULL,
+  safety_level VARCHAR(20) NOT NULL DEFAULT 'none',
+  confidence VARCHAR(10) NOT NULL DEFAULT 'low',
+  adherence_30d DECIMAL(4,3) NOT NULL DEFAULT 0,
+  adherence_cycle DECIMAL(4,3) NOT NULL DEFAULT 0,
+  data_completeness DECIMAL(4,3) NOT NULL DEFAULT 0,
+  input_hash CHAR(64) NOT NULL,
+  request_json JSON NOT NULL,
+  result_json LONGTEXT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_snapshot_input (user_id, input_hash, model_version),
+  KEY idx_snapshot_user_created (user_id, created_at),
+  KEY idx_snapshot_user_sport (user_id, sport, created_at),
+  CONSTRAINT fk_snapshot_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Latest plan per athlete without scanning history.
+CREATE OR REPLACE VIEW v_latest_recommendation AS
+SELECT s.*
+FROM recommendation_snapshots s
+JOIN (
+  SELECT user_id, MAX(created_at) AS created_at
+  FROM recommendation_snapshots
+  GROUP BY user_id
+) latest ON latest.user_id = s.user_id AND latest.created_at = s.created_at;
 ```

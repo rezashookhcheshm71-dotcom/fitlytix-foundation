@@ -19,6 +19,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ApiAssessmentRouteImport } from './routes/api/assessment'
 import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiPlanRouteImport } from './routes/api/plan'
 import { Route as ApiRecommendRouteImport } from './routes/api/recommend'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
 import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
@@ -94,6 +95,11 @@ const ApiDbTestRoute = ApiDbTestRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlanRoute = ApiPlanRouteImport.update({
+  id: '/api/plan',
+  path: '/api/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRecommendRoute = ApiRecommendRouteImport.update({
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/api/assessment': typeof ApiAssessmentRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/plan': typeof ApiPlanRoute
   '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/api/assessment': typeof ApiAssessmentRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/plan': typeof ApiPlanRoute
   '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/api/assessment': typeof ApiAssessmentRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/plan': typeof ApiPlanRoute
   '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/api/assessment'
     | '/api/db-test'
     | '/api/health'
+    | '/api/plan'
     | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
@@ -393,6 +403,7 @@ export interface FileRouteTypes {
     | '/api/assessment'
     | '/api/db-test'
     | '/api/health'
+    | '/api/plan'
     | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
@@ -431,6 +442,7 @@ export interface FileRouteTypes {
     | '/api/assessment'
     | '/api/db-test'
     | '/api/health'
+    | '/api/plan'
     | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
@@ -470,6 +482,7 @@ export interface RootRouteChildren {
   ApiAssessmentRoute: typeof ApiAssessmentRoute
   ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiPlanRoute: typeof ApiPlanRoute
   ApiRecommendRoute: typeof ApiRecommendRoute
   AssessmentCommonRoute: typeof AssessmentCommonRoute
   AssessmentSportRoute: typeof AssessmentSportRoute
@@ -568,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plan': {
+      id: '/api/plan'
+      path: '/api/plan'
+      fullPath: '/api/plan'
+      preLoaderRoute: typeof ApiPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/recommend': {
@@ -766,6 +786,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAssessmentRoute: ApiAssessmentRoute,
   ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiPlanRoute: ApiPlanRoute,
   ApiRecommendRoute: ApiRecommendRoute,
   AssessmentCommonRoute: AssessmentCommonRoute,
   AssessmentSportRoute: AssessmentSportRoute,

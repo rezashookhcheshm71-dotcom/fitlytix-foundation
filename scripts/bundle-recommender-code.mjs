@@ -27,11 +27,19 @@ const FILES = [
   ["src/services/recommendation/engine.ts", "ts"],
   ["src/services/recommendation/requestSchema.ts", "ts"],
   ["src/services/recommendation/store.server.ts", "ts"],
+  ["src/services/recommendation/snapshots.server.ts", "ts"],
+  ["src/services/recommendation/assembly.server.ts", "ts"],
+  ["src/services/recommendation/userPlan.server.ts", "ts"],
+  ["src/services/recommendation/presentation.ts", "ts"],
+  ["src/hooks/use-plan.ts", "ts"],
+  ["src/components/domain/plan-summary.tsx", "tsx"],
   ["src/routes/api/recommend.ts", "ts"],
+  ["src/routes/api/plan.ts", "ts"],
   ["src/routes/recommendation.tsx", "tsx"],
   ["scripts/check-model-parity.mjs", "js"],
   ["scripts/verify-prod.mjs", "js"],
   ["database/migrations/mysql/003_fitlytix_recommendation_engine.sql", "sql"],
+  ["database/migrations/mysql/004_recommendation_snapshots.sql", "sql"],
 ];
 
 const head = `# کد کامل موتور پیشنهاد برنامه FitLytix
