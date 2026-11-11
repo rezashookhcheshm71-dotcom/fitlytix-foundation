@@ -20,6 +20,7 @@ import { Route as ApiAssessmentRouteImport } from './routes/api/assessment'
 import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiPlanRouteImport } from './routes/api/plan'
+import { Route as ApiPlanDiagnoseRouteImport } from './routes/api/plan-diagnose'
 import { Route as ApiRecommendRouteImport } from './routes/api/recommend'
 import { Route as AssessmentCommonRouteImport } from './routes/assessment.common'
 import { Route as AssessmentSportRouteImport } from './routes/assessment.sport'
@@ -100,6 +101,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiPlanRoute = ApiPlanRouteImport.update({
   id: '/api/plan',
   path: '/api/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlanDiagnoseRoute = ApiPlanDiagnoseRouteImport.update({
+  id: '/api/plan-diagnose',
+  path: '/api/plan-diagnose',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRecommendRoute = ApiRecommendRouteImport.update({
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/api/plan': typeof ApiPlanRoute
+  '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/api/plan': typeof ApiPlanRoute
+  '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -324,6 +332,7 @@ export interface FileRoutesById {
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/api/plan': typeof ApiPlanRoute
+  '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
   '/assessment/common': typeof AssessmentCommonRoute
   '/assessment/sport': typeof AssessmentSportRoute
@@ -365,6 +374,7 @@ export interface FileRouteTypes {
     | '/api/db-test'
     | '/api/health'
     | '/api/plan'
+    | '/api/plan-diagnose'
     | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/api/db-test'
     | '/api/health'
     | '/api/plan'
+    | '/api/plan-diagnose'
     | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/api/db-test'
     | '/api/health'
     | '/api/plan'
+    | '/api/plan-diagnose'
     | '/api/recommend'
     | '/assessment/common'
     | '/assessment/sport'
@@ -483,6 +495,7 @@ export interface RootRouteChildren {
   ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiPlanRoute: typeof ApiPlanRoute
+  ApiPlanDiagnoseRoute: typeof ApiPlanDiagnoseRoute
   ApiRecommendRoute: typeof ApiRecommendRoute
   AssessmentCommonRoute: typeof AssessmentCommonRoute
   AssessmentSportRoute: typeof AssessmentSportRoute
@@ -588,6 +601,13 @@ declare module '@tanstack/react-router' {
       path: '/api/plan'
       fullPath: '/api/plan'
       preLoaderRoute: typeof ApiPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plan-diagnose': {
+      id: '/api/plan-diagnose'
+      path: '/api/plan-diagnose'
+      fullPath: '/api/plan-diagnose'
+      preLoaderRoute: typeof ApiPlanDiagnoseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/recommend': {
@@ -787,6 +807,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiPlanRoute: ApiPlanRoute,
+  ApiPlanDiagnoseRoute: ApiPlanDiagnoseRoute,
   ApiRecommendRoute: ApiRecommendRoute,
   AssessmentCommonRoute: AssessmentCommonRoute,
   AssessmentSportRoute: AssessmentSportRoute,

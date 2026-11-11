@@ -335,6 +335,43 @@ location / {
 - آموزش مجدد: روی ماشین دارای پایتون `python ml/train.py` → commit/push کردن `model.json` →
   روی سرور `git pull && npm run build` + Restart. مدل را روی سرور آموزش ندهید.
 
+### تست end-to-end روی سرور (MySQL واقعی)
+
+مسیرهای وابسته به دیتابیس را نمی‌توان در محیط توسعهٔ بدون DB تست کرد؛ برای همین یک تست
+آماده روی خود سرور اجرا می‌شود:
+
+```sh
+E2E_BASE_URL=http://127.0.0.1:3000 \
+E2E_EMAIL=e2e@fitlytix.ir E2E_PASSWORD='یک-رمز-قوی' E2E_REGISTER=1 \
+E2E_SPORT=crossfit npm run e2e:plan
+```
+
+این تست واقعاً: ثبت‌نام/ورود می‌کند → ارزیابی عمومی و ارزیابی رشته را ذخیره می‌کند →
+بررسی می‌کند برنامه به‌صورت خودکار ساخته شده → `GET /api/plan` را می‌خواند و صحت
+(archetype، طول دوره، پایبندی، توضیح‌ها، ذخیرهٔ snapshot) را با assert بررسی می‌کند →
+`POST /api/plan` با override سه‌ماهه را امتحان می‌کند → وضعیت migrationها را گزارش می‌دهد.
+
+- خروجی: فهرست `✓/✗`، جدول وضعیت migrationها، ورودی‌های خوانده‌شده/غایب.
+- کد خروج: `0` سالم، `1` حداقل یک بررسی ناموفق، `2` تنظیمات ناقص.
+- داده‌ای که می‌سازد: یک کاربر تست + دو ارزیابی + snapshotهای همان کاربر.
+  پاک‌سازی (اختیاری):
+  ```sql
+  DELETE FROM recommendation_snapshots WHERE user_id = (SELECT id FROM users WHERE email='e2e@fitlytix.ir');
+  DELETE FROM assessment_answers WHERE assessment_id IN (SELECT id FROM assessments WHERE athlete_user_id = (SELECT id FROM users WHERE email='e2e@fitlytix.ir'));
+  DELETE FROM assessments WHERE athlete_user_id = (SELECT id FROM users WHERE email='e2e@fitlytix.ir');
+  DELETE FROM users WHERE email='e2e@fitlytix.ir';
+  ```
+
+برای بررسی سریع بدون ساخت داده، در حالت لاگین:
+
+```bash
+curl -s --cookie "…" https://app.fitlytix.ir/api/plan-diagnose | python3 -m json.tool
+```
+
+که برمی‌گرداند: جداول موجود/غایب، وضعیت migrationهای 001–004، تعداد ارزیابی‌ها و پاسخ‌های
+قابل‌استفاده (`answersCount`)، جلسات و لاگ تغذیهٔ ۲۸ روز، snapshot ذخیره‌شده و یک
+**dry-run** از تصمیم مدل (`dryRun`، بدون ذخیره) به‌همراه `hints` برای هر چیز غایب.
+
 ### عیب‌یابی مخصوص مدل
 
 | نشانه                                                 | علت / راه‌حل                                                                  |

@@ -38,6 +38,7 @@ fitlytix-foundation/
 ├── src/routes/api/recommend.ts            ← endpoint: POST/GET /api/recommend
 ├── src/routes/recommendation.tsx          ← صفحه دمو: /recommendation
 ├── scripts/check-model-parity.mjs         ← تست برابری TS ↔ sklearn
+├── scripts/e2e-plan.mjs                   ← تست end-to-end روی سرور با MySQL
 ├── scripts/verify-prod.mjs                ← اسموکتست بعد از deploy
 └── database/migrations/mysql/
     └── 003_fitlytix_recommendation_engine.sql

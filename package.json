@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "start": "node .output/server/index.mjs",
     "verify:prod": "node scripts/verify-prod.mjs",
-    "code:bundle": "node scripts/bundle-recommender-code.mjs"
+    "code:bundle": "node scripts/bundle-recommender-code.mjs",
+    "e2e:plan": "node scripts/e2e-plan.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
