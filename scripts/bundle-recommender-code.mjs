@@ -57,4 +57,6 @@ FILES.forEach(([path, lang], i) => {
 
 const target = join(root, "docs/recommendation-code-complete.md");
 writeFileSync(target, parts.join(""));
-console.log(`wrote ${target} (${FILES.length} files, ${Math.round(Buffer.byteLength(parts.join("")) / 1024)} KB)`);
+console.log(
+  `wrote ${target} (${FILES.length} files, ${Math.round(Buffer.byteLength(parts.join("")) / 1024)} KB)`,
+);

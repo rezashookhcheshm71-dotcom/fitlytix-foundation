@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "start": "node .output/server/index.mjs",
-    "verify:prod": "node scripts/verify-prod.mjs"
+    "verify:prod": "node scripts/verify-prod.mjs",
+    "code:bundle": "node scripts/bundle-recommender-code.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
