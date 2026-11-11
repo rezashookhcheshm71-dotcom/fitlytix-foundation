@@ -200,29 +200,109 @@ curl -X POST http://localhost:8080/api/recommend \
 
 ## ۸) استقرار روی سرور خودتان
 
-مدل داخل باندل سرور قرار می‌گیرد (import JSON در `model.server.ts`)، بنابراین:
+مدل داخل باندل سرور قرار می‌گیرد (import JSON در `model.server.ts`)، بنابراین هیچ سرویس
+جداگانه‌ای لازم نیست. **روی سرور به پایتون نیازی نیست**؛ پایتون فقط برای آموزش است.
 
-```bash
+### چک‌لیست استقرار (cPanel / Passenger)
+
+```sh
+# 1) کد + آرتیفکت مدل
+cd ~/fitlytix-app && git pull origin main
+ls -lh src/services/recommendation/model/        # model.json ≈ 1.3MB
+
+# 2) نصب و بیلد در محیط Node همان اپ
+source ~/nodevenv/fitlytix-app/22/bin/activate
+node -v                                          # 22.x (حداقل 20.19)
 npm ci
-npm run build          # خروجی: .output/server/index.mjs
-npm start              # یا اجرای app.js روی cPanel/Passenger
+npm run build
+du -sh .output                                   # ~8MB
+grep -c fitlytix-gbdt-json .output/server/_ssr/router-*.mjs   # باید > ۰ باشد
 ```
 
-- **بدون پایتون در production**: پایتون فقط برای آموزش لازم است.
-- **بدون سرویس بیرونی**: هیچ درخواستی به OpenAI/سرویس ابری زده نمی‌شود.
-- اگر بعداً خواستید مدل را جدا کنید، تنها قرارداد `recommendPlan()` است؛ می‌توانید آن را
-  به یک میکروسرویس منتقل کنید بدون تغییر UI.
-- حافظه: مدل در اولین فراخوانی parse و در حافظه cache می‌شود؛ ~۲–۴ مگابایت RAM.
-- زمان پاسخ: پیش‌بینی مدل در حد میلی‌ثانیه است؛ گلوگاه واقعی، دسترسی به دیتابیس برای
-  خواندن ارزیابی/رفتار است.
+3. cPanel → **Setup Node.js App** → Environment variables:
 
-### متغیرهای محیطی
+| متغیر                                                         | مقدار                                 |
+| ------------------------------------------------------------- | ------------------------------------- |
+| `NODE_ENV`                                                    | `production`                          |
+| `SESSION_SECRET`                                              | ۳۲+ کاراکتر تصادفی                    |
+| `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` | اطلاعات MySQL                         |
+| `PORT`                                                        | **تنظیم نشود**؛ Passenger خودش می‌دهد |
 
-هیچ متغیر جدیدی لازم نیست. برای فعال شدن ثبت تصمیم‌ها، همان تنظیمات فعلی MySQL کافی است
-(`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`). اگر جدول‌ها نباشند، ثبت بی‌صدا رد می‌شود
-و API سالم می‌ماند.
+Startup file: `app.js`. فایل `.env` به‌تنهایی توسط سرور بیلدشده خوانده نمی‌شود؛ متغیرها را در
+همین UI (یا `EnvironmentFile` در systemd) بگذارید.
 
----
+4. migration `003` را در phpMyAdmin (بعد از Backup) import کنید. بدون آن API کار می‌کند ولی
+   هیچ تصمیمی ثبت نمی‌شود و داده‌ای برای آموزش مجدد جمع نمی‌شود.
+
+5. Restart: دکمه cPanel یا `touch tmp/restart.txt`.
+
+6. تأیید:
+
+```sh
+curl -s https://app.fitlytix.ir/api/health
+curl -s https://app.fitlytix.ir/api/recommend | head -c 300     # نسخه + دقت‌ها
+POST=$(curl -s -X POST https://app.fitlytix.ir/api/recommend \
+  -H 'content-type: application/json' \
+  -d '{"sport":"crossfit","profile":{"experience":"intermediate","primaryGoal":"strength","sessionsPerWeek":4}}')
+echo "$POST" | head -c 400
+npm run verify:prod https://app.fitlytix.ir
+```
+
+`verify:prod` علاوه بر صفحه‌ها، یک inference واقعی می‌گیرد و باید خطی مثل این چاپ کند:
+`200 POST /api/recommend -> cf_strength_skill · 6mo · recomp · model … (model, simulated)`.
+
+### بدون SSH
+
+- cPanel → **Terminal** و اجرای همان دستورها.
+- یا بیلد روی سیستم خودتان و آپلود فقط `.output/` + `app.js`؛ نسخه Node مبدأ و سرور باید یکسان باشد.
+
+### VPS با systemd + nginx
+
+```ini
+# /etc/systemd/system/fitlytix.service
+[Unit]
+Description=FitLytix
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/fitlytix
+Environment=NODE_ENV=production
+Environment=PORT=3000
+EnvironmentFile=/var/www/fitlytix/.env
+ExecStart=/usr/bin/node .output/server/index.mjs
+Restart=always
+User=www-data
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```nginx
+location / {
+  proxy_pass http://127.0.0.1:3000;
+  proxy_http_version 1.1;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+### آپدیت‌ها و آموزش مجدد
+
+- آپدیت اپ: `git pull && npm ci && npm run build && touch tmp/restart.txt`.
+- آموزش مجدد: روی ماشین دارای پایتون `python ml/train.py` → commit/push کردن `model.json` →
+  روی سرور `git pull && npm run build` + Restart. مدل را روی سرور آموزش ندهید.
+
+### عیب‌یابی مخصوص مدل
+
+| نشانه                                                 | علت / راه‌حل                                                                  |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `Cannot find module .output/server/index.mjs`         | بیلد انجام نشده یا در پوشه اشتباه                                             |
+| `MODEL_FORMAT_UNSUPPORTED` یا ۵۰۰ در `/api/recommend` | `model.json` ناقص/قدیمی است؛ حجم و `git status` را چک کنید و دوباره بیلد کنید |
+| لاگ `[recommendation] model/runtime contract issues`  | مدل و کد از دو کامیت مختلف‌اند؛ همان کامیت را بیلد کنید                       |
+| ۴۰۳ `Blocked request`                                 | فقط مربوط به dev server و allowlist است؛ روی prod وجود ندارد                  |
+| اولین درخواست ۱–۲ ثانیه                               | parse یک‌بارهٔ مدل؛ بعد از آن ۲–۱۵ms                                          |
+| بیلد روی هاست کم‌حافظه                                | `NODE_OPTIONS=--max-old-space-size=2048 npm run build`                        |
 
 ## ۹) داده و حلقه بازخورد
 
