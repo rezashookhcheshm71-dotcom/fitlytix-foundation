@@ -9,15 +9,40 @@ let pool: Pool | null = null;
 const columnCache = new Map<string, Set<string>>();
 let existingTablesCache: Set<string> | null = null;
 
+/**
+ * Read an env var defensively.
+ *
+ * cPanel/Apache `SetEnv DB_USER  someone` (double space) or a stray newline in an `.env`
+ * file ends up inside the value; MySQL then rejects the login with a message such as
+ * `Access denied for user ' someone'@'localhost'`, which is very hard to spot. Trimming
+ * (and unwrapping harmless surrounding quotes) makes the app tolerant of that.
+ */
+function readEnvVar(...names: string[]): string | undefined {
+  for (const name of names) {
+    const raw = process.env[name];
+    if (raw === undefined) continue;
+    let value = raw.trim();
+    if (value.length >= 2) {
+      const first = value[0];
+      const last = value[value.length - 1];
+      if ((first === '"' || first === "'") && first === last) {
+        value = value.slice(1, -1).trim();
+      }
+    }
+    if (value) return value;
+  }
+  return undefined;
+}
+
 function resolveDbConfig() {
-  const host = process.env["DB_HOST"] ?? process.env["MYSQL_HOST"] ?? "127.0.0.1";
-  const port = Number(process.env["DB_PORT"] ?? process.env["MYSQL_PORT"] ?? "3306");
-  const database = process.env["DB_NAME"] ?? process.env["MYSQL_DATABASE"] ?? "eugtezmj_fitlytix";
-  const user = process.env["DB_USER"] ?? process.env["MYSQL_USER"] ?? "";
-  const password = process.env["DB_PASSWORD"] ?? process.env["MYSQL_PASSWORD"] ?? "";
+  const host = readEnvVar("DB_HOST", "MYSQL_HOST") ?? "127.0.0.1";
+  const port = Number(readEnvVar("DB_PORT", "MYSQL_PORT") ?? "3306");
+  const database = readEnvVar("DB_NAME", "MYSQL_DATABASE") ?? "eugtezmj_fitlytix";
+  const user = readEnvVar("DB_USER", "MYSQL_USER") ?? "";
+  const password = readEnvVar("DB_PASSWORD", "MYSQL_PASSWORD") ?? "";
   // Some cPanel hosts only expose the MySQL unix socket (TCP 3306 stays closed).
   // Setting DB_SOCKET=/var/lib/mysql/mysql.sock makes mysql2 connect over the socket.
-  const socketPath = process.env["DB_SOCKET"] ?? process.env["MYSQL_SOCKET"] ?? "";
+  const socketPath = readEnvVar("DB_SOCKET", "MYSQL_SOCKET") ?? "";
 
   return {
     host,

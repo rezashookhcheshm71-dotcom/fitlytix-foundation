@@ -27,14 +27,29 @@ export const Route = createFileRoute("/api/db-test")({
   server: {
     handlers: {
       GET: async () => {
+        // Booleans only — never values. The *_PADDED flags catch the classic cPanel typo
+        // `SetEnv DB_USER  someone` (double space), which MySQL reports as
+        // `Access denied for user ' someone'@'localhost'`.
+        const padded = (...names: string[]) =>
+          names.some((name) => {
+            const raw = process.env[name];
+            return raw !== undefined && raw !== raw.trim();
+          });
         const env = {
           DB_HOST: Boolean(process.env["DB_HOST"] ?? process.env["MYSQL_HOST"]),
           DB_PORT: Boolean(process.env["DB_PORT"] ?? process.env["MYSQL_PORT"]),
           DB_NAME: Boolean(process.env["DB_NAME"] ?? process.env["MYSQL_DATABASE"]),
           DB_USER: Boolean(process.env["DB_USER"] ?? process.env["MYSQL_USER"]),
           DB_PASSWORD: Boolean(process.env["DB_PASSWORD"] ?? process.env["MYSQL_PASSWORD"]),
+          DB_SOCKET: Boolean(process.env["DB_SOCKET"] ?? process.env["MYSQL_SOCKET"]),
           SESSION_SECRET: Boolean(process.env["SESSION_SECRET"]),
           NODE_ENV: process.env["NODE_ENV"] ?? null,
+          padded: {
+            DB_HOST: padded("DB_HOST", "MYSQL_HOST"),
+            DB_NAME: padded("DB_NAME", "MYSQL_DATABASE"),
+            DB_USER: padded("DB_USER", "MYSQL_USER"),
+            DB_PASSWORD: padded("DB_PASSWORD", "MYSQL_PASSWORD"),
+          },
         };
 
         try {
