@@ -196,7 +196,15 @@ async function main() {
     body: JSON.stringify({
       templateId: "common-foundation",
       answers: COMMON_ANSWERS,
-      bodyAnalysis: { weightKg: 82, heightCm: 180, bodyFatPct: 18 },
+      // measuredAt + source are required by bodyAnalysisInputSchema; omitting them made this
+      // call fail with HTTP 400 before the body row was ever written.
+      bodyAnalysis: {
+        measuredAt: new Date().toISOString().slice(0, 10),
+        source: "inbody",
+        weightKg: 82,
+        heightCm: 180,
+        bodyFatPct: 18,
+      },
       wearable: { intent: "no", providers: [] },
     }),
   });
