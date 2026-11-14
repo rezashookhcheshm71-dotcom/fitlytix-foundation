@@ -31,9 +31,17 @@ CREATE TABLE IF NOT EXISTS recommendation_snapshots (
   result_json LONGTEXT NOT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_snapshot_input (user_id, input_hash, model_version),
+  KEY idx_snapshot_user (user_id),
   KEY idx_snapshot_user_created (user_id, created_at),
-  KEY idx_snapshot_user_sport (user_id, sport, created_at),
-  CONSTRAINT fk_snapshot_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  KEY idx_snapshot_user_sport (user_id, sport, created_at)
+  -- No FOREIGN KEY on purpose: `users.id` is CHAR(36) on a fresh install but some
+  -- production databases were created with a different type/collation, which makes the
+  -- constraint fail with MySQL 3780 and blocks the whole migration. Referential
+  -- integrity is enforced in code (every row is written from an authenticated session).
+  -- If your `users` table matches exactly, you may add it afterwards:
+  --   ALTER TABLE recommendation_snapshots
+  --     ADD CONSTRAINT fk_snapshot_user FOREIGN KEY (user_id)
+  --     REFERENCES users(id) ON DELETE CASCADE;
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Latest plan per athlete without scanning history.
