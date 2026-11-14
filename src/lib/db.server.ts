@@ -1,4 +1,9 @@
-import mysql, { type Pool, type PoolConnection, type ResultSetHeader, type RowDataPacket } from "mysql2/promise";
+import mysql, {
+  type Pool,
+  type PoolConnection,
+  type ResultSetHeader,
+  type RowDataPacket,
+} from "mysql2/promise";
 
 let pool: Pool | null = null;
 const columnCache = new Map<string, Set<string>>();
@@ -10,6 +15,9 @@ function resolveDbConfig() {
   const database = process.env["DB_NAME"] ?? process.env["MYSQL_DATABASE"] ?? "eugtezmj_fitlytix";
   const user = process.env["DB_USER"] ?? process.env["MYSQL_USER"] ?? "";
   const password = process.env["DB_PASSWORD"] ?? process.env["MYSQL_PASSWORD"] ?? "";
+  // Some cPanel hosts only expose the MySQL unix socket (TCP 3306 stays closed).
+  // Setting DB_SOCKET=/var/lib/mysql/mysql.sock makes mysql2 connect over the socket.
+  const socketPath = process.env["DB_SOCKET"] ?? process.env["MYSQL_SOCKET"] ?? "";
 
   return {
     host,
@@ -17,6 +25,7 @@ function resolveDbConfig() {
     database,
     user,
     password,
+    socketPath,
   };
 }
 
@@ -34,8 +43,7 @@ export function getDbPool(): Pool {
   }
 
   pool = mysql.createPool({
-    host: cfg.host,
-    port: cfg.port,
+    ...(cfg.socketPath ? { socketPath: cfg.socketPath } : { host: cfg.host, port: cfg.port }),
     database: cfg.database,
     user: cfg.user,
     password: cfg.password,
@@ -104,7 +112,10 @@ export async function tableExists(tableName: string, conn?: PoolConnection): Pro
   return false;
 }
 
-export async function getTableColumns(tableName: string, conn?: PoolConnection): Promise<Set<string>> {
+export async function getTableColumns(
+  tableName: string,
+  conn?: PoolConnection,
+): Promise<Set<string>> {
   const normalized = tableName.toLowerCase();
   const cached = columnCache.get(normalized);
   if (cached) return cached;

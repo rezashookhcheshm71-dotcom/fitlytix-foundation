@@ -372,6 +372,32 @@ curl -s --cookie "…" https://app.fitlytix.ir/api/plan-diagnose | python3 -m js
 قابل‌استفاده (`answersCount`)، جلسات و لاگ تغذیهٔ ۲۸ روز، snapshot ذخیره‌شده و یک
 **dry-run** از تصمیم مدل (`dryRun`، بدون ذخیره) به‌همراه `hints` برای هر چیز غایب.
 
+### عیب‌یابی اتصال دیتابیس (cPanel)
+
+`GET /api/db-test` همیشه باید `{"ok":true,...}` برگرداند. اگر نداد:
+
+1. **کد خطا را بگیرید** (نسخهٔ جدید این endpoint کد mysql2 و وضعیت متغیرها را برمی‌گرداند):
+   ```json
+   {"ok":false,"code":"ECONNREFUSED","env":{"DB_HOST":true,"DB_USER":true,...}}
+   ```
+2. `ECONNREFUSED` → معمولاً TCP روی 3306 بسته است. دو راه:
+   - `SetEnv DB_HOST localhost` و Restart
+   - اتصال از طریق سوکت: مسیر را با `mysql -e "SHOW VARIABLES LIKE 'socket';"` پیدا کنید
+     و `SetEnv DB_SOCKET /var/lib/mysql/mysql.sock` اضافه کنید (پشتیبانی `DB_SOCKET` در
+     `src/lib/db.server.ts` هست)
+3. `ER_ACCESS_DENIED_ERROR` → کاربر/رمز در cPanel → MySQL Databases؛ سپس همان مقدار در
+   `.htaccess` یا Environment variables.
+4. `DB_NOT_CONFIGURED` → متغیرها به اپ نرسیده‌اند: بلوک `SetEnv` نباید داخل
+   `<IfModule Litespeed>` قفل شده باشد، و بعد از تغییر `touch tmp/restart.txt`.
+
+تست مستقیم از شل (بدون وب‌سرور):
+
+```sh
+DB_HOST=localhost DB_NAME=DB DB_USER=USER DB_PASSWORD='…' SESSION_SECRET=x PORT=3999 \
+  node .output/server/index.mjs > /tmp/fit.log 2>&1 &
+sleep 3; curl -s http://127.0.0.1:3999/api/db-test; echo; kill %1
+```
+
 ### عیب‌یابی مخصوص مدل
 
 | نشانه                                                 | علت / راه‌حل                                                                  |
