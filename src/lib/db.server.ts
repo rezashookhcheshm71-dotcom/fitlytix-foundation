@@ -74,9 +74,7 @@ export function getDbPool(): Pool {
   // Each Node process therefore keeps a very small pool and releases idle sockets quickly.
   const configuredLimit = Number(process.env["DB_POOL_SIZE"] ?? "");
   const connectionLimit =
-    Number.isFinite(configuredLimit) && configuredLimit >= 1
-      ? Math.min(configuredLimit, 20)
-      : 3;
+    Number.isFinite(configuredLimit) && configuredLimit >= 1 ? Math.min(configuredLimit, 20) : 3;
 
   pool = mysql.createPool({
     ...(cfg.socketPath ? { socketPath: cfg.socketPath } : { host: cfg.host, port: cfg.port }),
