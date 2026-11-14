@@ -69,13 +69,25 @@ export function getDbPool(): Pool {
     throw new Error("DB_NOT_CONFIGURED");
   }
 
+  // Shared cPanel hosting allows only a handful of concurrent MySQL connections in total
+  // (observed: 63 threads already in use, and "Too many connections" on registration).
+  // Each Node process therefore keeps a very small pool and releases idle sockets quickly.
+  const configuredLimit = Number(process.env["DB_POOL_SIZE"] ?? "");
+  const connectionLimit =
+    Number.isFinite(configuredLimit) && configuredLimit >= 1
+      ? Math.min(configuredLimit, 20)
+      : 3;
+
   pool = mysql.createPool({
     ...(cfg.socketPath ? { socketPath: cfg.socketPath } : { host: cfg.host, port: cfg.port }),
     database: cfg.database,
     user: cfg.user,
     password: cfg.password,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit,
+    maxIdle: 2,
+    idleTimeout: 30_000,
+    enableKeepAlive: true,
     queueLimit: 0,
     charset: "utf8mb4",
     timezone: "Z",

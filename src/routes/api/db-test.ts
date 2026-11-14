@@ -21,6 +21,10 @@ const HINTS: Record<string, string> = {
   ER_BAD_DB_ERROR: "دیتابیس با این نام وجود ندارد (DB_NAME).",
   ER_NOT_SUPPORTED_AUTH_MODE: "روش احراز هویت MySQL پشتیبانی نمی‌شود.",
   PROTOCOL_CONNECTION_LOST: "اتصال MySQL قطع شد؛ معمولاً محدودیت همزمانی هاست.",
+  ER_CON_COUNT_ERROR:
+    "سقف اتصال‌های همزمان MySQL پر شده است. نمونه‌های اضافی Node را ببندید و DB_POOL_SIZE (پیش‌فرض ۳) را کم نگه دارید.",
+  ER_TOO_MANY_USER_CONNECTIONS:
+    "این کاربر MySQL به سقف اتصال مجاز رسیده است؛ اتصال‌های باز را ببندید یا DB_POOL_SIZE را کاهش دهید.",
 };
 
 export const Route = createFileRoute("/api/db-test")({
