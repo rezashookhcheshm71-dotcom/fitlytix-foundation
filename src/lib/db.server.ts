@@ -21,7 +21,9 @@ function readEnvVar(...names: string[]): string | undefined {
   for (const name of names) {
     const raw = process.env[name];
     if (raw === undefined) continue;
-    let value = raw.trim();
+    // Strip whitespace (JS \s already covers NBSP and BOM) plus zero-width characters,
+    // which survive copy/paste from chat and docs and are invisible in an editor.
+    let value = raw.replace(/^[\s\u200b-\u200d]+|[\s\u200b-\u200d]+$/g, "");
     if (value.length >= 2) {
       const first = value[0];
       const last = value[value.length - 1];
