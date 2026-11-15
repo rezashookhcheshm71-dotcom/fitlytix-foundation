@@ -28,6 +28,7 @@ import {
   isValidExperienceLevel,
   isValidSportSlug,
 } from "@/server/athlete.repository";
+import { readCheckinAggregate } from "@/server/logging.repository";
 
 export interface AssembledRecommendationRequest {
   request: RecommendationRequest;
@@ -303,6 +304,20 @@ export async function assembleRecommendationRequest(
   const nutritionAdherence = await readNutritionAdherence(user.id);
   const daysSinceSignup = await readDaysSinceSignup(user.id);
 
+  // Daily check-ins are fresher than the assessment: a month-old "I sleep 7.5h" answer should
+  // not outweigh two weeks of real entries. Two or more check-ins are required before they
+  // replace the assessment, so a single bad night cannot rewrite the whole plan.
+  const checkins = await readCheckinAggregate(user.id, 14);
+  if (checkins.count >= 2) {
+    if (checkins.avgSleepHours !== undefined) {
+      answers["common.recovery.sleep_hours"] = Math.round(checkins.avgSleepHours * 10) / 10;
+    }
+    if (checkins.avgStress !== undefined) {
+      answers["common.recovery.stress"] = Math.max(1, Math.min(5, Math.round(checkins.avgStress)));
+    }
+    sourcesFa.push(`چک-این روزانه (${checkins.count} روز)`);
+  }
+
   const behavior: RecommendationBehaviorInput = {
     windowDays: WINDOW_DAYS,
     ...(sessions
@@ -316,6 +331,9 @@ export async function assembleRecommendationRequest(
     ...(sessions?.previousAvgRpe !== undefined ? { previousAvgRpe: sessions.previousAvgRpe } : {}),
     ...(nutritionAdherence !== undefined ? { nutritionAdherence } : {}),
     ...(daysSinceSignup !== undefined ? { daysSinceSignup } : {}),
+    ...(checkins.count >= 2 && checkins.avgReadiness !== undefined
+      ? { readinessAvg: Math.round(checkins.avgReadiness) }
+      : {}),
     wearableConnected,
   };
 
@@ -323,6 +341,7 @@ export async function assembleRecommendationRequest(
   else missingFa.push("سابقه جلسات تمرین");
   if (nutritionAdherence !== undefined) sourcesFa.push("پایبندی تغذیه");
   else missingFa.push("لاگ تغذیه");
+  if (checkins.count < 2) missingFa.push("چک-این روزانه (خواب/آمادگی)");
   if (!body?.bodyFatPct) missingFa.push("درصد چربی بدن");
 
   const subscription = await readActiveSubscription(user.id);

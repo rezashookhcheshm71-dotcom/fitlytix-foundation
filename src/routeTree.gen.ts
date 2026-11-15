@@ -17,8 +17,10 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as RecommendationRouteImport } from './routes/recommendation'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ApiAssessmentRouteImport } from './routes/api/assessment'
+import { Route as ApiDatasetExportRouteImport } from './routes/api/dataset-export'
 import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiLogsRouteImport } from './routes/api/logs'
 import { Route as ApiPlanRouteImport } from './routes/api/plan'
 import { Route as ApiPlanDiagnoseRouteImport } from './routes/api/plan-diagnose'
 import { Route as ApiRecommendRouteImport } from './routes/api/recommend'
@@ -88,6 +90,11 @@ const ApiAssessmentRoute = ApiAssessmentRouteImport.update({
   path: '/api/assessment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDatasetExportRoute = ApiDatasetExportRouteImport.update({
+  id: '/api/dataset-export',
+  path: '/api/dataset-export',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDbTestRoute = ApiDbTestRouteImport.update({
   id: '/api/db-test',
   path: '/api/db-test',
@@ -96,6 +103,11 @@ const ApiDbTestRoute = ApiDbTestRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLogsRoute = ApiLogsRouteImport.update({
+  id: '/api/logs',
+  path: '/api/logs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPlanRoute = ApiPlanRouteImport.update({
@@ -248,8 +260,10 @@ export interface FileRoutesByFullPath {
   '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
+  '/api/dataset-export': typeof ApiDatasetExportRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/logs': typeof ApiLogsRoute
   '/api/plan': typeof ApiPlanRoute
   '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
@@ -288,8 +302,10 @@ export interface FileRoutesByTo {
   '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
+  '/api/dataset-export': typeof ApiDatasetExportRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/logs': typeof ApiLogsRoute
   '/api/plan': typeof ApiPlanRoute
   '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
@@ -329,8 +345,10 @@ export interface FileRoutesById {
   '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
+  '/api/dataset-export': typeof ApiDatasetExportRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
+  '/api/logs': typeof ApiLogsRoute
   '/api/plan': typeof ApiPlanRoute
   '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
@@ -371,8 +389,10 @@ export interface FileRouteTypes {
     | '/recommendation'
     | '/register'
     | '/api/assessment'
+    | '/api/dataset-export'
     | '/api/db-test'
     | '/api/health'
+    | '/api/logs'
     | '/api/plan'
     | '/api/plan-diagnose'
     | '/api/recommend'
@@ -411,8 +431,10 @@ export interface FileRouteTypes {
     | '/recommendation'
     | '/register'
     | '/api/assessment'
+    | '/api/dataset-export'
     | '/api/db-test'
     | '/api/health'
+    | '/api/logs'
     | '/api/plan'
     | '/api/plan-diagnose'
     | '/api/recommend'
@@ -451,8 +473,10 @@ export interface FileRouteTypes {
     | '/recommendation'
     | '/register'
     | '/api/assessment'
+    | '/api/dataset-export'
     | '/api/db-test'
     | '/api/health'
+    | '/api/logs'
     | '/api/plan'
     | '/api/plan-diagnose'
     | '/api/recommend'
@@ -492,8 +516,10 @@ export interface RootRouteChildren {
   RecommendationRoute: typeof RecommendationRoute
   RegisterRoute: typeof RegisterRoute
   ApiAssessmentRoute: typeof ApiAssessmentRoute
+  ApiDatasetExportRoute: typeof ApiDatasetExportRoute
   ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  ApiLogsRoute: typeof ApiLogsRoute
   ApiPlanRoute: typeof ApiPlanRoute
   ApiPlanDiagnoseRoute: typeof ApiPlanDiagnoseRoute
   ApiRecommendRoute: typeof ApiRecommendRoute
@@ -582,6 +608,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssessmentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/dataset-export': {
+      id: '/api/dataset-export'
+      path: '/api/dataset-export'
+      fullPath: '/api/dataset-export'
+      preLoaderRoute: typeof ApiDatasetExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/db-test': {
       id: '/api/db-test'
       path: '/api/db-test'
@@ -594,6 +627,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/logs': {
+      id: '/api/logs'
+      path: '/api/logs'
+      fullPath: '/api/logs'
+      preLoaderRoute: typeof ApiLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/plan': {
@@ -804,8 +844,10 @@ const rootRouteChildren: RootRouteChildren = {
   RecommendationRoute: RecommendationRoute,
   RegisterRoute: RegisterRoute,
   ApiAssessmentRoute: ApiAssessmentRoute,
+  ApiDatasetExportRoute: ApiDatasetExportRoute,
   ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
+  ApiLogsRoute: ApiLogsRoute,
   ApiPlanRoute: ApiPlanRoute,
   ApiPlanDiagnoseRoute: ApiPlanDiagnoseRoute,
   ApiRecommendRoute: ApiRecommendRoute,

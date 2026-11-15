@@ -4,7 +4,7 @@
  *   GET /api/plan-diagnose     (requires a signed-in athlete)
  *
  * Answers the questions that are otherwise buried in logs:
- *   - is the database reachable and are migrations 001–005 applied?
+ *   - is the database reachable and are migrations 001–006 applied?
  *   - did this athlete's assessment answers actually land in the tables the model reads?
  *   - which signals are still missing (so a plan is thin)?
  *   - what would the model decide right now, and is a snapshot stored?
@@ -37,6 +37,7 @@ const REQUIRED_TABLES = [
   "recommendation_outcomes",
   "model_registry",
   "recommendation_snapshots",
+  "athlete_checkins",
 ] as const;
 
 async function countRows(sql: string, params: unknown[]): Promise<number | null> {
@@ -141,6 +142,7 @@ export const Route = createFileRoute("/api/plan-diagnose")({
                 "004_recommendation_snapshots": tables["recommendation_snapshots"] === true,
                 "005_recommendation_snapshots_seq":
                   tables["recommendation_snapshots"] === true && snapshotColumns.has("seq"),
+                "006_data_loop_checkins_outcomes": tables["athlete_checkins"] === true,
               },
             },
             athlete: {

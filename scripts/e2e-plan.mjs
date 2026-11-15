@@ -285,6 +285,58 @@ async function main() {
     `durationMonths=${override.body?.plan?.durationMonths}`,
   );
 
+  // ---- data loop: the athlete logs reality, the outcome label follows -----------------
+  const sessionLog = await call("/api/logs", {
+    method: "POST",
+    body: JSON.stringify({
+      kind: "session",
+      payload: { title: "جلسهٔ تست e2e", minutes: 62, rpe: 7.5, completed: true },
+    }),
+  });
+  record(
+    sessionLog.status === 201 && sessionLog.body?.ok === true,
+    "POST /api/logs (ثبت جلسه)",
+    `HTTP ${sessionLog.status}`,
+  );
+
+  const checkinLog = await call("/api/logs", {
+    method: "POST",
+    body: JSON.stringify({
+      kind: "checkin",
+      payload: { sleepHours: 7.2, stress: 2, readiness: 72, weightKg: 82 },
+    }),
+  });
+  record(
+    checkinLog.status === 201 && checkinLog.body?.ok === true,
+    "POST /api/logs (چک‌این روزانه)",
+    `HTTP ${checkinLog.status}`,
+  );
+
+  const nutritionLog = await call("/api/logs", {
+    method: "POST",
+    body: JSON.stringify({
+      kind: "nutrition",
+      payload: { description: "برنج و مرغ و سالاد", calories: 720, proteinG: 48 },
+    }),
+  });
+  record(
+    nutritionLog.status === 201 && nutritionLog.body?.ok === true,
+    "POST /api/logs (ثبت وعده)",
+    `HTTP ${nutritionLog.status}`,
+  );
+
+  const logsRead = await call("/api/logs?days=14");
+  const logsOk =
+    logsRead.status === 200 &&
+    logsRead.body?.ok === true &&
+    Array.isArray(logsRead.body.sessions) &&
+    logsRead.body.sessions.length > 0;
+  record(
+    logsOk,
+    "GET /api/logs (داده‌های ثبت‌شده خوانده شد)",
+    `sessions=${logsRead.body?.sessions?.length ?? 0} meals=${logsRead.body?.nutrition?.length ?? 0} checkins=${logsRead.body?.checkins?.length ?? 0}`,
+  );
+
   const diagnose = await call("/api/plan-diagnose");
   if (diagnose.status === 200 && diagnose.body?.ok) {
     const db = diagnose.body.database ?? {};

@@ -134,6 +134,7 @@ touch ~/public_html/fitlytix-app/tmp/restart.txt
 | 003 recommendation engine    | ✅               | —                                                                                |
 | 004 recommendation snapshots | ✅               | بدون FK (خطای `#3780`)                                                           |
 | **005 snapshot seq**         | ⬜ اگر اجرا نشده | مرتب‌سازی قطعی اسنپشات‌ها                                                        |
+| **006 data loop**            | ⬜ اگر اجرا نشده | `athlete_checkins` + ستون‌های برچسب نتیجه در `recommendation_outcomes`           |
 
 ### چرا ۰۰۵ مهم است (نکتهٔ ورزشی/محصولی)
 
@@ -153,6 +154,18 @@ CREATE OR REPLACE VIEW v_latest_recommendation AS SELECT s.* FROM recommendation
 ```
 
 > خطای `Duplicate column name 'seq'` = قبلاً اجرا شده؛ رد شوید.
+
+### مهاجرت ۰۰۶ — حلقهٔ داده (توضیح کامل در `docs/DATA_LOOP_FA.md`)
+
+```sql
+CREATE TABLE IF NOT EXISTS athlete_checkins (id CHAR(36) NOT NULL PRIMARY KEY, athlete_user_id CHAR(36) NOT NULL, checkin_date DATE NOT NULL, sleep_hours DECIMAL(4,2) NULL, sleep_quality TINYINT UNSIGNED NULL, stress TINYINT UNSIGNED NULL, readiness TINYINT UNSIGNED NULL, weight_kg DECIMAL(5,2) NULL, resting_hr SMALLINT UNSIGNED NULL, notes VARCHAR(500) NULL, source VARCHAR(24) NOT NULL DEFAULT 'manual', data_origin VARCHAR(20) NOT NULL DEFAULT 'live', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uq_checkin_user_date (athlete_user_id, checkin_date)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+```sql
+ALTER TABLE recommendation_outcomes ADD COLUMN snapshot_id CHAR(36) NULL, ADD COLUMN window_days SMALLINT UNSIGNED NULL, ADD COLUMN nutrition_adherence DECIMAL(4,3) NULL, ADD COLUMN avg_rpe DECIMAL(4,1) NULL, ADD COLUMN label_source VARCHAR(24) NOT NULL DEFAULT 'auto', ADD UNIQUE KEY uq_outcome_snapshot (snapshot_id);
+```
+
+> خطای `Duplicate column name` = قبلاً اجرا شده.
 
 ---
 

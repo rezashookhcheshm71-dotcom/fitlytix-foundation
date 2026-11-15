@@ -85,7 +85,12 @@ def _weighted_choice(rng: np.random.Generator, n: int, weights: Dict[str, float]
     return rng.choice(np.array(keys, dtype=object), size=n, p=p)
 
 
-def _simulate_sport(rng: np.random.Generator, sport: str, n: int) -> Tuple[pd.DataFrame, Dict[str, np.ndarray], pd.DataFrame]:
+def _simulate_sport(
+    rng: np.random.Generator,
+    sport: str,
+    n: int,
+    calibration: Dict[str, float] | None = None,
+) -> Tuple[pd.DataFrame, Dict[str, np.ndarray], pd.DataFrame]:
     """Simulate n athletes of one sport and label every candidate plan."""
     # ---- demographics ------------------------------------------------------
     male = rng.random(n) < 0.63
@@ -284,6 +289,14 @@ def _simulate_sport(rng: np.random.Generator, sport: str, n: int) -> Tuple[pd.Da
     best = utility.argmax(axis=1)
     chosen_archetype = [archetypes[i] for i in best]
     chosen_adherence = adherence[np.arange(n), best]
+
+    # Real logged outcomes can shift where adherence actually lands. Instead of inventing a
+    # new objective we keep the same coaching policy and move the simulated adherence
+    # distribution so its mean matches what athletes really did (prior matching).
+    if calibration and calibration.get("target_mean_adherence") is not None:
+        target = float(calibration["target_mean_adherence"])
+        current = float(np.mean(chosen_adherence)) if chosen_adherence.size else target
+        chosen_adherence = np.clip(chosen_adherence + (target - current), 0.02, 0.99)
     chosen_progress = progress[np.arange(n), best]
     chosen_overload = overload[np.arange(n), best]
     chosen_injury = injury_risk[np.arange(n), best]
@@ -438,7 +451,11 @@ def _simulate_sport(rng: np.random.Generator, sport: str, n: int) -> Tuple[pd.Da
     return X, labels, diagnostics
 
 
-def simulate_cohort(n: int = 48000, seed: int = 42) -> Cohort:
+def simulate_cohort(
+    n: int = 48000,
+    seed: int = 42,
+    calibration: Dict[str, float] | None = None,
+) -> Cohort:
     schema.validate_schema()
     rng = np.random.default_rng(seed)
     parts = {s: max(1, int(round(n * p))) for s, p in SPORT_PRIORS.items()}
@@ -446,7 +463,7 @@ def simulate_cohort(n: int = 48000, seed: int = 42) -> Cohort:
 
     Xs, label_parts, diag_parts = [], {k: [] for k in ("program", "nutrition", "duration", "sessions", "adherence", "coaching")}, []
     for sport, count in parts.items():
-        X, labels, diag = _simulate_sport(rng, sport, count)
+        X, labels, diag = _simulate_sport(rng, sport, count, calibration=calibration)
         Xs.append(X)
         diag_parts.append(diag)
         for key, values in labels.items():

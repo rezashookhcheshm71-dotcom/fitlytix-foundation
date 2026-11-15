@@ -129,3 +129,22 @@ python ml/train.py --rows 120000 --seed 7 --test-size 0.2
 - خروجی تغذیه فقط «ساختار و بازه» است، نه کالری‌شماری یا رژیم درمانی.
 - در شرایط درد محدودکننده، بارداری، بیماری مزمن یا ورزشکار زیر ۱۶ سال، مسیر
   بازبینی انسانی (`safety.level = review_required`) باید فعال بماند.
+
+## Retraining with real data (phase 6)
+
+```sh
+# 1) export what the product actually produced (needs a running server + DATASET_EXPORT_TOKEN)
+DATASET_BASE_URL=http://127.0.0.1:3999 DATASET_EXPORT_TOKEN=… node scripts/export-dataset.mjs
+
+# 2) retrain — refuses to run until there are enough labelled outcomes (default 200)
+node scripts/retrain.mjs --dataset data/datasets/dataset-….jsonl
+```
+
+`scripts/retrain.mjs` derives `calibration.json` from the labelled rows (mean real adherence,
+overall and per sport) and passes it to `ml/train.py --calibration`. The simulator keeps its
+coaching objective but shifts its adherence distribution so its mean matches reality, and the
+model version records `trainingData: "simulated+real-priors"`.
+
+Why not train directly on outcomes yet: a few hundred rows with noisy labels would teach the
+model noise. Once the labelled volume is in the thousands, switch to supervised training on
+`recommendation_outcomes` and label the artefact `trainingData: "logged"`.

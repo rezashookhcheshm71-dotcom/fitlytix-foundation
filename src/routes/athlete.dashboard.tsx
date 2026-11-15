@@ -26,6 +26,7 @@ import { bodyAnalysisService } from "@/services/body-analysis/service";
 import { demoAthlete, demoRecovery, demoRecoveryHistory } from "@/mock/athlete";
 import { CoachCards, JourneyBar, PackageNotice, ReadinessCard } from "@/components/domain/coaching";
 import { PlanSummaryCard } from "@/components/domain/plan-summary";
+import { DataEntryCard } from "@/components/domain/data-entry-card";
 import { HealthDataPanel } from "@/components/domain/health-data";
 import { decisionEngine } from "@/services/decision-engine/service";
 import { goalsService } from "@/services/goals/service";
@@ -155,6 +156,18 @@ function AthleteDashboard() {
       <CoachCards recs={recs} />
 
       <PlanSummaryCard className="mb-6" />
+
+      <DataEntryCard
+        className="mb-6"
+        onSaved={() => {
+          void fetch("/api/plan", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ force: true }),
+          }).then(() => window.location.reload());
+        }}
+      />
 
       {goal && (
         <Panel className="mb-6">

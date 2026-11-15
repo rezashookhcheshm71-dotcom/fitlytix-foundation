@@ -171,13 +171,24 @@ def main() -> None:
     parser.add_argument("--rows", type=int, default=48000, help="synthetic cohort size")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--test-size", type=float, default=0.2)
+    parser.add_argument(
+        "--calibration",
+        default=None,
+        help="JSON file with real-data priors (see scripts/retrain.mjs) — keeps the same "
+        "objective but moves the simulated adherence distribution to match logged outcomes",
+    )
     parser.add_argument("--out", default=MODEL_DIR)
     parser.add_argument("--parity-cases", type=int, default=200)
     args = parser.parse_args()
 
     schema.validate_schema()
     print(f"[1/5] Simulating {args.rows:,} athletes (seed={args.seed})…")
-    cohort = simulate_cohort(args.rows, args.seed)
+    calibration = None
+    if args.calibration:
+        with open(args.calibration, encoding="utf-8") as fh:
+            calibration = json.load(fh)
+        print(f"      calibration: {json.dumps(calibration, ensure_ascii=False)}")
+    cohort = simulate_cohort(args.rows, args.seed, calibration=calibration)
     X, diag = cohort.X, cohort.diagnostics
 
     # Stratify on sport × program so every archetype is represented in the test set.
@@ -289,7 +300,8 @@ def main() -> None:
         "schemaVersion": schema.MODEL_SCHEMA_VERSION,
         "modelVersion": f"{dt.datetime.now(dt.timezone.utc):%Y.%m.%d}-{_git_sha()}",
         "trainedAt": trained_at,
-        "trainingData": "simulated",  # switch to "logged" once trained on recommendation_outcomes
+        "trainingData": "simulated+real-priors" if calibration else "simulated",
+        "calibration": calibration,
         "seed": args.seed,
         "rows": int(len(X)),
         "sports": schema.SPORTS,
