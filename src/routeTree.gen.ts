@@ -17,6 +17,7 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as RecommendationRouteImport } from './routes/recommendation'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ApiAssessmentRouteImport } from './routes/api/assessment'
+import { Route as ApiCoachInsightsRouteImport } from './routes/api/coach-insights'
 import { Route as ApiDatasetExportRouteImport } from './routes/api/dataset-export'
 import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -39,7 +40,9 @@ import { Route as CoachIndexRouteImport } from './routes/coach.index'
 import { Route as CoachAssistantRouteImport } from './routes/coach.assistant'
 import { Route as CoachAthletesRouteImport } from './routes/coach.athletes'
 import { Route as CoachAttentionRouteImport } from './routes/coach.attention'
+import { Route as CoachDataQualityRouteImport } from './routes/coach.data-quality'
 import { Route as CoachExercisesRouteImport } from './routes/coach.exercises'
+import { Route as CoachInsightsRouteImport } from './routes/coach.insights'
 import { Route as CoachNutritionRouteImport } from './routes/coach.nutrition'
 import { Route as CoachPerformanceRouteImport } from './routes/coach.performance'
 import { Route as CoachProfileRouteImport } from './routes/coach.profile'
@@ -88,6 +91,11 @@ const RegisterRoute = RegisterRouteImport.update({
 const ApiAssessmentRoute = ApiAssessmentRouteImport.update({
   id: '/api/assessment',
   path: '/api/assessment',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCoachInsightsRoute = ApiCoachInsightsRouteImport.update({
+  id: '/api/coach-insights',
+  path: '/api/coach-insights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDatasetExportRoute = ApiDatasetExportRouteImport.update({
@@ -200,9 +208,19 @@ const CoachAttentionRoute = CoachAttentionRouteImport.update({
   path: '/coach/attention',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoachDataQualityRoute = CoachDataQualityRouteImport.update({
+  id: '/coach/data-quality',
+  path: '/coach/data-quality',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoachExercisesRoute = CoachExercisesRouteImport.update({
   id: '/coach/exercises',
   path: '/coach/exercises',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachInsightsRoute = CoachInsightsRouteImport.update({
+  id: '/coach/insights',
+  path: '/coach/insights',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoachNutritionRoute = CoachNutritionRouteImport.update({
@@ -260,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
+  '/api/coach-insights': typeof ApiCoachInsightsRoute
   '/api/dataset-export': typeof ApiDatasetExportRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
@@ -281,7 +300,9 @@ export interface FileRoutesByFullPath {
   '/coach/assistant': typeof CoachAssistantRoute
   '/coach/athletes': typeof CoachAthletesRoute
   '/coach/attention': typeof CoachAttentionRoute
+  '/coach/data-quality': typeof CoachDataQualityRoute
   '/coach/exercises': typeof CoachExercisesRoute
+  '/coach/insights': typeof CoachInsightsRoute
   '/coach/nutrition': typeof CoachNutritionRoute
   '/coach/performance': typeof CoachPerformanceRoute
   '/coach/profile': typeof CoachProfileRoute
@@ -302,6 +323,7 @@ export interface FileRoutesByTo {
   '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
+  '/api/coach-insights': typeof ApiCoachInsightsRoute
   '/api/dataset-export': typeof ApiDatasetExportRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
@@ -323,7 +345,9 @@ export interface FileRoutesByTo {
   '/coach/assistant': typeof CoachAssistantRoute
   '/coach/athletes': typeof CoachAthletesRoute
   '/coach/attention': typeof CoachAttentionRoute
+  '/coach/data-quality': typeof CoachDataQualityRoute
   '/coach/exercises': typeof CoachExercisesRoute
+  '/coach/insights': typeof CoachInsightsRoute
   '/coach/nutrition': typeof CoachNutritionRoute
   '/coach/performance': typeof CoachPerformanceRoute
   '/coach/profile': typeof CoachProfileRoute
@@ -345,6 +369,7 @@ export interface FileRoutesById {
   '/recommendation': typeof RecommendationRoute
   '/register': typeof RegisterRoute
   '/api/assessment': typeof ApiAssessmentRoute
+  '/api/coach-insights': typeof ApiCoachInsightsRoute
   '/api/dataset-export': typeof ApiDatasetExportRoute
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
@@ -366,7 +391,9 @@ export interface FileRoutesById {
   '/coach/assistant': typeof CoachAssistantRoute
   '/coach/athletes': typeof CoachAthletesRoute
   '/coach/attention': typeof CoachAttentionRoute
+  '/coach/data-quality': typeof CoachDataQualityRoute
   '/coach/exercises': typeof CoachExercisesRoute
+  '/coach/insights': typeof CoachInsightsRoute
   '/coach/nutrition': typeof CoachNutritionRoute
   '/coach/performance': typeof CoachPerformanceRoute
   '/coach/profile': typeof CoachProfileRoute
@@ -389,6 +416,7 @@ export interface FileRouteTypes {
     | '/recommendation'
     | '/register'
     | '/api/assessment'
+    | '/api/coach-insights'
     | '/api/dataset-export'
     | '/api/db-test'
     | '/api/health'
@@ -410,7 +438,9 @@ export interface FileRouteTypes {
     | '/coach/assistant'
     | '/coach/athletes'
     | '/coach/attention'
+    | '/coach/data-quality'
     | '/coach/exercises'
+    | '/coach/insights'
     | '/coach/nutrition'
     | '/coach/performance'
     | '/coach/profile'
@@ -431,6 +461,7 @@ export interface FileRouteTypes {
     | '/recommendation'
     | '/register'
     | '/api/assessment'
+    | '/api/coach-insights'
     | '/api/dataset-export'
     | '/api/db-test'
     | '/api/health'
@@ -452,7 +483,9 @@ export interface FileRouteTypes {
     | '/coach/assistant'
     | '/coach/athletes'
     | '/coach/attention'
+    | '/coach/data-quality'
     | '/coach/exercises'
+    | '/coach/insights'
     | '/coach/nutrition'
     | '/coach/performance'
     | '/coach/profile'
@@ -473,6 +506,7 @@ export interface FileRouteTypes {
     | '/recommendation'
     | '/register'
     | '/api/assessment'
+    | '/api/coach-insights'
     | '/api/dataset-export'
     | '/api/db-test'
     | '/api/health'
@@ -494,7 +528,9 @@ export interface FileRouteTypes {
     | '/coach/assistant'
     | '/coach/athletes'
     | '/coach/attention'
+    | '/coach/data-quality'
     | '/coach/exercises'
+    | '/coach/insights'
     | '/coach/nutrition'
     | '/coach/performance'
     | '/coach/profile'
@@ -516,6 +552,7 @@ export interface RootRouteChildren {
   RecommendationRoute: typeof RecommendationRoute
   RegisterRoute: typeof RegisterRoute
   ApiAssessmentRoute: typeof ApiAssessmentRoute
+  ApiCoachInsightsRoute: typeof ApiCoachInsightsRoute
   ApiDatasetExportRoute: typeof ApiDatasetExportRoute
   ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
@@ -537,7 +574,9 @@ export interface RootRouteChildren {
   CoachAssistantRoute: typeof CoachAssistantRoute
   CoachAthletesRoute: typeof CoachAthletesRoute
   CoachAttentionRoute: typeof CoachAttentionRoute
+  CoachDataQualityRoute: typeof CoachDataQualityRoute
   CoachExercisesRoute: typeof CoachExercisesRoute
+  CoachInsightsRoute: typeof CoachInsightsRoute
   CoachNutritionRoute: typeof CoachNutritionRoute
   CoachPerformanceRoute: typeof CoachPerformanceRoute
   CoachProfileRoute: typeof CoachProfileRoute
@@ -606,6 +645,13 @@ declare module '@tanstack/react-router' {
       path: '/api/assessment'
       fullPath: '/api/assessment'
       preLoaderRoute: typeof ApiAssessmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/coach-insights': {
+      id: '/api/coach-insights'
+      path: '/api/coach-insights'
+      fullPath: '/api/coach-insights'
+      preLoaderRoute: typeof ApiCoachInsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/dataset-export': {
@@ -762,11 +808,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoachAttentionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/coach/data-quality': {
+      id: '/coach/data-quality'
+      path: '/coach/data-quality'
+      fullPath: '/coach/data-quality'
+      preLoaderRoute: typeof CoachDataQualityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/coach/exercises': {
       id: '/coach/exercises'
       path: '/coach/exercises'
       fullPath: '/coach/exercises'
       preLoaderRoute: typeof CoachExercisesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach/insights': {
+      id: '/coach/insights'
+      path: '/coach/insights'
+      fullPath: '/coach/insights'
+      preLoaderRoute: typeof CoachInsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/coach/nutrition': {
@@ -844,6 +904,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecommendationRoute: RecommendationRoute,
   RegisterRoute: RegisterRoute,
   ApiAssessmentRoute: ApiAssessmentRoute,
+  ApiCoachInsightsRoute: ApiCoachInsightsRoute,
   ApiDatasetExportRoute: ApiDatasetExportRoute,
   ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
@@ -865,7 +926,9 @@ const rootRouteChildren: RootRouteChildren = {
   CoachAssistantRoute: CoachAssistantRoute,
   CoachAthletesRoute: CoachAthletesRoute,
   CoachAttentionRoute: CoachAttentionRoute,
+  CoachDataQualityRoute: CoachDataQualityRoute,
   CoachExercisesRoute: CoachExercisesRoute,
+  CoachInsightsRoute: CoachInsightsRoute,
   CoachNutritionRoute: CoachNutritionRoute,
   CoachPerformanceRoute: CoachPerformanceRoute,
   CoachProfileRoute: CoachProfileRoute,

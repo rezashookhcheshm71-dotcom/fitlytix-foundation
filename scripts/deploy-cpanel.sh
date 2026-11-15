@@ -6,13 +6,18 @@
 #   bash scripts/deploy-cpanel.sh --with-migrations # + apply snapshots migrations (004/005)
 #   bash scripts/deploy-cpanel.sh --dry-run         # print what would happen
 #   bash scripts/deploy-cpanel.sh --no-backup       # skip the tarball backup
+#   bash scripts/deploy-cpanel.sh --prune           # delete node_modules after a successful build
+#
+# It also makes sure Passenger writes an application log (PassengerAppLogFile) — without it a
+# 500 response leaves no trace of the stack trace anywhere.
 #
 # Why a script: the build on this host needs a very specific environment
 # (RAYON_NUM_THREADS=1 ... , dev dependencies installed, Passenger restarted afterwards) and
 # pasting a dozen commands into an SSH session repeatedly mangled the input.
 #
-# What it never does: touch .htaccess, delete .output before a successful build, or run a
-# database migration unless --with-migrations is passed.
+# The only .htaccess change it ever makes: appending PassengerAppLogFile, once, if it is missing.
+# What it never does: delete .output before a successful build, delete node_modules unless
+# --prune is passed, or run a database migration unless --with-migrations is passed.
 set -euo pipefail
 
 BRANCH="${BRANCH:-arena/9adac5a4-fitlytix-foundation}"
@@ -25,12 +30,14 @@ BACKUP_DIR="${BACKUP_DIR:-$HOME/deploy-backups}"
 WITH_MIGRATIONS=0
 DRY_RUN=0
 DO_BACKUP=1
+PRUNE=0
 
 for arg in "$@"; do
   case "$arg" in
     --with-migrations) WITH_MIGRATIONS=1 ;;
     --dry-run) DRY_RUN=1 ;;
     --no-backup) DO_BACKUP=0 ;;
+    --prune) PRUNE=1 ;;
     -h | --help)
       sed -n '2,20p' "$0"
       exit 0
@@ -154,10 +161,23 @@ if [ "$WITH_MIGRATIONS" = "1" ]; then
   fi
 fi
 
-# --- 6. restart Passenger --------------------------------------------------
+# --- 6. Passenger application log (idempotent) -----------------------------
+if [ ! -f .htaccess ] || ! grep -q "PassengerAppLogFile" .htaccess; then
+  log "adding PassengerAppLogFile to .htaccess"
+  run "mkdir -p '$APP_DIR/logs'"
+  run "printf '\\n# Application log (added by deploy-cpanel.sh)\\nPassengerAppLogFile %s/logs/passenger.log\\n' '$APP_DIR' >> '$APP_DIR/.htaccess'"
+fi
+
+# --- 7. restart Passenger --------------------------------------------------
 log "restarting application"
 run "mkdir -p '$APP_DIR/tmp'"
 run "touch '$APP_DIR/tmp/restart.txt'"
+
+# --- 8. optional cleanup ---------------------------------------------------
+if [ "$PRUNE" = "1" ]; then
+  log "removing node_modules (not needed at runtime: Nitro bundles its dependencies)"
+  run "rm -rf '$APP_DIR/node_modules'"
+fi
 
 cat <<EOF
 

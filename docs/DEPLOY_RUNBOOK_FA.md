@@ -423,10 +423,13 @@ touch ~/public_html/fitlytix-app/tmp/restart.txt
 
 ### ابزارها
 
-| دستور                                 | کار                                 |
-| ------------------------------------- | ----------------------------------- |
-| `npm run e2e:plan`                    | تست end-to-end روی سرور در حال اجرا |
-| `npm run verify:prod`                 | بررسی استاتیک بیلد تولیدی           |
-| `npm run code:bundle`                 | بستهٔ کد موتور برای بازبینی         |
-| `node scripts/check-model-parity.mjs` | تطابق TS با آرتیفکت مدل             |
-| `bash scripts/deploy-cpanel.sh`       | دپلوی یک‌مرحله‌ای                   |
+| دستور                                   | کار                                                                     |
+| --------------------------------------- | ----------------------------------------------------------------------- |
+| `npm run e2e:plan`                      | تست end-to-end روی سرور در حال اجرا                                     |
+| `npm run verify:prod`                   | بررسی استاتیک بیلد تولیدی                                               |
+| `npm run code:bundle`                   | بستهٔ کد موتور برای بازبینی                                             |
+| `node scripts/check-model-parity.mjs`   | تطابق TS با آرتیفکت مدل                                                 |
+| `bash scripts/deploy-cpanel.sh`         | دپلوی یک‌مرحله‌ای (پشتیبان → بیلد → مهاجرت → ری‌استارت → لاگ Passenger) |
+| `bash scripts/deploy-cpanel.sh --prune` | همان + حذف `node_modules` بعد از بیلد موفق                              |
+| `bash scripts/daily-export.sh`          | استخراج شبانهٔ دیتاست با نمونهٔ موقت + نگهداشت ۱۴ فایل آخر              |
+| `GET /api/coach-insights`               | دادهٔ `/coach/data-quality` و `/coach/insights`                         |

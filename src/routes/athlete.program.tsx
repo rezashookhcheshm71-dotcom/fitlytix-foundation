@@ -9,6 +9,8 @@ import { WorkoutBlockCard } from "@/components/domain/workout";
 import { demoAthlete } from "@/mock/athlete";
 import { programDisplayService } from "@/services/program/service";
 import { usePlan } from "@/hooks/use-plan";
+import { QuickSessionCard } from "@/components/domain/quick-session-card";
+import { DataEntryCard } from "@/components/domain/data-entry-card";
 import { faNumber } from "@/lib/locale";
 import { SPORTS, SPORT_LIST, EXPERIENCE_LABEL } from "@/domain/sports";
 import type { ExperienceLevel, SportId } from "@/domain/types";
@@ -303,6 +305,20 @@ function ProgramPage() {
         </ol>
       </div>
 
+      <QuickSessionCard
+        className="mt-6"
+        title={workout.title}
+        estimatedMin={workout.estimatedMin}
+        onSaved={() => {
+          void fetch("/api/plan", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ force: true }),
+          }).then(() => window.location.reload());
+        }}
+      />
+
       <div className="space-y-4">
         {workout.blocks.map((b, index) => (
           <div key={b.id}>
@@ -317,6 +333,18 @@ function ProgramPage() {
           </div>
         ))}
       </div>
+      <DataEntryCard
+        className="mt-8"
+        onSaved={() => {
+          void fetch("/api/plan", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ force: true }),
+          }).then(() => window.location.reload());
+        }}
+      />
+
       <section className="mt-8 border-t border-border pt-6">
         <h2 className="text-lg font-bold">خلاصه جلسه</h2>
         <p className="mt-2 text-sm text-muted-foreground" aria-live="polite">
