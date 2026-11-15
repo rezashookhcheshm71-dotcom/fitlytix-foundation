@@ -15,7 +15,9 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-$HOME/public_html/fitlytix-app}"
-PORT="${PORT:-3998}"
+# Exported under its own name: the env file below may define PORT (for the live app), and a
+# short-lived export instance must never inherit it.
+EXPORT_PORT="${EXPORT_PORT:-3998}"
 KEEP="${KEEP:-14}"
 DATASET_DIR="${DATASET_DIR:-$APP_DIR/data/datasets}"
 ENV_FILE="${ENV_FILE:-$HOME/fitlytix.env}"
@@ -44,30 +46,42 @@ DB_PASSWORD="${DB_PASSWORD:-$(grep -E '^SetEnv[[:space:]]+DB_PASSWORD' .htaccess
   exit 1
 }
 
-TOKEN="${DATASET_EXPORT_TOKEN:-$(openssl rand -hex 24)}"
-export DATASET_EXPORT_TOKEN="$TOKEN"
+# Node is guaranteed here (the app runs on it), openssl is not.
+TOKEN="${DATASET_EXPORT_TOKEN:-$(node -e 'process.stdout.write(require("crypto").randomBytes(24).toString("hex"))')}"
+[ -n "$TOKEN" ] || {
+  echo "cannot generate an export token" >&2
+  exit 1
+}
 
 # --- short-lived instance --------------------------------------------------
-LOG="/tmp/fitlytix-export-$PORT.log"
+LOG="/tmp/fitlytix-export-$EXPORT_PORT.log"
 env DB_HOST="$DB_HOST" DB_NAME="$DB_NAME" DB_USER="$DB_USER" DB_PASSWORD="$DB_PASSWORD" \
-  SESSION_SECRET="dataset-export" PORT="$PORT" DATASET_EXPORT_TOKEN="$TOKEN" \
+  SESSION_SECRET="$TOKEN" PORT="$EXPORT_PORT" DATASET_EXPORT_TOKEN="$TOKEN" \
   setsid nohup node .output/server/index.mjs > "$LOG" 2>&1 < /dev/null &
 PID=$!
 trap 'kill "$PID" 2>/dev/null || true' EXIT
 
 for _ in $(seq 1 30); do
-  if curl -fsS "http://127.0.0.1:$PORT/api/health" > /dev/null 2>&1; then break; fi
+  if curl -fsS "http://127.0.0.1:$EXPORT_PORT/api/health" > /dev/null 2>&1; then break; fi
   sleep 1
 done
 
-if ! curl -fsS "http://127.0.0.1:$PORT/api/health" > /dev/null 2>&1; then
+if ! curl -fsS "http://127.0.0.1:$EXPORT_PORT/api/health" > /dev/null 2>&1; then
   echo "the export instance did not start — see $LOG" >&2
   tail -20 "$LOG" >&2
   exit 1
 fi
 
+# Confirm the listener is *our* instance: a stale process on the same port would answer
+# /api/health too, then reject our fresh token with 403.
+if ! curl -fsS -o /dev/null "http://127.0.0.1:$EXPORT_PORT/api/dataset-export?token=$TOKEN&limit=1"; then
+  echo "export endpoint rejected the token — port $EXPORT_PORT is probably held by another instance; retry with EXPORT_PORT=3997" >&2
+  tail -20 "$LOG" >&2
+  exit 1
+fi
+
 # --- export ----------------------------------------------------------------
-DATASET_BASE_URL="http://127.0.0.1:$PORT" DATASET_DIR="$DATASET_DIR" node scripts/export-dataset.mjs
+DATASET_BASE_URL="http://127.0.0.1:$EXPORT_PORT" DATASET_DIR="$DATASET_DIR" node scripts/export-dataset.mjs
 
 # --- retention -------------------------------------------------------------
 if [ -d "$DATASET_DIR" ]; then
