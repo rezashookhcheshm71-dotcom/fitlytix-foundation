@@ -4,7 +4,7 @@
  *   GET /api/plan-diagnose     (requires a signed-in athlete)
  *
  * Answers the questions that are otherwise buried in logs:
- *   - is the database reachable and are migrations 001–004 applied?
+ *   - is the database reachable and are migrations 001–005 applied?
  *   - did this athlete's assessment answers actually land in the tables the model reads?
  *   - which signals are still missing (so a plan is thin)?
  *   - what would the model decide right now, and is a snapshot stored?
@@ -14,7 +14,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { RowDataPacket } from "mysql2/promise";
 import { AuthHttpError, requireAuthenticatedUser } from "@/lib/auth.server";
-import { dbQuery, isDatabaseConfigured, tableExists } from "@/lib/db.server";
+import { dbQuery, getTableColumns, isDatabaseConfigured, tableExists } from "@/lib/db.server";
 import { assembleRecommendationRequest } from "@/services/recommendation/assembly.server";
 import {
   getLatestRecommendationSnapshot,
@@ -120,6 +120,10 @@ export const Route = createFileRoute("/api/plan-diagnose")({
           ),
         ]);
 
+        const snapshotColumns = tables["recommendation_snapshots"]
+          ? await getTableColumns("recommendation_snapshots")
+          : new Set<string>();
+
         return Response.json(
           {
             ok: true,
@@ -135,6 +139,8 @@ export const Route = createFileRoute("/api/plan-diagnose")({
                 "003_recommendation_engine":
                   tables["recommendation_events"] === true && tables["model_registry"] === true,
                 "004_recommendation_snapshots": tables["recommendation_snapshots"] === true,
+                "005_recommendation_snapshots_seq":
+                  tables["recommendation_snapshots"] === true && snapshotColumns.has("seq"),
               },
             },
             athlete: {

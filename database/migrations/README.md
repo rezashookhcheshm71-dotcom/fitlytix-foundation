@@ -67,3 +67,12 @@ retrain on real outcomes. Apply after 001/002/003.
 - It does not connect application services automatically. The app must use repositories/API routes for these tables, with authentication and authorization checks.
 - It does not alter the nine existing MyISAM tables or add the ten previously identified foreign keys to existing assessment/sport tables. Those are a separate, data-preserving migration after backup and a fresh orphan check.
 - It does not convert the PostgreSQL/Supabase reference file under `docs/schema/future-schema.sql`; that file remains a separate architecture reference.
+
+## Migration 005 — stable snapshot ordering (additive)
+
+`005_recommendation_snapshots_seq.sql` adds a monotonic `seq` column (and rebuilds
+`v_latest_recommendation` on top of it). Without it, two snapshots written in the same second —
+which happens on every assessment submission, because the common assessment and the sport
+assessment each refresh the plan — could be ordered arbitrarily and the athlete might see the
+plan built from the common assessment only. The application detects the column automatically
+and falls back to `created_at` when the migration has not been applied yet.

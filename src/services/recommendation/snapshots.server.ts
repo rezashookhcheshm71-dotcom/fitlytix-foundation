@@ -11,7 +11,13 @@
  */
 import crypto from "node:crypto";
 import type { RowDataPacket } from "mysql2/promise";
-import { dbExecute, dbQuery, isDatabaseConfigured, tableExists } from "@/lib/db.server";
+import {
+  dbExecute,
+  dbQuery,
+  getTableColumns,
+  isDatabaseConfigured,
+  tableExists,
+} from "@/lib/db.server";
 import type {
   PlanDurationMonths,
   PlanRecommendation,
@@ -177,13 +183,35 @@ export async function saveRecommendationSnapshot(args: SaveSnapshotArgs): Promis
   }
 }
 
+/**
+ * Newest-first ordering for snapshots.
+ *
+ * `created_at` only has second precision and a single assessment submission can produce more
+ * than one snapshot within the same second (common assessment, then sport assessment), which
+ * made `ORDER BY created_at DESC LIMIT 1` pick an arbitrary — sometimes stale — row.
+ * Migration 005 adds a monotonic `seq` column; without it we fall back to `created_at`.
+ */
+let snapshotHasSeq: boolean | null = null;
+
+async function snapshotOrderClause(): Promise<string> {
+  if (snapshotHasSeq === null) {
+    try {
+      const columns = await getTableColumns(SNAPSHOT_TABLE);
+      snapshotHasSeq = columns.has("seq");
+    } catch {
+      snapshotHasSeq = false;
+    }
+  }
+  return snapshotHasSeq ? "seq DESC" : "created_at DESC";
+}
+
 export async function getLatestRecommendationSnapshot(
   userId: string,
 ): Promise<RecommendationSnapshot | null> {
   try {
     if (!(await snapshotsAvailable())) return null;
     const rows = await dbQuery<RowDataPacket[]>(
-      `SELECT * FROM ${SNAPSHOT_TABLE} WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`,
+      `SELECT * FROM ${SNAPSHOT_TABLE} WHERE user_id = ? ORDER BY ${await snapshotOrderClause()} LIMIT 1`,
       [userId],
     );
     const row = rows[0];
