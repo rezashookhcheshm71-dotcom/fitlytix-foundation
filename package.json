@@ -13,7 +13,8 @@
     "start": "node .output/server/index.mjs",
     "verify:prod": "node scripts/verify-prod.mjs",
     "code:bundle": "node scripts/bundle-recommender-code.mjs",
-    "e2e:plan": "node scripts/e2e-plan.mjs"
+    "e2e:plan": "node scripts/e2e-plan.mjs",
+    "loop:status": "node scripts/loop-status.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
