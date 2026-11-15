@@ -58,13 +58,23 @@ run() {
 cd "$APP_DIR"
 
 # --- node / npm from the cPanel nodevenv ----------------------------------
-NODEVENV_ACTIVATE="$HOME/nodevenv/public_html/fitlytix-app/22/bin/activate"
-if [ -f "$NODEVENV_ACTIVATE" ]; then
-  # shellcheck disable=SC1090
-  source "$NODEVENV_ACTIVATE"
+# Prefer the nodevenv bin directory over `source activate`: cPanel's activate script reads
+# variables that are unset under `set -u` (CL_VIRTUAL_ENV) and aborts halfway through.
+NODEVENV_BIN="$HOME/nodevenv/public_html/fitlytix-app/22/bin"
+if [ -x "$NODEVENV_BIN/npm" ]; then
+  export PATH="$NODEVENV_BIN:$PATH"
+fi
+if ! command -v node >/dev/null; then
+  NODEVENV_ACTIVATE="$NODEVENV_BIN/activate"
+  if [ -f "$NODEVENV_ACTIVATE" ]; then
+    set +u
+    # shellcheck disable=SC1090
+    . "$NODEVENV_ACTIVATE" || true
+    set -u
+  fi
 fi
 command -v node >/dev/null || {
-  echo "node not found — run: source $NODEVENV_ACTIVATE" >&2
+  echo "node not found — add $NODEVENV_BIN to PATH first" >&2
   exit 1
 }
 log "node $(node --version) / npm $(npm --version)"
