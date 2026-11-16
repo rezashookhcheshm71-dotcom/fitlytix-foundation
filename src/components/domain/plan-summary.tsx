@@ -55,15 +55,11 @@ export function PlanSummaryCard({ className }: { className?: string }) {
                     ? "متوسط"
                     : "کم"}
               </Pill>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 px-2 text-[11px]"
-                onClick={() => void plan.refresh()}
-                disabled={plan.refreshing}
-              >
-                <RefreshCw className={plan.refreshing ? "size-3.5 animate-spin" : "size-3.5"} />
-                {plan.refreshing ? "بازتولید…" : "بازتولید"}
+              <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-[11px]">
+                <Link to="/athlete/program">
+                  <RefreshCw className="size-3.5" />
+                  تنظیم برنامه
+                </Link>
               </Button>
             </div>
           </div>

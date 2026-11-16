@@ -12,6 +12,7 @@ import { usePlan } from "@/hooks/use-plan";
 import { QuickSessionCard } from "@/components/domain/quick-session-card";
 import { DataEntryCard } from "@/components/domain/data-entry-card";
 import { NudgeBanner } from "@/components/domain/nudge-banner";
+import { PlanControls } from "@/components/domain/plan-controls";
 import { useNudges } from "@/hooks/use-nudges";
 import { faNumber } from "@/lib/locale";
 import { SPORTS, SPORT_LIST, EXPERIENCE_LABEL } from "@/domain/sports";
@@ -143,14 +144,6 @@ function ProgramPage() {
               : ""}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => void plan.refresh()}
-              disabled={plan.refreshing}
-            >
-              {plan.refreshing ? "در حال بازتولید…" : "بازتولید برنامه"}
-            </Button>
             <Button size="sm" variant="ghost" asChild>
               <Link to="/athlete/nutrition">ساختار تغذیه</Link>
             </Button>
@@ -160,6 +153,7 @@ function ProgramPage() {
               </span>
             )}
           </div>
+          <PlanControls plan={plan} />
         </div>
       ) : plan.status === "loading" ? (
         <div className="mb-5 rounded-lg border border-border bg-card px-4 py-3 text-xs text-muted-foreground">

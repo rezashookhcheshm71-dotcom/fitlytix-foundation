@@ -18,6 +18,8 @@ import {
   buildProgramFromRecommendation,
 } from "@/services/recommendation/presentation";
 import { resolvePlanForUser } from "@/services/recommendation/userPlan.server";
+import { getLatestRecommendationSnapshot } from "@/services/recommendation/snapshots.server";
+import { describePlanChanges } from "@/services/recommendation/diff";
 
 const constraintsSchema = z
   .object({
@@ -57,6 +59,13 @@ async function respondWithPlan(
   options: { force: boolean; constraints?: z.infer<typeof constraintsSchema> },
 ): Promise<Response> {
   const user = await requireAuthenticatedUser(request);
+
+  // Read the plan the athlete is currently looking at *before* recomputing, so the response can
+  // say exactly what changed (or that nothing did, which is a legitimate answer).
+  const previous =
+    options.force || options.constraints
+      ? await getLatestRecommendationSnapshot(user.id).catch(() => null)
+      : null;
   const resolved = await resolvePlanForUser(user, {
     force: options.force,
     ...(options.constraints ? { constraints: options.constraints } : {}),
@@ -84,6 +93,8 @@ async function respondWithPlan(
         diagnostics: resolved.diagnostics,
         sourcesFa: resolved.sourcesFa,
         missingFa: resolved.missingFa,
+        previousGeneratedAt: previous?.createdAt ?? null,
+        changesFa: describePlanChanges(previous?.recommendation, resolved.recommendation),
       },
     },
     { status: 200, headers: { "cache-control": "no-store" } },

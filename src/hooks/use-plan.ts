@@ -12,6 +12,7 @@ import type { PlanDurationMonths } from "@/domain/recommendation";
 import type { Program, Workout } from "@/domain/types";
 import type { PlanSummary } from "@/services/recommendation/presentation";
 import type { RecommendationDiagnostics } from "@/services/recommendation/engine";
+import type { PlanChange } from "@/services/recommendation/diff";
 
 export interface PlanMeta {
   fromSnapshot: boolean;
@@ -22,6 +23,9 @@ export interface PlanMeta {
   diagnostics: RecommendationDiagnostics | null;
   sourcesFa: string[];
   missingFa: string[];
+  /** What changed compared with the plan the athlete was looking at, if anything. */
+  changesFa?: PlanChange[];
+  previousGeneratedAt?: string | null;
 }
 
 export interface PlanResponse {
@@ -35,12 +39,26 @@ export interface PlanResponse {
 
 export type PlanStatus = "loading" | "unauthenticated" | "ready" | "error";
 
+export interface PlanRefreshChange {
+  changes: PlanChange[];
+  attemptedAt: number;
+  /** Constraints the athlete asked for — echoed back so the UI can explain a no-op. */
+  requested: { durationMonths?: PlanDurationMonths | "auto"; maxSessionsPerWeek?: number };
+}
+
+export interface PlanRefreshConstraints {
+  durationMonths?: PlanDurationMonths | "auto";
+  maxSessionsPerWeek?: number;
+}
+
 export interface UsePlanResult {
   status: PlanStatus;
   data: PlanResponse | null;
   error: string | null;
   refreshing: boolean;
-  refresh: (constraints?: { durationMonths?: PlanDurationMonths | "auto" }) => Promise<void>;
+  /** Result of the last explicit regeneration, for an honest "what changed" message. */
+  lastChange: PlanRefreshChange | null;
+  refresh: (constraints?: PlanRefreshConstraints) => Promise<void>;
 }
 
 async function readPlan(
@@ -78,6 +96,7 @@ export function usePlan(options: { enabled?: boolean } = {}): UsePlanResult {
   const [data, setData] = useState<PlanResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastChange, setLastChange] = useState<PlanRefreshChange | null>(null);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -109,7 +128,7 @@ export function usePlan(options: { enabled?: boolean } = {}): UsePlanResult {
   }, [enabled]);
 
   const refresh = useCallback(
-    async (constraints?: { durationMonths?: PlanDurationMonths | "auto" }) => {
+    async (constraints?: PlanRefreshConstraints) => {
       if (!enabled) return;
       setRefreshing(true);
       try {
@@ -122,6 +141,11 @@ export function usePlan(options: { enabled?: boolean } = {}): UsePlanResult {
         setStatus(result.status);
         setData(result.data);
         setError(result.error);
+        setLastChange({
+          changes: result.data?.meta.changesFa ?? [],
+          attemptedAt: Date.now(),
+          requested: constraints ?? {},
+        });
       } catch {
         if (!mounted.current) return;
         setStatus("error");
@@ -133,5 +157,5 @@ export function usePlan(options: { enabled?: boolean } = {}): UsePlanResult {
     [enabled],
   );
 
-  return { status, data, error, refreshing, refresh };
+  return { status, data, error, refreshing, lastChange, refresh };
 }
