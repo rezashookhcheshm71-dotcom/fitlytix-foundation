@@ -2,8 +2,9 @@
 /**
  * Build a password hash this app accepts, and print the one SQL line that installs it.
  *
- *   node scripts/make-password-hash.mjs --email me@example.com
+ *   node scripts/make-password-hash.mjs                              # asks for email + password
  *   node scripts/make-password-hash.mjs --email me@example.com --password 'MyPass123'
+ *   node scripts/make-password-hash.mjs --role coach                  # also fix the role column',
  *
  * Zero dependencies on purpose: it must run on the cPanel host, where `node_modules` is
  * removed after a build and mysql2 is therefore unavailable. The output is a single
@@ -146,6 +147,20 @@ console.log(
   `SELECT id, email, role, LEFT(password_hash, 7) AS prefix FROM users WHERE LOWER(email) = '${escapedEmail}';`,
 );
 console.log("");
+const role = arg("role").trim().toLowerCase();
+if (role !== "") {
+  const allowed = ["athlete", "coach", "head_coach", "admin"];
+  if (!allowed.includes(role)) {
+    console.error(`نقش باید یکی از ${allowed.join(" / ")} باشد.`);
+    process.exit(2);
+  }
+  console.log("و اگر می‌خواهید نقش حساب هم عوض شود، این خط را جدا اجرا کنید");
+  console.log("(فقط بعد از اجرای migration 007، چون ستون role تا آن موقع وجود ندارد):");
+  console.log("");
+  console.log(`UPDATE users SET role = '${role}' WHERE LOWER(email) = '${escapedEmail}';`);
+  console.log("");
+}
+
 console.log("اگر SELECT خالی بود، یعنی حساب با این ایمیل در این دیتابیس وجود ندارد —");
 console.log("در آن صورت از صفحهٔ ثبت‌نام اپ حساب بسازید، نه از این اسکریپت.");
 console.log("");
