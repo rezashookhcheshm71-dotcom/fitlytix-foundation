@@ -250,9 +250,11 @@ docs/                       همین سند + runbook + data loop + code map
 
 ## ۹) وضعیت دقیق: چه چیزی تأیید شده و چه چیزی نه
 
-**تأیید شده:** بیلد تولیدی، `tsc`، eslint، پاریتی مدل، ساخت دیتاست/گزارش (با صفر ردیف برچسب)، مهاجرت
-۰۰۶ (توسط کاربر)، مهاجرت ۰۰۷ (خروجی `SHOW COLUMNS` دیده شد: `id char(36)`، `role`، `status`،
-`password_hash varchar(255)`)، نوشتن `PassengerAppLogFile` در `.htaccess`، حذف `node_modules` با `--prune`.
+**تأیید شده:** بیلد تولیدی روی هاست با `--low-mem` (commit `4515154` به بعد)، `tsc`، eslint، پاریتی مدل،
+**ورود موفق** (هش argon2 قدیمی با `set-password.sh` به scrypt تبدیل شد و نقش `coach` ست شد),
+**دیتاست واقعی**: ۱۴ ردیف / پوشش رفتار ۱۰۰٪ / صفر برچسب تا پنجرهٔ ۳ روزه، مهاجرت ۰۰۶ و ۰۰۷
+(`SHOW COLUMNS`: `id char(36)`، `role`، `status`، `password_hash varchar(255)`)،
+`PassengerAppLogFile` در `.htaccess`، `--prune`، و یادآور ورزشکار (`GET /api/nudges`) با ۴ تست قاعده.
 
 **تأیید نشده (باید با چشم دیده شود):** ورود موفق در مرورگر روی `app.fitlytix.ir`؛ ماندن نشست پس از
 ورود (`/api/auth/me`)؛ `POST /api/logs` از کارت جلسه؛ نمایش دادهٔ واقعی در `/coach/data-quality` و
