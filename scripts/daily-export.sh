@@ -38,9 +38,11 @@ if [ -f "$ENV_FILE" ]; then
 fi
 trim() { printf '%s' "$1" | tr -d '[:space:]'; }
 DB_HOST="$(trim "${DB_HOST:-localhost}")"
-DB_NAME="$(trim "${DB_NAME:-$(grep -E '^SetEnv[[:space:]]+DB_NAME' .htaccess | awk '{print $3}')}")"
-DB_USER="$(trim "${DB_USER:-$(grep -E '^SetEnv[[:space:]]+DB_USER' .htaccess | awk '{print $3}')}")"
-DB_PASSWORD="${DB_PASSWORD:-$(grep -E '^SetEnv[[:space:]]+DB_PASSWORD' .htaccess | awk '{print $3}')}"
+# Read a value from .htaccess without tripping `set -e` when the file is missing.
+ht() { grep -E "^SetEnv[[:space:]]+$1" .htaccess 2>/dev/null | awk '{print $3}' || true; }
+DB_NAME="$(trim "${DB_NAME:-$(ht DB_NAME)}")"
+DB_USER="$(trim "${DB_USER:-$(ht DB_USER)}")"
+DB_PASSWORD="${DB_PASSWORD:-$(ht DB_PASSWORD)}"
 [ -n "$DB_NAME" ] && [ -n "$DB_USER" ] || {
   echo "cannot read DB_* credentials" >&2
   exit 1
@@ -87,15 +89,21 @@ if [ "$PROBE_CODE" != "200" ]; then
     echo "the token was rejected — port $EXPORT_PORT is probably held by another instance;" \
       "retry with EXPORT_PORT=$((EXPORT_PORT - 1))" >&2
   else
-    echo "this is the endpoint's own error (see the JSON above and the log tail below)," >&2
-    echo "not a port conflict — send that message to whoever maintains the app." >&2
+    echo "this is the endpoint's own error (see the JSON above), not a port conflict." >&2
+    echo "خروجی بالا را همان‌طور که هست برای من بفرستید." >&2
   fi
   tail -20 "$LOG" >&2
   exit 1
 fi
 
 # --- export ----------------------------------------------------------------
-DATASET_BASE_URL="http://127.0.0.1:$EXPORT_PORT" DATASET_DIR="$DATASET_DIR" node scripts/export-dataset.mjs
+# The exporter reads DATASET_EXPORT_TOKEN itself; passing it only to the server left the
+# exporter with an empty token and it aborted with "DATASET_EXPORT_TOKEN لازم است".
+DATASET_BASE_URL="http://127.0.0.1:$EXPORT_PORT" \
+  DATASET_DIR="$DATASET_DIR" \
+  DATASET_EXPORT_TOKEN="$TOKEN" \
+  DATASET_LIMIT="${DATASET_LIMIT:-5000}" \
+  node scripts/export-dataset.mjs
 
 # --- retention -------------------------------------------------------------
 if [ -d "$DATASET_DIR" ]; then

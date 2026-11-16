@@ -29,9 +29,11 @@ command -v curl >/dev/null || { bad "curl روی هاست نیست"; exit 1; }
 
 # --- credentials ------------------------------------------------------------
 trim() { printf '%s' "$1" | tr -d '[:space:]'; }
-DB_NAME="$(trim "${DB_NAME:-$(grep -E '^SetEnv[[:space:]]+DB_NAME' .htaccess 2>/dev/null | awk '{print $3}')}")"
-DB_USER="$(trim "${DB_USER:-$(grep -E '^SetEnv[[:space:]]+DB_USER' .htaccess 2>/dev/null | awk '{print $3}')}")"
-DB_PASSWORD="${DB_PASSWORD:-$(grep -E '^SetEnv[[:space:]]+DB_PASSWORD' .htaccess 2>/dev/null | awk '{print $3}')}"
+# Read a value from .htaccess without tripping `set -e` when the file is missing.
+ht() { grep -E "^SetEnv[[:space:]]+$1" .htaccess 2>/dev/null | awk '{print $3}' || true; }
+DB_NAME="$(trim "${DB_NAME:-$(ht DB_NAME)}")"
+DB_USER="$(trim "${DB_USER:-$(ht DB_USER)}")"
+DB_PASSWORD="${DB_PASSWORD:-$(ht DB_PASSWORD)}"
 if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ]; then
   info "اعتبارنامهٔ دیتابیس پیدا نشد؛ تست بدون دیتابیس اجرا می‌شود"
 fi
