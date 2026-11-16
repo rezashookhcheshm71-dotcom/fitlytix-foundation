@@ -92,11 +92,26 @@ run_deploy() {
     bad "scripts/deploy-cpanel.sh نیست — ابتدا کد را با tar باز کنید"
     exit 1
   fi
-  bash scripts/deploy-cpanel.sh --prune || {
-    bad "دپلوی ناموفق بود. خروجی بالا را (با خط خطا) بفرستید."
-    exit 1
-  }
-  ok "دپلوی تمام شد"
+
+  # Stray temporary instances (from check-app/check-loop/daily-export) eat the account's
+  # process limit and make the Rust bundler fail with "Resource temporarily unavailable".
+  if [ -f scripts/cleanup.sh ]; then
+    bash scripts/cleanup.sh --kill >/dev/null 2>&1 || true
+  fi
+
+  if bash scripts/deploy-cpanel.sh --prune; then
+    ok "دپلوی تمام شد"
+    return 0
+  fi
+
+  bad "دپلوی بار اول ناموفق بود"
+  info "تلاش دوم با حالت کم‌مصرف (--low-mem: یک ترد، ۱ گیگابایت heap)"
+  if bash scripts/deploy-cpanel.sh --prune --low-mem; then
+    ok "دپلوی در تلاش دوم تمام شد"
+    return 0
+  fi
+  bad "دپلوی در هر دو حالت ناموفق بود — خروجی بالا را بفرستید"
+  exit 1
 }
 
 run_password() {

@@ -405,6 +405,28 @@ bash scripts/set-password.sh --role coach
 می‌خواند و رمز را با قواعد `verifyPassword()` می‌سنجد. نیاز به `mysql` CLI دارد؛ اگر نبود، به
 `finish-setup.sh --password` ارجاع می‌دهد.
 
+### بیلد با «Resource temporarily unavailable» می‌افتد
+
+پیام `The global thread pool has not been initialized ... Resource temporarily unavailable` یعنی
+سیستم نمی‌تواند ترد بسازد: سقف `nproc`/`pmem` حساب cPanel پر شده. رایج‌ترین علت، نمونه‌های موقت
+باقی‌مانده از `check-app.sh` / `check-loop.sh` / `daily-export.sh` است (اگر اسکریپت وسط کار قطع شود
+زنده می‌مانند).
+
+```
+bash scripts/cleanup.sh --kill
+```
+
+فقط پروسه‌هایی را می‌بندد که روی پورت‌های ۳۹۷۰–۳۹۹۹ گوش می‌دهند؛ پروسهٔ Passenger دست‌نخورده است.
+بعد:
+
+```
+bash scripts/deploy-cpanel.sh --prune --low-mem
+```
+
+`--low-mem` یک ترد و ۱ گیگابایت heap می‌دهد (`UV_THREADPOOL_SIZE=1`, `--max-old-space-size=1024`).
+`finish-setup.sh` خودش اول cleanup را می‌زند و اگر دپلوی بار اول شکست بخورد، خودکار با `--low-mem`
+تلاش دوم می‌کند.
+
 ### حلقهٔ داده را با یک دستور بسنجید
 
 ```

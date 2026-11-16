@@ -7,6 +7,7 @@
 #   bash scripts/deploy-cpanel.sh --dry-run         # print what would happen
 #   bash scripts/deploy-cpanel.sh --no-backup       # skip the tarball backup
 #   bash scripts/deploy-cpanel.sh --prune           # delete node_modules after a successful build
+#   bash scripts/deploy-cpanel.sh --low-mem         # when the build dies with "Resource temporarily unavailable"
 #
 # It also makes sure Passenger writes an application log (PassengerAppLogFile) — without it a
 # 500 response leaves no trace of the stack trace anywhere.
@@ -31,6 +32,7 @@ WITH_MIGRATIONS=0
 DRY_RUN=0
 DO_BACKUP=1
 PRUNE=0
+LOW_MEM=0
 
 for arg in "$@"; do
   case "$arg" in
@@ -38,6 +40,7 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=1 ;;
     --no-backup) DO_BACKUP=0 ;;
     --prune) PRUNE=1 ;;
+    --low-mem) LOW_MEM=1 ;;
     -h | --help)
       sed -n '2,20p' "$0"
       exit 0
@@ -108,7 +111,12 @@ run "cd '$APP_DIR' && npm_config_omit= npm ci --include=dev --no-audit --no-fund
 # --- 4. build --------------------------------------------------------------
 # Rolldown/Rayon panics with the default thread pool on this container.
 log "building"
-run "cd '$APP_DIR' && RAYON_NUM_THREADS=1 RAYON_RS_NUM_CPUS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=1536 npm run build"
+if [ "$LOW_MEM" = "1" ]; then
+  # Thread/memory starvation (typical CloudLinux nproc or pmem limit): one thread, 1 GB heap.
+  run "cd '$APP_DIR' && RAYON_NUM_THREADS=1 RAYON_RS_NUM_CPUS=1 UV_THREADPOOL_SIZE=1 NODE_OPTIONS='--max-old-space-size=1024 --max-semi-space-size=4' npm run build"
+else
+  run "cd '$APP_DIR' && RAYON_NUM_THREADS=1 RAYON_RS_NUM_CPUS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=1536 npm run build"
+fi
 if [ "$DRY_RUN" != "1" ] && [ ! -f ".output/server/index.mjs" ]; then
   echo "build output missing: .output/server/index.mjs" >&2
   exit 1
