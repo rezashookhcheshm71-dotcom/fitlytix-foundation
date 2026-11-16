@@ -73,9 +73,23 @@ if ! curl -fsS "http://127.0.0.1:$EXPORT_PORT/api/health" > /dev/null 2>&1; then
 fi
 
 # Confirm the listener is *our* instance: a stale process on the same port would answer
-# /api/health too, then reject our fresh token with 403.
-if ! curl -fsS -o /dev/null "http://127.0.0.1:$EXPORT_PORT/api/dataset-export?token=$TOKEN&limit=1"; then
-  echo "export endpoint rejected the token — port $EXPORT_PORT is probably held by another instance; retry with EXPORT_PORT=3997" >&2
+# /api/health too, then reject our fresh token with 403. Any other status is a real bug in
+# the endpoint, so print what the endpoint actually said instead of blaming the port.
+PROBE_BODY="/tmp/fitlytix-export-probe.json"
+PROBE_CODE=$(curl -s -m 30 -o "$PROBE_BODY" -w '%{http_code}' \
+  "http://127.0.0.1:$EXPORT_PORT/api/dataset-export?token=$TOKEN&limit=1" || echo "000")
+
+if [ "$PROBE_CODE" != "200" ]; then
+  echo "export endpoint returned HTTP $PROBE_CODE" >&2
+  head -c 400 "$PROBE_BODY" 2>/dev/null | sed 's/^/  /' >&2
+  echo >&2
+  if [ "$PROBE_CODE" = "403" ]; then
+    echo "the token was rejected — port $EXPORT_PORT is probably held by another instance;" \
+      "retry with EXPORT_PORT=$((EXPORT_PORT - 1))" >&2
+  else
+    echo "this is the endpoint's own error (see the JSON above and the log tail below)," >&2
+    echo "not a port conflict — send that message to whoever maintains the app." >&2
+  fi
   tail -20 "$LOG" >&2
   exit 1
 fi

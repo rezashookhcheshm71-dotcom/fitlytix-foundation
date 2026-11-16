@@ -65,6 +65,10 @@ export const Route = createFileRoute("/api/dataset-export")({
             Math.min(50_000, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : 5000)),
           );
 
+          // `COLLATE` on the join is deliberate: migration 003 created recommendation_outcomes
+          // without an explicit collation, so MySQL 8 defaults it to utf8mb4_0900_ai_ci while
+          // migration 004 pins recommendation_snapshots to utf8mb4_unicode_ci. Comparing the two
+          // raises "#1267 Illegal mix of collations" and the export dies with a 500.
           const hasOutcomes = await tableExists("recommendation_outcomes");
           const rows = await dbQuery<RowDataPacket[]>(
             `SELECT s.id, s.user_id, s.sport, s.model_version, s.archetype_id,
@@ -72,7 +76,7 @@ export const Route = createFileRoute("/api/dataset-export")({
                   s.safety_level, s.confidence, s.request_json, s.result_json, s.created_at,
                   ${hasOutcomes ? "o.adherence, o.sessions_completed, o.window_days, o.nutrition_adherence, o.avg_rpe, o.completed_cycle, o.progress_score" : "NULL AS adherence, NULL AS sessions_completed, NULL AS window_days, NULL AS nutrition_adherence, NULL AS avg_rpe, NULL AS completed_cycle, NULL AS progress_score"}
            FROM recommendation_snapshots s
-           ${hasOutcomes ? "LEFT JOIN recommendation_outcomes o ON o.snapshot_id = s.id" : ""}
+           ${hasOutcomes ? "LEFT JOIN recommendation_outcomes o ON o.snapshot_id = s.id COLLATE utf8mb4_unicode_ci" : ""}
            ORDER BY s.created_at DESC
            LIMIT ${limit}`,
           );

@@ -170,7 +170,7 @@ export async function getCoachInsights(options: { limit?: number } = {}): Promis
     ? await safeQuery(
         `SELECT s.user_id, AVG(o.adherence) AS adherence, COUNT(*) AS n
          FROM recommendation_outcomes o
-         JOIN recommendation_snapshots s ON s.id = o.snapshot_id
+         JOIN recommendation_snapshots s ON s.id = o.snapshot_id COLLATE utf8mb4_unicode_ci
          GROUP BY s.user_id`,
       )
     : [];
@@ -239,7 +239,7 @@ export async function getCoachInsights(options: { limit?: number } = {}): Promis
                   AVG(o.avg_rpe) AS rpe,
                   SUM(CASE WHEN o.completed_cycle = 1 THEN 1 ELSE 0 END) AS cycles
            FROM recommendation_snapshots s
-           JOIN recommendation_outcomes o ON o.snapshot_id = s.id
+           JOIN recommendation_outcomes o ON o.snapshot_id = s.id COLLATE utf8mb4_unicode_ci
            GROUP BY s.archetype_id, s.sport
            ORDER BY plans DESC`,
         )
