@@ -128,6 +128,37 @@ if (table.length) {
   }
 }
 
+// --- labelling window -------------------------------------------------------
+// Mirrors MIN_WINDOW_DAYS in src/services/recommendation/outcomes.server.ts: a plan younger
+// than this is deliberately left unlabelled, so a fresh snapshot is not evidence of anything.
+const MIN_WINDOW_DAYS = 3;
+const ages = rows
+  .map((row) => {
+    const at = new Date(String(row.createdAt ?? ""));
+    if (Number.isNaN(at.getTime())) return null;
+    return { at, ageDays: (Date.now() - at.getTime()) / 86_400_000 };
+  })
+  .filter(Boolean);
+
+if (ages.length) {
+  const waiting = ages.filter((a) => a.ageDays < MIN_WINDOW_DAYS).length;
+  const ready = ages.filter(
+    (a) => a.ageDays >= MIN_WINDOW_DAYS && !labelled.some((row) => row.createdAt === undefined),
+  );
+  const youngest = ages.reduce((a, b) => (a.at > b.at ? a : b));
+  const earliest = new Date(youngest.at.getTime() + MIN_WINDOW_DAYS * 86_400_000);
+  console.log(`\nپنجرهٔ برچسب‌گذاری (حداقل ۳ روز):`);
+  console.log(`  در انتظار پنجره: ${waiting} ردیف`);
+  console.log(
+    `  زودترین برچسب بعدی برای تازه‌ترین برنامه: ${earliest.toISOString().slice(0, 16).replace("T", " ")}`,
+  );
+  if (waiting === ages.length) {
+    console.log(
+      "  یعنی هیچ‌کدام از این اسنپ‌شات‌ها هنوز به سن برچسب نرسیده‌اند — این طبیعی است، نه باگ.",
+    );
+  }
+}
+
 // --- which input signals are missing most ----------------------------------
 const missed = new Map();
 for (const row of rows) {
