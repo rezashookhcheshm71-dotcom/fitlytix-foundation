@@ -394,6 +394,27 @@ touch ~/public_html/fitlytix-app/tmp/restart.txt
 
 ---
 
+### ورود ۴۰۱ می‌دهد (ایمیل/رمز رد می‌شود)
+
+`POST /api/auth/login` برای «ایمیل ناموجود» و «هش با فرمت ناشناخته» یک پاسخ می‌دهد: ۴۰۱.
+پس اول نگاه کنید ردیف و فرمت هش چه هستند (phpMyAdmin → SQL):
+
+```sql
+SELECT id, email, role, status, LEFT(password_hash, 12) AS prefix, LENGTH(password_hash) AS len FROM users ORDER BY id;
+```
+
+- `prefix = scrypt$` → حساب و فرمت درست‌اند، رمز اشتباه است → با اسکریپت زیر رمز را بازنشانی کنید.
+- `prefix = $2y$` یا `$argon2…` → هشِ نسخهٔ قدیمی است و اپ آن را تأیید نمی‌کند → بازنشانی لازم است.
+- SELECT خالی → این ایمیل در این دیتابیس نیست (ثبت‌نام کنید یا دیتابیس/env را چک کنید).
+
+بازنشانی بدون نیاز به `node_modules` (روی هاست، فقط Node):
+
+```
+node scripts/make-password-hash.mjs --email me@example.com
+```
+
+یک خط `UPDATE users SET password_hash = 'scrypt$…' WHERE LOWER(email) = '…';` چاپ می‌کند؛ همان را در تب SQL اجرا کنید. اسکریپت پیش از چاپ، هش را با همان قواعد `verifyPassword()` می‌سنجد.
+
 ## ۱۱) ضمیمه
 
 ### API
