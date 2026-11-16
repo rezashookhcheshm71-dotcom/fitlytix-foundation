@@ -353,7 +353,10 @@ loop-status (آستانه ۲۰۰) → retrain.mjs (Python، لوکال/CI) → p
 
 ## ۳.۸ امنیت
 
-- رمز: `scrypt` با نمک تصادفی ۱۶ بایتی، `scrypt$<salt>$<hex>`، مقایسهٔ `timingSafeEqual`.
+- رمز: `scrypt` با نمک تصادفی ۱۶ بایتی، `scrypt$<salt>$<hex>`، مقایسهٔ `timingSafeEqual`؛
+  `verifyPassword()` علاوه بر آن `salt:hash` و `sha256` را هم می‌پذیرد، ولی **argon2 را نه**.
+  جدول `users` با یک اپ قدیمی مشترک است و حساب‌های قدیمی هش `$argon2…` دارند → تا بازنشانی، ورودشان ۴۰۱ است.
+  بازنشانی: `bash scripts/set-password.sh --role coach` (مستقیم روی دیتابیس، بدون phpMyAdmin).
 - نشست: توکن امضاشده با HMAC-SHA256 + ردیف در `user_sessions` (قابل ابطال)، ۳۰ روز، `HttpOnly`.
 - RBAC: `requireRole(["coach","head_coach","admin"])` در APIهای مربی.
 - دیتاست: توکن محیطی، فقط روی نمونهٔ موقتِ صادرکننده فعال میشود، نه روی اپ اصلی.
