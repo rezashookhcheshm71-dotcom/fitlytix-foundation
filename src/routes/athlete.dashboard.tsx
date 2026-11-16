@@ -20,10 +20,14 @@ import type { BodyAnalysisRecord } from "@/domain/body-analysis";
 import { SPORTS, SPORT_LIST } from "@/domain/sports";
 import type { SportId } from "@/domain/types";
 import { getCurrentUser, type SessionUserDto } from "@/lib/auth";
+import { faNumber } from "@/lib/locale";
 import { assessmentEngine } from "@/services/assessment/engine";
 import { athleteDashboardService } from "@/services/athlete/dashboard";
 import { bodyAnalysisService } from "@/services/body-analysis/service";
-import { demoAthlete, demoRecovery, demoRecoveryHistory } from "@/mock/athlete";
+import { demoAthlete } from "@/mock/athlete";
+import { NudgeBanner } from "@/components/domain/nudge-banner";
+import { usePlan } from "@/hooks/use-plan";
+import { useAthleteOverview } from "@/hooks/use-athlete-overview";
 import { CoachCards, JourneyBar, PackageNotice, ReadinessCard } from "@/components/domain/coaching";
 import { PlanSummaryCard } from "@/components/domain/plan-summary";
 import { DataEntryCard } from "@/components/domain/data-entry-card";
@@ -70,6 +74,8 @@ function AthleteDashboard() {
     null,
   );
   const navigate = useNavigate();
+  const plan = usePlan();
+  const overview = useAthleteOverview();
 
   useEffect(() => {
     let active = true;
@@ -89,9 +95,20 @@ function AthleteDashboard() {
     };
   }, []);
 
-  const sport: SportId = selectedSport ?? persistedSport ?? demoAthlete.primarySport;
+  const realWorkout = plan.data?.workout ?? null;
+  const realPlan = plan.data?.plan ?? null;
+  const realProgram = plan.data?.program ?? null;
+  const recorded = overview.data;
+  const sport: SportId =
+    selectedSport ?? persistedSport ?? realPlan?.sport ?? demoAthlete.primarySport;
   const activeAthleteId = sessionUser?.athleteId ?? demoAthlete.id;
   const data = athleteDashboardService.getSnapshot(demoAthlete.id, sport);
+  const programPhase = realProgram?.phase ?? data.program.phase;
+  const programName = realProgram?.name ?? data.program.name;
+  const weekIndex = realProgram?.weekIndex ?? data.program.week;
+  const totalWeeks = realProgram?.totalWeeks ?? data.program.totalWeeks;
+  const recovery = recorded?.recovery ?? null;
+  const history = recorded?.recoveryHistory ?? [];
   const sportMeta = SPORTS[sport];
   const firstName = sessionUser?.firstName || demoAthlete.identity.firstName;
   const name = sessionUser
@@ -100,20 +117,22 @@ function AthleteDashboard() {
   const [addOpen, setAddOpen] = useState(false);
   const [bodyVersion, setBodyVersion] = useState(0);
   const bodyRecords = useMemo(() => {
+    // Same pattern as the decision context below: the body-analysis dialog writes outside React.
+    void bodyVersion;
     const all =
       persistedBodyRecords && persistedBodyRecords.length > 0
         ? persistedBodyRecords
         : bodyAnalysisService.list(demoAthlete.id);
     // Demo-only views for QA: ?body=empty | ?body=single
     return body === "empty" ? [] : body === "single" ? all.slice(-1) : all;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body, bodyVersion, persistedBodyRecords]);
   const pack = subscriptionService.getPackage(demoAthlete.id, pkg);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const ctx = useMemo(
-    () => decisionEngine.context(demoAthlete.id, sport, pkg),
-    [sport, pkg, healthVersion],
-  );
+  const ctx = useMemo(() => {
+    // `healthVersion` is read here on purpose: the health panel writes outside React, and this
+    // recomputes the decision context once it has.
+    void healthVersion;
+    return decisionEngine.context(demoAthlete.id, sport, pkg);
+  }, [sport, pkg, healthVersion]);
   const recs = decisionEngine.recommend(ctx);
   const goal = goalsService.primary(demoAthlete.id, sport);
   const nutritionPlan = nutritionService.getDailyPlan(
@@ -152,6 +171,8 @@ function AthleteDashboard() {
           </Button>
         ))}
       </div>
+
+      <NudgeBanner className="mb-6" nudges={recorded?.nudges ?? []} />
 
       <CoachCards recs={recs} />
 
@@ -203,7 +224,7 @@ function AthleteDashboard() {
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span>امروز</span>
                   <span>·</span>
-                  <MockBadge label="پیشنهاد نمایشی" />
+                  {realWorkout ? <span>برنامهٔ شما</span> : <MockBadge label="پیشنهاد نمایشی" />}
                 </div>
                 <h1 className="mt-2 text-2xl font-extrabold md:text-3xl">سلام {firstName}</h1>
                 <div className="mt-4 flex items-start gap-3 rounded-xl bg-background/50 p-4 ring-1 ring-border/70">
@@ -212,7 +233,7 @@ function AthleteDashboard() {
                   </span>
                   <div>
                     <div className="text-xs font-bold text-primary">تمرکز امروز</div>
-                    <p className="mt-1 text-sm leading-7">{data.focus}</p>
+                    <p className="mt-1 text-sm leading-7">{realWorkout?.focus ?? data.focus}</p>
                   </div>
                 </div>
                 <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -222,7 +243,8 @@ function AthleteDashboard() {
                     </Link>
                   </Button>
                   <span className="font-mono inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Clock className="size-4" /> {data.workout.duration} دقیقه
+                    <Clock className="size-4" />{" "}
+                    {realWorkout?.estimatedMin ?? data.workout.duration} دقیقه
                   </span>
                 </div>
               </div>
@@ -232,10 +254,17 @@ function AthleteDashboard() {
                 <span className="text-xs font-bold text-muted-foreground">جلسه بعدی</span>
                 <Pill color={`var(${sportMeta.colorToken})`}>امروز</Pill>
               </div>
-              <h2 className="font-display text-lg font-bold">{data.workout.title}</h2>
-              <p className="text-xs text-muted-foreground">{data.workout.detail}</p>
+              <h2 className="font-display text-lg font-bold">
+                {realWorkout?.title ?? data.workout.title}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {realWorkout?.focus ?? data.workout.detail}
+              </p>
               <div className="mt-5 grid grid-cols-2 gap-2">
-                {data.workout.blocks.map((block, index) => (
+                {(realWorkout
+                  ? realWorkout.blocks.slice(0, 4).map((block) => block.title)
+                  : data.workout.blocks
+                ).map((block, index) => (
                   <div
                     key={block}
                     className="flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs"
@@ -258,61 +287,114 @@ function AthleteDashboard() {
             <Panel>
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-bold text-muted-foreground">برنامه فعلی</span>
-                <Pill>{data.program.phase}</Pill>
+                <Pill>{programPhase}</Pill>
               </div>
-              <h2 className="font-display text-lg font-bold">{data.program.name}</h2>
+              <h2 className="font-display text-lg font-bold">{programName}</h2>
               <div className="mt-5 flex justify-between text-xs">
                 <span>
-                  هفته {data.program.week} از {data.program.totalWeeks}
+                  هفته {faNumber(weekIndex)} از {faNumber(totalWeeks)}
                 </span>
                 <span className="font-mono text-muted-foreground">
-                  {Math.round((data.program.week / data.program.totalWeeks) * 100)}٪
+                  {faNumber(Math.round((weekIndex / Math.max(1, totalWeeks)) * 100))}٪
                 </span>
               </div>
               <Bar
-                value={data.program.week / data.program.totalWeeks}
+                value={weekIndex / Math.max(1, totalWeeks)}
                 className="mt-2"
                 color={`var(${sportMeta.colorToken})`}
               />
               <div className="mt-5 grid grid-cols-3 gap-2">
-                {data.metrics.map((metric) => (
-                  <Stat
-                    key={metric.label}
-                    label={metric.label}
-                    value={metric.value}
-                    unit={metric.note}
-                  />
-                ))}
+                {realPlan ? (
+                  <>
+                    <Stat
+                      label="جلسه در هفته"
+                      value={faNumber(realPlan.sessionsPerWeek)}
+                      unit="جلسه"
+                    />
+                    <Stat
+                      label="دقیقه هر جلسه"
+                      value={faNumber(realPlan.sessionMinutes)}
+                      unit="دقیقه"
+                    />
+                    <Stat
+                      label="پایبندی چرخه"
+                      value={`${faNumber(Math.round(realPlan.adherenceCycle * 100))}٪`}
+                      unit="ثبت‌شده"
+                    />
+                  </>
+                ) : (
+                  data.metrics.map((metric) => (
+                    <Stat
+                      key={metric.label}
+                      label={metric.label}
+                      value={metric.value}
+                      unit={metric.note}
+                    />
+                  ))
+                )}
               </div>
             </Panel>
             <Panel>
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-bold text-muted-foreground">ریکاوری</span>
-                <Pill color="var(--success)">آماده</Pill>
+                {recovery ? (
+                  <Pill color={recovery.isToday ? "var(--success)" : "var(--warning)"}>
+                    {recovery.isToday ? "چک‌این امروز" : `آخرین چک‌این ${recovery.date}`}
+                  </Pill>
+                ) : (
+                  <Pill color="var(--warning)">چک‌این نشده</Pill>
+                )}
               </div>
-              <div className="flex items-center gap-4">
-                <ProgressRing
-                  value={data.recovery.readiness}
-                  size={88}
-                  stroke={9}
-                  color="var(--success)"
-                >
-                  <span className="font-mono text-xl font-bold">{data.recovery.readiness}</span>
-                  <span className="text-[9px] text-muted-foreground">آمادگی</span>
-                </ProgressRing>
-                <div className="grid flex-1 grid-cols-2 gap-3">
-                  <Mini icon={Moon} label="خواب" value={data.recovery.sleep} />
-                  <Mini icon={Zap} label="HRV" value={`${demoRecovery.hrv}`} />
-                  <Mini icon={Target} label="وضعیت" value={data.recovery.label} />
-                  <Mini icon={Clock} label="فشار" value={data.recovery.strain} />
+              {recovery ? (
+                <>
+                  <div className="flex items-center gap-4">
+                    <ProgressRing
+                      value={recovery.readiness ?? 0}
+                      size={88}
+                      stroke={9}
+                      color="var(--success)"
+                    >
+                      <span className="font-mono text-xl font-bold">
+                        {recovery.readiness === null ? "—" : faNumber(recovery.readiness)}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground">آمادگی</span>
+                    </ProgressRing>
+                    <div className="grid flex-1 grid-cols-2 gap-3">
+                      <Mini
+                        icon={Moon}
+                        label="خواب"
+                        value={recovery.sleepHours === null ? "—" : `${recovery.sleepHours} س`}
+                      />
+                      <Mini
+                        icon={Zap}
+                        label="تنش"
+                        value={recovery.stress === null ? "—" : `${recovery.stress}`}
+                      />
+                      <Mini icon={Target} label="وضعیت" value={recovery.labelFa} />
+                      <Mini icon={Clock} label="تاریخ" value={recovery.date} />
+                    </div>
+                  </div>
+                  {history.length >= 2 && <RecoveryBars data={history} height={90} />}
+                  <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                    این اعداد از چک‌این‌های خود شما می‌آید؛ اگر امروز ثبت نکرده‌اید، از کارت ثبت
+                    داده انجام دهید.
+                  </p>
+                </>
+              ) : (
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <p>هنوز چک‌اینی ثبت نکرده‌اید، پس عددی برای ریکاوری وجود ندارد.</p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/athlete/program">ثبت چک‌این امروز</Link>
+                  </Button>
                 </div>
-              </div>
-              <RecoveryBars data={demoRecoveryHistory} height={90} />
-              <p className="mt-2 text-xs leading-6 text-muted-foreground">{data.recovery.detail}</p>
+              )}
             </Panel>
             <Panel className="md:col-span-2 xl:col-span-1">
               <div className="mb-1 flex items-center justify-between">
-                <span className="text-xs font-bold text-muted-foreground">پروفایل عملکرد</span>
+                <span className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                  پروفایل عملکرد
+                  <MockBadge label="نمایشی" />
+                </span>
                 <Link
                   to="/athlete/fitness-dna"
                   search={{ sport }}
@@ -327,6 +409,31 @@ function AthleteDashboard() {
           </section>
         </>
       )}
+
+      <section className="mb-6 grid gap-3 sm:grid-cols-4">
+        <Stat
+          label="جلسهٔ ثبت‌شده (۲۸ روز)"
+          value={faNumber(recorded?.counts.sessionsLogged ?? 0)}
+          unit={`${faNumber(recorded?.counts.sessionsCompleted ?? 0)} انجام‌شده`}
+        />
+        <Stat
+          label="روز چک‌این"
+          value={faNumber(recorded?.counts.checkinDays ?? 0)}
+          unit="از ۲۸ روز"
+        />
+        <Stat
+          label="روز ثبت وعده"
+          value={faNumber(recorded?.counts.mealDays ?? 0)}
+          unit="از ۲۸ روز"
+        />
+        <Stat
+          label="وضعیت داده"
+          value={
+            overview.status === "empty" ? "خالی" : overview.status === "ready" ? "در حال رشد" : "—"
+          }
+          unit={overview.status === "empty" ? "اولین ثبت را انجام دهید" : "بر پایهٔ ثبت‌های شما"}
+        />
+      </section>
 
       {pack.includes.nutrition ? (
         <Panel className="mb-6">
@@ -385,23 +492,34 @@ function AthleteDashboard() {
           <Panel>
             <SectionHeading
               title="جلسات اخیر"
-              subtitle="سه جلسه آخر"
+              subtitle="سه جلسهٔ آخر از دادهٔ ثبت‌شده"
               action={{ label: "تاریخچه", to: "/athlete/performance" }}
             />
             <div className="divide-y divide-border/60">
-              {data.sessions.map((session) => (
-                <div
-                  key={`${session.date}-${session.title}`}
-                  className="grid grid-cols-[75px_1fr_auto] items-center gap-3 py-3"
-                >
-                  <span className="text-xs text-muted-foreground">{session.date}</span>
-                  <div>
-                    <div className="text-sm font-semibold">{session.title}</div>
-                    <div className="text-xs text-muted-foreground">{session.load}</div>
+              {(recorded?.recentSessions ?? []).length === 0 ? (
+                <p className="py-3 text-sm text-muted-foreground">
+                  هنوز جلسه‌ای ثبت نشده است. اولین جلسه را از کارت ثبت داده وارد کنید.
+                </p>
+              ) : (
+                (recorded?.recentSessions ?? []).map((session) => (
+                  <div
+                    key={session.id}
+                    className="grid grid-cols-[75px_1fr_auto] items-center gap-3 py-3"
+                  >
+                    <span className="num text-xs text-muted-foreground">{session.date}</span>
+                    <div>
+                      <div className="text-sm font-semibold">{session.title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {session.status === "completed" ? "انجام شد" : "ثبت موقت"}
+                        {session.minutes !== null ? ` · ${faNumber(session.minutes)} دقیقه` : ""}
+                      </div>
+                    </div>
+                    <span className="font-mono text-sm font-bold">
+                      {session.rpe !== null ? `RPE ${faNumber(session.rpe)}` : "—"}
+                    </span>
                   </div>
-                  <span className="font-mono text-sm font-bold">{session.result}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </Panel>
         )}

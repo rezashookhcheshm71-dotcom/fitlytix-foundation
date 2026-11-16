@@ -331,9 +331,41 @@ export async function readCheckinAggregate(userId: string, days = 14): Promise<C
   }
 }
 
+export interface RecentSession {
+  id: string;
+  title: string;
+  status: string;
+  rpe: number | null;
+  minutes: number | null;
+  at: string;
+}
+
+export interface RecentMeal {
+  id: string;
+  description: string;
+  mealType: string | null;
+  calories: number | null;
+  proteinG: number | null;
+  at: string;
+}
+
+export interface RecentCheckin {
+  date: string;
+  sleepHours: number | null;
+  stress: number | null;
+  readiness: number | null;
+  weightKg: number | null;
+}
+
+export interface RecentLogs {
+  sessions: RecentSession[];
+  nutrition: RecentMeal[];
+  checkins: RecentCheckin[];
+}
+
 /** Data captured in the last `days` days, for the athlete's "what did I log" panel. */
-export async function listRecentLogs(userId: string, days = 14) {
-  const empty = { sessions: [], nutrition: [], checkins: [] as unknown[] };
+export async function listRecentLogs(userId: string, days = 14): Promise<RecentLogs> {
+  const empty: RecentLogs = { sessions: [], nutrition: [], checkins: [] };
   try {
     const sessions = (await tableExists("training_sessions"))
       ? await dbQuery<RowDataPacket[]>(
