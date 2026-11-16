@@ -23,9 +23,73 @@ const arg = (name) => {
   return process.argv[i + 1] ?? "";
 };
 
-const email = arg("email").trim().toLowerCase();
-if (!email || !email.includes("@")) {
-  console.error("مثال: node scripts/make-password-hash.mjs --email me@example.com");
+function ask(question) {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+// Turns off terminal echo: the password never lands in scrollback or shell history.
+function askHidden(question) {
+  return new Promise((resolve, reject) => {
+    if (!process.stdin.isTTY) {
+      reject(new Error("no tty"));
+      return;
+    }
+    process.stdout.write(question);
+    const stdin = process.stdin;
+    stdin.setRawMode(true);
+    stdin.resume();
+    stdin.setEncoding("utf8");
+
+    let value = "";
+    const cleanup = () => {
+      stdin.removeListener("data", onData);
+      stdin.setRawMode(false);
+      stdin.pause();
+      process.stdout.write("\n");
+    };
+    const onData = (chunk) => {
+      for (const char of chunk) {
+        if (char === "\r" || char === "\n" || char === "\u0004") {
+          cleanup();
+          resolve(value);
+          return;
+        }
+        if (char === "\u0003") {
+          cleanup();
+          process.exit(130);
+        }
+        if (char === "\u007f" || char === "\b") {
+          value = value.slice(0, -1);
+          continue;
+        }
+        value += char;
+      }
+    };
+    stdin.on("data", onData);
+  });
+}
+
+async function resolveEmail() {
+  const given = arg("email").trim().toLowerCase();
+  if (given) return given;
+  if (!process.stdin.isTTY) {
+    console.error("مثال: node scripts/make-password-hash.mjs --email me@example.com");
+    process.exit(2);
+  }
+  const answer = (await ask("ایمیل حساب: ")).trim().toLowerCase();
+  if (!answer) process.exit(2);
+  return answer;
+}
+
+const email = await resolveEmail();
+if (!email.includes("@")) {
+  console.error("ایمیل معتبر نیست.");
   process.exit(2);
 }
 
@@ -39,10 +103,7 @@ async function readPassword() {
     return Buffer.concat(chunks).toString("utf8").trim();
   }
 
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const answer = await new Promise((resolve) => rl.question("رمز عبور جدید: ", resolve));
-  rl.close();
-  return answer.trim();
+  return (await askHidden("رمز عبور جدید (تایپ نمی‌شود): ")).trim();
 }
 
 const password = await readPassword();

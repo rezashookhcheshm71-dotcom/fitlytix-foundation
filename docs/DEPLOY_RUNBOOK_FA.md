@@ -410,10 +410,11 @@ SELECT id, email, role, status, LEFT(password_hash, 12) AS prefix, LENGTH(passwo
 بازنشانی بدون نیاز به `node_modules` (روی هاست، فقط Node):
 
 ```
-node scripts/make-password-hash.mjs --email me@example.com
+node scripts/make-password-hash.mjs
 ```
 
-یک خط `UPDATE users SET password_hash = 'scrypt$…' WHERE LOWER(email) = '…';` چاپ می‌کند؛ همان را در تب SQL اجرا کنید. اسکریپت پیش از چاپ، هش را با همان قواعد `verifyPassword()` می‌سنجد.
+ایمیل و رمز جدید را تعاملی می‌پرسد (رمز بدون اکو تایپ می‌شود) و یک خط
+`UPDATE users SET password_hash = 'scrypt$…' WHERE LOWER(email) = '…';` چاپ می‌کند؛ همان را در تب SQL اجرا کنید. اسکریپت پیش از چاپ، هش را با همان قواعد `verifyPassword()` می‌سنجد.
 
 ## ۱۱) ضمیمه
 
