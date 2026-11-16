@@ -113,7 +113,9 @@ run "cd '$APP_DIR' && npm_config_omit= npm ci --include=dev --no-audit --no-fund
 log "building"
 if [ "$LOW_MEM" = "1" ]; then
   # Thread/memory starvation (typical CloudLinux nproc or pmem limit): one thread, 1 GB heap.
-  run "cd '$APP_DIR' && RAYON_NUM_THREADS=1 RAYON_RS_NUM_CPUS=1 UV_THREADPOOL_SIZE=1 NODE_OPTIONS='--max-old-space-size=1024 --max-semi-space-size=4' npm run build"
+  # Every pool that can spawn threads is pinned to one: libuv (UV_THREADPOOL_SIZE), rayon
+  # (RAYON_*), V8 workers (--v8-pool-size) and npm's own job pool.
+  run "cd '$APP_DIR' && RAYON_NUM_THREADS=1 RAYON_RS_NUM_CPUS=1 UV_THREADPOOL_SIZE=1 npm_config_jobs=1 NODE_OPTIONS='--max-old-space-size=1024 --max-semi-space-size=4 --v8-pool-size=1' npm run build"
 else
   run "cd '$APP_DIR' && RAYON_NUM_THREADS=1 RAYON_RS_NUM_CPUS=1 UV_THREADPOOL_SIZE=2 NODE_OPTIONS=--max-old-space-size=1536 npm run build"
 fi

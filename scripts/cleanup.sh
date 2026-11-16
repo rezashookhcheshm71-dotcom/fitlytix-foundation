@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
-# پاک‌سازی پروسه‌های باقی‌مانده، برای وقتی بیلد با «Resource temporarily unavailable» می‌افتد.
+# پاک‌سازی پروسه‌های یتیم node، برای وقتی بیلد با «Resource temporarily unavailable» می‌افتد.
 #
-#   bash scripts/cleanup.sh            # فقط گزارش
-#   bash scripts/cleanup.sh --kill     # بستن نمونه‌های موقت روی پورت‌های ۳۹۷۰–۳۹۹۹
+#   bash scripts/cleanup.sh            # فقط گزارش: هر پروسه node، عمر، حافظۀ مصرفی، تعداد ترد
+#   bash scripts/cleanup.sh --kill     # بستن پروسه‌هایی که مال Passenger نیستند
 #
-# چرا: اسکریپت‌های check-app / check-loop / daily-export یک نمونهٔ موقت روی پورت‌های
-# ۳۹۸x بالا می‌آورند و در پایان می‌بندند؛ اگر اجرا وسط کار قطع شود (Ctrl+C، قطع SSH، خطا در
-# اسکریپت)، آن نمونه زنده می‌ماند. چند نمونهٔ باقی‌مانده سقف `nproc` حساب cPanel را پر می‌کند و
-# بیلد Rust/Vite با خطای «The global thread pool has not been initialized» می‌افتد.
+# چرا: CloudLinux سقف تعداد پروسه/ترد را در سطح LVE اعمال می‌کند و `ulimit -u` آن را نشان
+# نمی‌دهد. اسکریپت‌های check-app / check-loop / daily-export یک نمونهٔ موقت بالا می‌آورند و در
+# پایان می‌بندند؛ اگر اجرا وسط کار قطع شود، نمونه زنده می‌ماند و سهمیهٔ ترد حساب را می‌خورد تا
+# جایی که باندلر Rust/Vite با «The global thread pool has not been initialized» می‌افتد.
 #
-# این اسکریپت فقط پروسه‌هایی را می‌بندد که روی آن پورت‌ها گوش می‌دهند — یعنی همان نمونه‌های
-# موقت خودمان. پروسهٔ Passenger (که سایت را سرو می‌کند) دست‌نخورده می‌ماند.
+# تشخیص Passenger: پروسه‌ای که Passenger اجرا می‌کند در `/proc/<pid>/environ` متغیرهای
+# PASSENGER_* دارد. همان‌ها هرگز بسته نمی‌شوند؛ بقیه (که خودمان ساخته‌ایم) یتیم حساب می‌شوند.
 set -uo pipefail
 
 KILL=0
@@ -22,45 +22,65 @@ info() { printf '  \033[36m•\033[0m %s\n' "$*"; }
 bad() { printf '  \033[31m✘\033[0m %s\n' "$*"; }
 head_() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 
-head_ "وضعیت منابع"
-NODE_COUNT=$(pgrep -c node 2>/dev/null || echo 0)
-info "پروسه‌های node: $NODE_COUNT"
-[ -n "${NPROC_LIMIT:-}" ] || info "سقف پروسهٔ کاربر (ulimit -u): $(ulimit -u 2>/dev/null || echo "?")"
+head_ "وضعیت کلی"
+info "پروسه‌های node: $(pgrep -c node 2>/dev/null || echo 0)"
 if command -v free >/dev/null; then
   info "حافظه: $(free -m | awk '/Mem:/ {printf "%.0f مگابایت آزاد از %.0f", $7, $2}')"
 fi
+info "توجه: سقف واقعی (LVE/nproc) با ulimit دیده نمی‌شود؛ پس به تعداد تردها نگاه کنید."
 
-# find listener pid on a port without requiring lsof
-port_pid() {
-  local port="$1" pid=""
-  if command -v ss >/dev/null; then
-    pid=$(ss -ltnp 2>/dev/null | awk -v p=":$port" '$4 ~ p {print $0}' | grep -o 'pid=[0-9]*' | head -1 | cut -d= -f2)
-  elif command -v lsof >/dev/null; then
-    pid=$(lsof -ti "tcp:$port" -sTCP:LISTEN 2>/dev/null | head -1)
-  fi
-  printf '%s' "$pid"
+# cPanel's Passenger sets PASSENGER_* in the environment of the process it supervises.
+is_passenger() { grep -qs "PASSENGER" "/proc/$1/environ" 2>/dev/null; }
+threads_of() { awk '/^Threads:/ {print $2; exit}' "/proc/$1/status" 2>/dev/null; }
+rss_mb() {
+  local kb
+  kb=$(awk '/^VmRSS:/ {print $2; exit}' "/proc/$1/status" 2>/dev/null)
+  [ -n "${kb:-}" ] && printf '%s' "$((kb / 1024))" || printf '?'
 }
 
-head_ "نمونه‌های موقت (پورت ۳۹۷۰–۳۹۹۹)"
-FOUND=0
-for port in $(seq 3970 3999); do
-  pid=$(port_pid "$port")
-  if [ -n "$pid" ]; then
-    FOUND=$((FOUND + 1))
-    CMD=$(ps -o cmd= -p "$pid" 2>/dev/null | cut -c1-60)
-    bad "پورت $port → pid $pid ($CMD)"
-    if [ "$KILL" = "1" ]; then
-      kill "$pid" 2>/dev/null && ok "بسته شد: pid $pid" || bad "بستن ناموفق: pid $pid"
+head_ "پروسه‌های node"
+ORPHANS=0
+KEPT=0
+for pid in $(pgrep -x node 2>/dev/null); do
+  CMD=$(ps -o cmd= -p "$pid" 2>/dev/null | cut -c1-70)
+  AGE=$(ps -o etime= -p "$pid" 2>/dev/null | tr -d ' ')
+  TH=$(threads_of "$pid")
+  RSS=$(rss_mb "$pid")
+
+  if is_passenger "$pid"; then
+    KEPT=$((KEPT + 1))
+    ok "pid $pid · Passenger · ${AGE:-?} · ${TH:-?} ترد · ${RSS}MB"
+    continue
+  fi
+
+  ORPHANS=$((ORPHANS + 1))
+  bad "pid $pid · یتیم · ${AGE:-?} · ${TH:-?} ترد · ${RSS}MB"
+  printf '     %s\n' "$CMD"
+  if [ "$KILL" = "1" ]; then
+    if kill "$pid" 2>/dev/null; then
+      sleep 1
+      kill -0 "$pid" 2>/dev/null && kill -9 "$pid" 2>/dev/null
+      ok "بسته شد: pid $pid"
+    else
+      bad "بستن ناموفق: pid $pid (شاید مجوز کافی نیست)"
     fi
   fi
 done
-[ "$FOUND" -eq 0 ] && ok "هیچ نمونهٔ موقتی پیدا نشد"
 
-head_ "نتیجه"
-if [ "$FOUND" -gt 0 ] && [ "$KILL" = "0" ]; then
-  echo "  برای بستن آن‌ها: bash scripts/cleanup.sh --kill"
+head_ "جمع‌بندی"
+if [ "$ORPHANS" -eq 0 ]; then
+  ok "هیچ پروسهٔ یتیمی نیست ($KEPT پروسهٔ Passenger دست‌نخورده)"
+  echo ""
+  echo "  پس علت خطای بیلد، سقف ترد/حافظهٔ LVE است. دپلوی کم‌مصرف را بزنید:"
+  echo "     bash scripts/deploy-cpanel.sh --prune --low-mem"
+elif [ "$KILL" = "1" ]; then
+  ok "$ORPHANS پروسهٔ یتیم بسته شد"
+  echo ""
+  echo "  حالا دپلوی:"
+  echo "     bash scripts/deploy-cpanel.sh --prune --low-mem"
+else
+  echo "  برای بستن آن‌ها:"
+  echo "     bash scripts/cleanup.sh --kill"
   exit 1
 fi
-echo "  حالا دپلوی را دوباره بزنید:"
-echo "     bash scripts/deploy-cpanel.sh --prune --low-mem"
 echo ""
