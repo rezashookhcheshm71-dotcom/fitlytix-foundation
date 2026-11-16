@@ -32,6 +32,14 @@ export interface AthleteOverview {
   } | null;
   /** Readiness per check-in, oldest → newest, for the bar chart. */
   recoveryHistory: { day: string; readiness: number }[];
+  /** Newest 14 check-ins, oldest → newest — the raw rows the recovery page plots. */
+  checkins: {
+    date: string;
+    sleepHours: number | null;
+    stress: number | null;
+    readiness: number | null;
+    weightKg: number | null;
+  }[];
   recentSessions: {
     id: string;
     title: string;
@@ -85,6 +93,13 @@ export async function getAthleteOverview(userId: string): Promise<AthleteOvervie
           labelFa: readinessLabelFa(newest.readiness),
         }
       : null,
+    checkins: checkins.slice(-14).map((entry) => ({
+      date: dayOf(entry.date),
+      sleepHours: entry.sleepHours,
+      stress: entry.stress,
+      readiness: entry.readiness,
+      weightKg: entry.weightKg,
+    })),
     recoveryHistory: checkins
       .filter((entry) => entry.readiness !== null)
       .slice(-10)
