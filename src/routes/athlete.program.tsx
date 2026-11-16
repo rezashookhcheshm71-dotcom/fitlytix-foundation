@@ -11,6 +11,8 @@ import { programDisplayService } from "@/services/program/service";
 import { usePlan } from "@/hooks/use-plan";
 import { QuickSessionCard } from "@/components/domain/quick-session-card";
 import { DataEntryCard } from "@/components/domain/data-entry-card";
+import { NudgeBanner } from "@/components/domain/nudge-banner";
+import { useNudges } from "@/hooks/use-nudges";
 import { faNumber } from "@/lib/locale";
 import { SPORTS, SPORT_LIST, EXPERIENCE_LABEL } from "@/domain/sports";
 import type { ExperienceLevel, SportId } from "@/domain/types";
@@ -51,6 +53,7 @@ function ProgramPage() {
   // The athlete's own model-generated plan wins; demo content is only a fallback.
   const plan = usePlan();
   const readyPlan = plan.status === "ready" ? plan.data : null;
+  const { nudges } = useNudges(plan.status !== "loading");
   const fallback = programDisplayService.getToday(sport, experience);
   const program = readyPlan?.program ?? fallback.program;
   const workout = readyPlan?.workout ?? fallback.workout;
@@ -305,6 +308,17 @@ function ProgramPage() {
         </ol>
       </div>
 
+      <NudgeBanner
+        className="mt-6"
+        nudges={nudges}
+        onAction={() => {
+          document
+            .getElementById("today-session")
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+      />
+
+      <div id="today-session" />
       <QuickSessionCard
         className="mt-6"
         title={workout.title}

@@ -22,6 +22,7 @@ import { Route as ApiDatasetExportRouteImport } from './routes/api/dataset-expor
 import { Route as ApiDbTestRouteImport } from './routes/api/db-test'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLogsRouteImport } from './routes/api/logs'
+import { Route as ApiNudgesRouteImport } from './routes/api/nudges'
 import { Route as ApiPlanRouteImport } from './routes/api/plan'
 import { Route as ApiPlanDiagnoseRouteImport } from './routes/api/plan-diagnose'
 import { Route as ApiRecommendRouteImport } from './routes/api/recommend'
@@ -116,6 +117,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiLogsRoute = ApiLogsRouteImport.update({
   id: '/api/logs',
   path: '/api/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNudgesRoute = ApiNudgesRouteImport.update({
+  id: '/api/nudges',
+  path: '/api/nudges',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPlanRoute = ApiPlanRouteImport.update({
@@ -283,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/api/logs': typeof ApiLogsRoute
+  '/api/nudges': typeof ApiNudgesRoute
   '/api/plan': typeof ApiPlanRoute
   '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
@@ -328,6 +335,7 @@ export interface FileRoutesByTo {
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/api/logs': typeof ApiLogsRoute
+  '/api/nudges': typeof ApiNudgesRoute
   '/api/plan': typeof ApiPlanRoute
   '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/api/db-test': typeof ApiDbTestRoute
   '/api/health': typeof ApiHealthRoute
   '/api/logs': typeof ApiLogsRoute
+  '/api/nudges': typeof ApiNudgesRoute
   '/api/plan': typeof ApiPlanRoute
   '/api/plan-diagnose': typeof ApiPlanDiagnoseRoute
   '/api/recommend': typeof ApiRecommendRoute
@@ -421,6 +430,7 @@ export interface FileRouteTypes {
     | '/api/db-test'
     | '/api/health'
     | '/api/logs'
+    | '/api/nudges'
     | '/api/plan'
     | '/api/plan-diagnose'
     | '/api/recommend'
@@ -466,6 +476,7 @@ export interface FileRouteTypes {
     | '/api/db-test'
     | '/api/health'
     | '/api/logs'
+    | '/api/nudges'
     | '/api/plan'
     | '/api/plan-diagnose'
     | '/api/recommend'
@@ -511,6 +522,7 @@ export interface FileRouteTypes {
     | '/api/db-test'
     | '/api/health'
     | '/api/logs'
+    | '/api/nudges'
     | '/api/plan'
     | '/api/plan-diagnose'
     | '/api/recommend'
@@ -557,6 +569,7 @@ export interface RootRouteChildren {
   ApiDbTestRoute: typeof ApiDbTestRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiLogsRoute: typeof ApiLogsRoute
+  ApiNudgesRoute: typeof ApiNudgesRoute
   ApiPlanRoute: typeof ApiPlanRoute
   ApiPlanDiagnoseRoute: typeof ApiPlanDiagnoseRoute
   ApiRecommendRoute: typeof ApiRecommendRoute
@@ -680,6 +693,13 @@ declare module '@tanstack/react-router' {
       path: '/api/logs'
       fullPath: '/api/logs'
       preLoaderRoute: typeof ApiLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/nudges': {
+      id: '/api/nudges'
+      path: '/api/nudges'
+      fullPath: '/api/nudges'
+      preLoaderRoute: typeof ApiNudgesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/plan': {
@@ -909,6 +929,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiDbTestRoute: ApiDbTestRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiLogsRoute: ApiLogsRoute,
+  ApiNudgesRoute: ApiNudgesRoute,
   ApiPlanRoute: ApiPlanRoute,
   ApiPlanDiagnoseRoute: ApiPlanDiagnoseRoute,
   ApiRecommendRoute: ApiRecommendRoute,
