@@ -394,6 +394,18 @@ touch ~/public_html/fitlytix-app/tmp/restart.txt
 
 ---
 
+### «سایت باز نمی‌شود» — کد یا Passenger؟
+
+```
+bash scripts/check-app.sh
+```
+
+همان بیلد را چند ثانیه روی یک پورت محلی بالا می‌آورد و سه نقطهٔ انتهایی را می‌زند. سه نتیجه:
+
+- اپ سالم + دیتابیس سالم → مشکل از Passenger/Apache است (`logs/passenger.log` + `touch tmp/restart.txt`).
+- اپ سالم + `/api/db-test` خطا → متغیرهای `DB_*` به اپ نرسیده‌اند (`SetEnv` در `.htaccess`).
+- اپ حتی محلی بالا نمی‌آید → آخرین ۲۵ خط لاگ node چاپ می‌شود (معمولاً ماژول گم‌شده بعد از `--prune`).
+
 ### «وارد نمی‌شوم» — تشخیص خودکار
 
 ```
