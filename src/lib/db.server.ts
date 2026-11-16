@@ -7,7 +7,11 @@ import mysql, {
 
 let pool: Pool | null = null;
 const columnCache = new Map<string, Set<string>>();
-let existingTablesCache: Set<string> | null = null;
+let tablesCache: { at: number; names: Set<string> } | null = null;
+// Positive/negative schema answers are cached briefly: a migration applied while the app is
+// running becomes visible within a minute without restarting Passenger.
+const SCHEMA_CACHE_TTL_MS = 60_000;
+const SAFE_IDENTIFIER = /^[a-z0-9_]{1,64}$/;
 
 /**
  * Read an env var defensively.
@@ -129,24 +133,43 @@ export async function withTransaction<T>(fn: (conn: PoolConnection) => Promise<T
   }
 }
 
+/**
+ * Table names in the current database.
+ *
+ * Uses `SHOW TABLES` on purpose. On cPanel/CloudLinux the MySQL account is frequently denied
+ * `INFORMATION_SCHEMA` (`#1044 Access denied ... to database 'information_schema'`), which used
+ * to make every `tableExists()` throw and turn ordinary pages into 500s. `SHOW TABLES` only
+ * needs the table privileges the account already has; INFORMATION_SCHEMA stays as a fallback.
+ */
+async function listTables(conn?: PoolConnection): Promise<Set<string>> {
+  if (tablesCache && Date.now() - tablesCache.at < SCHEMA_CACHE_TTL_MS) return tablesCache.names;
+
+  let names: string[] = [];
+  try {
+    const rows = await dbQuery<RowDataPacket[]>("SHOW TABLES", [], conn);
+    names = rows.map((row) => String(Object.values(row)[0] ?? "").toLowerCase());
+  } catch {
+    const rows = await dbQuery<RowDataPacket[]>(
+      `SELECT LOWER(TABLE_NAME) AS table_name
+       FROM INFORMATION_SCHEMA.TABLES
+       WHERE TABLE_SCHEMA = DATABASE()`,
+      [],
+      conn,
+    );
+    names = rows.map((row) => String(row["table_name"] ?? "").toLowerCase());
+  }
+
+  tablesCache = { at: Date.now(), names: new Set(names.filter(Boolean)) };
+  return tablesCache.names;
+}
+
 export async function tableExists(tableName: string, conn?: PoolConnection): Promise<boolean> {
   const normalized = tableName.toLowerCase();
-  if (existingTablesCache?.has(normalized)) return true;
-
-  const rows = await dbQuery<RowDataPacket[]>(
-    `SELECT TABLE_NAME AS table_name
-     FROM INFORMATION_SCHEMA.TABLES
-     WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = ?
-     LIMIT 1`,
-    [normalized],
-    conn,
-  );
-  if (rows.length > 0) {
-    if (!existingTablesCache) existingTablesCache = new Set();
-    existingTablesCache.add(normalized);
-    return true;
+  try {
+    return (await listTables(conn)).has(normalized);
+  } catch {
+    return false;
   }
-  return false;
 }
 
 export async function getTableColumns(
@@ -157,14 +180,22 @@ export async function getTableColumns(
   const cached = columnCache.get(normalized);
   if (cached) return cached;
 
-  const rows = await dbQuery<RowDataPacket[]>(
-    `SELECT COLUMN_NAME AS col
-     FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = ?`,
-    [normalized],
-    conn,
+  // Table names reach this function from fixed call sites, but it is interpolated into SQL,
+  // so refuse anything that is not a plain identifier.
+  if (!SAFE_IDENTIFIER.test(normalized)) return new Set();
+
+  let rows: RowDataPacket[] = [];
+  try {
+    // SHOW COLUMNS avoids INFORMATION_SCHEMA, which cPanel may deny (see listTables).
+    rows = await dbQuery<RowDataPacket[]>(`SHOW COLUMNS FROM \`${normalized}\``, [], conn);
+  } catch {
+    // Missing table (1146) or no privileges: the caller treats an empty set as "no columns".
+    return new Set();
+  }
+
+  const cols = new Set(
+    rows.map((r) => String(r["Field"] ?? "").toLowerCase()).filter((name) => name !== ""),
   );
-  const cols = new Set(rows.map((r) => String(r["col"]).toLowerCase()));
   if (cols.size > 0) {
     columnCache.set(normalized, cols);
   }
@@ -172,13 +203,16 @@ export async function getTableColumns(
 }
 
 export async function testDatabaseConnection(): Promise<{ db: string; table_count: number }> {
-  const rows = await dbQuery<RowDataPacket[]>(
-    `SELECT DATABASE() AS db,
-            (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE()) AS table_count`,
-  );
+  const rows = await dbQuery<RowDataPacket[]>("SELECT DATABASE() AS db");
   const first: RowDataPacket | undefined = rows[0];
+  let tableCount = 0;
+  try {
+    tableCount = (await listTables()).size;
+  } catch {
+    tableCount = 0;
+  }
   return {
     db: String(first?.["db"] ?? resolveDbConfig().database),
-    table_count: Number(first?.["table_count"] ?? 0),
+    table_count: tableCount,
   };
 }
